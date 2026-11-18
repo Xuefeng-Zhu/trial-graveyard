@@ -2,23 +2,23 @@
 
 Ordered and incremental. Each task leaves the app building and tests passing. Requirement references are in brackets.
 
-- [ ] 1. Scaffold the project
+- [x] 1. Scaffold the project
   - Create Vite + React 18 + TypeScript (strict) app in the repo root. Add zustand, idb-keyval, date-fns, framer-motion, vitest, @testing-library/react, jest-dom, fast-check, fake-indexeddb, vitest-axe, vite-plugin-pwa.
   - Create the folder layout from `structure.md`. Keep `.kiro/` committed; `.gitignore` must not list it.
   - Add npm scripts: `dev`, `build`, `test`, `typecheck`, and a GitHub Actions workflow running typecheck, tests, build. [R11.1]
 
-- [ ] 2. Domain: trial model and stage calculation
-  - [ ] 2.1 `src/domain/trial.ts`: types, validation (name, date, price, cadence, http(s) URL), factory. [R1.2, R1.3, R1.5]
-  - [ ] 2.2 `src/domain/stage.ts`: `getStage`, `getViewState`, countdown label, using the threshold table from design section 3. [R2.1, R2.8]
-  - [ ] 2.3 Example tests for every boundary (±1 ms) plus fast-check tests P-S1 to P-S8. 100% coverage. [R2]
+- [x] 2. Domain: trial model and stage calculation
+  - [x] 2.1 `src/domain/trial.ts`: types, validation (name, date, price, cadence, http(s) URL), factory. [R1.2, R1.3, R1.5]
+  - [x] 2.2 `src/domain/stage.ts`: `getStage`, `getViewState`, countdown label, using the threshold table from design section 3. [R2.1, R2.8]
+  - [x] 2.3 Example tests for every boundary (±1 ms) plus fast-check tests P-S1 to P-S8. 100% coverage. [R2]
 
-- [ ] 3. Domain: savings math
-  - [ ] 3.1 `src/domain/savings.ts`: `monthlyCents`, `savedCents`, `totalSavedByCurrency`, epitaph text, money formatting. [R4, R3.3]
-  - [ ] 3.2 Property tests P-M1 to P-M8 and example tests.
+- [x] 3. Domain: savings math
+  - [x] 3.1 `src/domain/savings.ts`: `monthlyCents`, `savedCents`, `totalSavedByCurrency`, epitaph text, money formatting. [R4, R3.3]
+  - [x] 3.2 Property tests P-M1 to P-M8 and example tests.
 
-- [ ] 4. Domain: ICS export
-  - [ ] 4.1 `src/domain/ics.ts` with escaping, folding, VALARM. [R6]
-  - [ ] 4.2 Tests including P-I1.
+- [x] 4. Domain: ICS export
+  - [x] 4.1 `src/domain/ics.ts` with escaping, folding, VALARM. [R6]
+  - [x] 4.2 Tests including P-I1.
 
 - [ ] 5. Receipt parser
   - [ ] 5.1 `src/lib/parse/` modules for money, cadence, date, url and name, plus `parseReceipt(text, refDate)`. [R5.1 to R5.4]
