@@ -26,11 +26,11 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 5.3 Property tests P-P1 to P-P9. Fix any catastrophic regexes found.
   - [x] 5.4 Feature-flagged LLM fallback stub, off by default, lazily imported, no network when off. [R5.7, R5.8]
 
-- [ ] 6. State and persistence
-  - [ ] 6.1 Zustand store with actions: add, update, delete, cancel, keep, undo, toggle daylight, load demo. [R1.6, R3, R9.4]
-  - [ ] 6.2 idb-keyval storage adapter, schema version, migration, corrupt data reset, in-memory fallback with notice. [R9.1, R9.3, R9.5]
-  - [ ] 6.3 `useNow` clock hook (60 s tick, refresh on visibility). [R2.7]
-  - [ ] 6.4 Tests with fake-indexeddb including P-X1.
+- [x] 6. State and persistence
+  - [x] 6.1 Zustand store with actions: add, update, delete, cancel, keep, undo, toggle daylight, load demo. [R1.6, R3, R9.4]
+  - [x] 6.2 idb-keyval storage adapter, schema version, migration, corrupt data reset, in-memory fallback with notice. [R9.1, R9.3, R9.5]
+  - [x] 6.3 `useNow` clock hook (60 s tick, refresh on visibility). [R2.7]
+  - [x] 6.4 Tests with fake-indexeddb including P-X1.
 
 - [ ] 7. Design system
   - `src/design/`: tokens.css (colors checked for AA contrast, focus ring, spacing), gothic display font plus readable body font (self-hosted), muted-by-default sound helper, global reduced-motion CSS block. [R8.4, R8.7, R8.9, R10]
