@@ -50,6 +50,67 @@ describe.each([
   });
 });
 
+describe('retro pixel palette', () => {
+  const palette = {
+    midnight: '#120f23',
+    deepPurple: '#2c2142',
+    violet: '#8b5cf6',
+    lavender: '#b8a9d9',
+    green: '#a8ff60',
+    orange: '#ffb14a',
+    red: '#ff586e',
+    moonlight: '#f2ecff',
+  };
+
+  it('defines every palette colour as a token', () => {
+    for (const [name, hex] of Object.entries({
+      'palette-midnight': palette.midnight,
+      'palette-deep-purple': palette.deepPurple,
+      'palette-violet': palette.violet,
+      'palette-lavender': palette.lavender,
+      'palette-green': palette.green,
+      'palette-orange': palette.orange,
+      'palette-red': palette.red,
+      'palette-moonlight': palette.moonlight,
+    })) {
+      expect(night[name]).toBe(hex);
+    }
+  });
+
+  it.each([
+    ['moonlight', 'midnight'],
+    ['moonlight', 'deepPurple'],
+    ['lavender', 'midnight'],
+    ['lavender', 'deepPurple'],
+    ['green', 'midnight'],
+    ['green', 'deepPurple'],
+    ['orange', 'midnight'],
+    ['orange', 'deepPurple'],
+    ['red', 'midnight'],
+    ['red', 'deepPurple'],
+    ['midnight', 'green'],
+    ['midnight', 'lavender'],
+  ] as const)('%s text on %s is at least 4.5:1', (fg, bg) => {
+    expect(contrastRatio(palette[fg], palette[bg])).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('keeps the warning tone readable in both themes', () => {
+    for (const t of [night, day]) {
+      for (const bg of ['color-bg', 'color-surface']) {
+        expect(contrastRatio(t['color-warn']!, t[bg]!)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('loads Press Start 2P and Inter from packages, not a CDN', () => {
+    const fonts = read('fonts.ts');
+    expect(fonts).toContain('@fontsource/press-start-2p/400.css');
+    expect(fonts).toContain('@fontsource/inter/400.css');
+    expect(fonts).not.toMatch(/https?:/);
+    expect(css).toContain("--font-display: 'Press Start 2P'");
+  });
+});
+
 describe('reduced motion block', () => {
   it('disables animation and limits transitions to opacity under 200 ms', () => {
     const global = read('global.css');
