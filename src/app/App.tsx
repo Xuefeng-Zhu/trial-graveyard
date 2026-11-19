@@ -114,7 +114,13 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             />
           ) : (
             <>
-              <PasteBox now={clock} onParsed={onParsed} />
+              <PasteBox
+                now={clock}
+                onParsed={onParsed}
+                onManual={() =>
+                  document.querySelector<HTMLElement>('form[aria-label="Grave details"] [name="name"]')?.focus()
+                }
+              />
               <Seance existing={s.graves} clock={clock} onBury={(trial) => s.addGrave(trial, clock())} />
               <GraveForm
                 initial={EMPTY_VALUES}

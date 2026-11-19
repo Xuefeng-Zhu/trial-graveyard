@@ -64,3 +64,83 @@
   background: transparent;
   color: var(--color-accent);
 }
+
+.imageZone {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}
+
+.dragging {
+  border-color: var(--color-accent);
+}
+
+.imageTitle {
+  margin: 0;
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.linkButton {
+  font: inherit;
+  padding: var(--space-2) 0;
+  background: none;
+  border: 0;
+  color: var(--color-accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.preview {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.thumb {
+  max-width: 8rem;
+  max-height: 8rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+}
+
+.progress {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.bar {
+  height: 0.5rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  background: var(--color-accent);
+}
+
+.shimmer {
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.details {
+  display: grid;
+  gap: var(--space-2);
+}

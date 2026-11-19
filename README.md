@@ -28,10 +28,22 @@ The crystal-ball button next to "Paste a receipt" opens the Inbox Séance. It co
 - **Privacy:** everything stays on the device. Only the trials you confirm are stored, email bodies are never stored, and Disconnect (or closing the panel) clears everything the spirits saw. The panel explains this under "What the spirits can see".
 - **Motion:** the scanning orb stays still when you prefer reduced motion.
 
+## Image receipts
+
+Under "Paste a receipt" you can also show the spirits a screenshot or photo of a confirmation. The text is read on your device and fills the same form as a pasted receipt.
+
+- **How it works:** choose an image, take a photo (on mobile), drop one on the box, or paste one from the clipboard. The image is shrunk to about 1600 px on the long edge and turned gray, then read with [tesseract.js](https://github.com/naptha/tesseract.js) (English). A progress bar with a Cancel button shows while the spirits are deciphering. The fields are prefilled for you to check. A confidence hint and a collapsible "What the spirits read" section show the raw text, which you can fix and read again.
+- **Try it:** "Try a sample screenshot" loads a generated Disney+ receipt from `public/samples/` (made by `scripts/make-samples.py`, all data invented).
+- **Lazy loading:** `tesseract.js` is loaded with a dynamic `import()` only after you pick an image, so it is a separate chunk and the main bundle does not grow. The worker, core and English data are fetched on first use and cached by the service worker (`tesseract-assets`), so image receipts work offline afterwards. These assets are not self-hosted: the first read contacts `cdn.jsdelivr.net` and `tessdata.projectnaptha.com`, which can see that the feature was used. The image itself is never sent, and the UI says so.
+- **Privacy:** the image never leaves the device. Only the trial you confirm is saved, never the image or the OCR text. The UI says so, and also mentions the CDN download.
+- **When it cannot read:** no text gives a friendly message and an "Enter it by hand" button that jumps to the form. A low-confidence read (under 40%) does not prefill the form, but keeps the raw text for you to fix and read again. A picture the browser cannot decode (HEIC, for example) gets its own message.
+- **Testing:** OCR sits behind an `OcrEngine` interface (`src/lib/ocr/types.ts`). Tests use a fake engine and never download models.
+- **Motion:** the progress shimmer stops when you prefer reduced motion.
+
 ## Built with Kiro
 
 - **Steering:** `.kiro/steering/` holds the product metaphor, tech stack and project structure, always included in the agent's context so the costume stays consistent.
-- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance.
+- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts.
 - **Agent hooks:** `.kiro/hooks/` has five hooks: test-on-save, domain-property-guard, spec-sync, a11y-check and spooky-copy.
 - **MCP:** `.kiro/settings/mcp.json` configures a `fetch` server and a GitHub server, explained in `.kiro/steering/mcp.md`. The token comes from `GITHUB_TOKEN`.
 - **Property-based tests:** fast-check covers stage boundaries, savings math, ICS export and the receipt parser, alongside example tests.
@@ -42,7 +54,7 @@ The crystal-ball button next to "Paste a receipt" opens the Inbox Séance. It co
 | Feature | Where | What it does here |
 |---|---|---|
 | Steering | `.kiro/steering/` (product, structure, tech, mcp) | Keeps the haunted metaphor, stack and MCP usage consistent. |
-| Specs (3) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/` | Requirements, design and tasks for the MVP, the polish pass and the Inbox Séance. |
+| Specs (4) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance and image receipts. |
 | Hooks (5) | `.kiro/hooks/` | Test on save, domain property guard, spec sync, a11y check, spooky copy. |
 | MCP | `.kiro/settings/mcp.json` | `fetch` for real cancellation and pricing pages, GitHub for follow-up issues. |
 | Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS and the receipt parser. |

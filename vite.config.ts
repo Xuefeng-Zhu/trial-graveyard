@@ -14,6 +14,20 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,webmanifest}'],
         navigateFallback: `${base}index.html`,
+        // Tesseract worker, core and English data come from CDNs on first use.
+        // Cache them so image receipts keep working offline afterwards.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }: { url: URL }) =>
+              url.hostname === 'cdn.jsdelivr.net' || url.hostname === 'tessdata.projectnaptha.com',
+            handler: 'CacheFirst' as const,
+            options: {
+              cacheName: 'tesseract-assets',
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'Trial Graveyard',
