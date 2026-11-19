@@ -82,7 +82,7 @@ describe('App end to end in the list view', () => {
     addTrial('Necro Audiobooks', '2026-10-20', '14.95');
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
     expect(screen.getByText('Here lies Necro Audiobooks. Saved you $14.95/mo.')).toBeInTheDocument();
-    expect(screen.getByText('$14.95')).toBeInTheDocument();
+    expect(within(screen.getByRole('region', { name: 'Mausoleum' })).getByText('$14.95')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(screen.queryByText(/Here lies/)).not.toBeInTheDocument();
     expect(screen.getByText(EMPTY_MAUSOLEUM_TEXT)).toBeInTheDocument();

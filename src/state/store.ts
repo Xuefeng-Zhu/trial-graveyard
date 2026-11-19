@@ -37,6 +37,8 @@ export interface GraveState extends PersistedSlice {
   updateGrave: (id: string, trial: ValidTrial) => void;
   deleteGrave: (id: string) => void;
   cancelGrave: (id: string, now: Date) => void;
+  /** Confirms an exorcism: buries the trial like a cancellation, so it counts as souls saved and can be undone. */
+  exorcise: (id: string, now: Date) => void;
   keepGrave: (id: string, now: Date) => void;
   /** Reverts the last status change if it happened within 10 s of `now`. Returns whether it did. */
   undo: (now: Date) => boolean;
@@ -140,6 +142,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
             lastChange: s.lastChange?.id === id ? null : s.lastChange,
           })),
         cancelGrave: (id, now) => changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) }),
+        exorcise: (id, now) => changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) }),
         keepGrave: (id, now) => changeStatus(id, now, { status: 'kept', keptAt: toLocalIso(now) }),
         undo: (now) => {
           const change = get().lastChange;
