@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createGraveStore } from '../state/store';
 import { NO_CANCEL_URL_TEXT, EMPTY_MAUSOLEUM_TEXT } from '../features/daylight/DaylightList';
 import { App } from './App';
+import { isSoundEnabled, setSoundEnabled } from '../design/sounds';
 
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
 const clock = () => NOW;
@@ -191,7 +192,7 @@ describe('haunted scene', () => {
     addTrial('Netflix', '2026-10-02', '15.49');
     const zombie = screen.getByRole('listitem', { name: /Netflix/ });
     fireEvent.click(within(zombie).getByRole('button', { name: /I cancelled/ }));
-    await waitFor(() => expect(screen.getByText('Here lies Netflix. Saved you $15.49/mo.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Here lies Netflix · $15.49/mo · slain Oct 2026')).toBeInTheDocument());
     expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
   });
 });
@@ -253,5 +254,60 @@ describe('accessibility', () => {
     fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
     const results = await axe(document.body);
     expect(results.violations).toEqual([]);
+  });
+});
+
+describe('sound toggle', () => {
+  afterEach(() => setSoundEnabled(false));
+
+  it('is off by default, exposes aria-pressed and persists the choice', () => {
+    const store = setup();
+    const toggle = screen.getByRole('button', { name: 'Sound: off' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(isSoundEnabled()).toBe(false);
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'Sound: on' })).toHaveAttribute('aria-pressed', 'true');
+    expect(store.getState().settings.soundOn).toBe(true);
+    expect(isSoundEnabled()).toBe(true);
+  });
+
+  it('restores the saved choice on load', () => {
+    const store = createGraveStore({ newId: () => 'x' });
+    store.setState((s) => ({ settings: { ...s.settings, soundOn: true, daylight: true } }));
+    render(<App store={store} clock={clock} />);
+    expect(screen.getByRole('button', { name: 'Sound: on' })).toHaveAttribute('aria-pressed', 'true');
+    expect(isSoundEnabled()).toBe(true);
+  });
+
+  it('plays a creak on bury and a thunder sting on cancel', () => {
+    const created: string[] = [];
+    const node: Record<string, unknown> = { frequency: {}, gain: {}, start: vi.fn(), stop: vi.fn(), getChannelData: () => [] };
+    node.connect = () => node;
+    const param = { setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() };
+    node.frequency = param;
+    node.gain = param;
+    vi.stubGlobal(
+      'AudioContext',
+      vi.fn(function () {
+        return {
+          createOscillator: () => (created.push('osc'), node),
+          createBufferSource: () => (created.push('noise'), node),
+          createBuffer: () => node,
+          createBiquadFilter: () => node,
+          createGain: () => node,
+          destination: {},
+          currentTime: 0,
+          sampleRate: 10,
+          close: vi.fn(),
+        };
+      }),
+    );
+    setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Sound: off' }));
+    addTrial('Audible', '2026-10-20', '14.95');
+    expect(created).toEqual(['osc']);
+    fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
+    expect(created).toEqual(['osc', 'noise']);
+    vi.unstubAllGlobals();
   });
 });

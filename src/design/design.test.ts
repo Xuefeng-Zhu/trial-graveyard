@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { contrastRatio } from './contrast';
-import { isSoundEnabled, playSound, setSoundEnabled } from './sounds';
+import { MAX_GAIN, isSoundEnabled, playSound, setSoundEnabled } from './sounds';
 
 
 function block(selector: string): Record<string, string> {
@@ -99,5 +99,55 @@ describe('sounds', () => {
       throw new Error('blocked');
     });
     expect(() => playSound('undo')).not.toThrow();
+  });
+
+  function audioNode() {
+    const makeParam = () => ({ value: 0, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() });
+    const node: Record<string, unknown> = {
+      frequency: makeParam(),
+      gain: makeParam(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      getChannelData: () => new Float32Array(10),
+    };
+    node.connect = vi.fn(() => node);
+    return node;
+  }
+
+  it.each(['creak', 'thunder'] as const)('synthesises %s with a capped gain', (name) => {
+    const node = audioNode();
+    const close = vi.fn();
+    const ctor = vi.fn(function () {
+      return {
+        createOscillator: () => node,
+        createGain: () => node,
+        createBiquadFilter: () => node,
+        createBuffer: () => node,
+        createBufferSource: () => node,
+        destination: {},
+        currentTime: 0,
+        sampleRate: 10,
+        close,
+      };
+    });
+    vi.stubGlobal('AudioContext', ctor);
+    setSoundEnabled(true);
+    playSound(name);
+    expect(ctor).toHaveBeenCalledOnce();
+    expect(node.start).toHaveBeenCalled();
+    (node.onended as () => void)();
+    expect(close).toHaveBeenCalled();
+    const peaks = (node.gain as { linearRampToValueAtTime: ReturnType<typeof vi.fn> }).linearRampToValueAtTime.mock.calls.map(
+      (c: number[]) => c[0] ?? 0,
+    );
+    expect(Math.max(...peaks)).toBeLessThanOrEqual(MAX_GAIN);
+  });
+
+  it('is silent for new sounds while muted', () => {
+    const ctor = vi.fn();
+    vi.stubGlobal('AudioContext', ctor);
+    playSound('creak');
+    playSound('thunder');
+    expect(ctor).not.toHaveBeenCalled();
   });
 });

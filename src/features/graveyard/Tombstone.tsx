@@ -1,3 +1,4 @@
+import { formatEpitaph } from '../../domain/epitaph';
 import { formatMoney } from '../../domain/savings';
 import type { Grave as GraveData } from '../../domain/trial';
 import styles from './graveyard.module.css';
@@ -21,7 +22,7 @@ export function Tombstone({ grave, epitaph, savedCents }: TombstoneProps) {
         <path className={styles.moss} d="M8 98 q6 -10 12 -4 q6 -12 14 -2 q8 -8 14 0 q8 -10 12 2 q6 -6 12 4 Z" />
       </svg>
       <p className={styles.name}>{grave.name}</p>
-      <p className={styles.epitaph}>{epitaph}</p>
+      <p className={styles.epitaph}>{grave.cancelledAt ? formatEpitaph(grave) : epitaph}</p>
       <p className={styles.srOnly}>Saved {formatMoney(savedCents, grave.currency)}</p>
     </div>
   );

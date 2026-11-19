@@ -76,7 +76,7 @@ describe('Scene stages', () => {
     expect(screen.getAllByTestId('cracks')).toHaveLength(2); // cracked + churning
     expect(screen.getByTestId('dirt')).toBeInTheDocument();
     expect(screen.getByText('Overdue')).toBeInTheDocument();
-    expect(screen.getByText('Here lies Dead One. Saved you $14.95/mo.')).toBeInTheDocument();
+    expect(screen.getByText('Here lies Dead One · $14.95/mo · slain Oct 2026')).toBeInTheDocument();
     expect(screen.getByText(/Haunting you for \$2\.00\/mo/)).toBeInTheDocument();
     expect(screen.getByText(/^Zombie, charges in 5 hours/)).toBeInTheDocument();
   });
