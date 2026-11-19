@@ -7,3 +7,12 @@
 .field input[aria-invalid='true'] { border-color: var(--danger); }
 .reader textarea { resize: vertical; min-height: 90px; }
 @media (max-width: 480px) { .fields { grid-template-columns: 1fr; } }
+
+.imageReader { border: 1px dashed var(--border); padding: 1rem; border-radius: 4px; display: grid; gap: .65rem; }
+.upload { position: relative; }
+.upload input { position: absolute; inset: 0; width: 100%; padding: 0; opacity: 0; cursor: pointer; }
+.upload:focus-within { outline: 2px solid var(--focus); outline-offset: 4px; }
+.preview { width: min(100%, 540px); border: 2px solid var(--border); border-radius: 4px; }
+.progress { width: 100%; accent-color: var(--accent); }
+.imageReader summary { cursor: pointer; min-height: 44px; padding: .55rem 0; }
+.imageReader textarea { margin-bottom: .5rem; }

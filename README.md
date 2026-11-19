@@ -34,6 +34,12 @@ Select **Summon demo graveyard** to explore eight fictional examples. Trial data
 
 Open **Inbox Séance** from Add trial to scan 13 fictional messages in the Haunted Demo Inbox. Review and edit the results before burying selected trials. Gmail and Outlook appear as disabled previews. The demo runs in memory and saves only confirmed trial fields.
 
+## Image receipts
+
+Choose a screenshot, use the rear camera, or paste/drop an image in the receipt reader. English OCR runs in a local Tesseract worker. Review the extracted text and date source before saving. Try the included Phantomflix screenshot to see the flow.
+
+The app serves the worker, core and language data from its own origin and caches them on first use for offline reading. Receipt images and OCR text stay in memory.
+
 ## Architecture
 
 - Pure trial, clock, currency and calendar logic in `src/domain/`.
@@ -43,14 +49,14 @@ Open **Inbox Séance** from Add trial to scan 13 fictional messages in the Haunt
 
 ## Built with Kiro
 
-The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 696 Vitest tests with 100% domain coverage, and the production build.
+The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 710 Vitest tests with 100% domain coverage, and the production build.
 
 ## Kiro features used
 
 | Feature | Usage |
 | --- | --- |
 | Steering | Product, stack, structure and MCP conventions |
-| Specs | 3 · Trial Graveyard MVP, Haunted Polish, Inbox Séance |
+| Specs | 4 · Trial Graveyard MVP, Haunted Polish, Inbox Séance, Image Receipts |
 | Hooks | 5 · Test on save, spec sync, domain properties, accessibility, copy |
 | MCP | GitHub issue context and deployment tools |
 | Property-based tests | Boundary, parser, money and archive invariants |

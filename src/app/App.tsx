@@ -107,8 +107,9 @@ export function App() {
           </> : <Landing daylight={settings.daylight} reduced={reduced || settings.calm}
               onSummon={() => state.loadDemo(new Date())} onAdd={() => navigate('add')} />)}
           {screen === 'add' && <section className="panel stack"><h1>Add a trial</h1>
-            <GraveForm values={values} change={setValues} onSave={bury} dateSource={dateSource} />
-            <PasteBox now={now} onParsed={prefill} extra={<SeanceButton onOpen={() => setSeance(true)} />} /></section>}
+            <GraveForm id="trial-editor" values={values} change={setValues} onSave={bury} dateSource={dateSource} />
+            <PasteBox now={now} onParsed={prefill}
+              onManual={() => document.querySelector<HTMLInputElement>('#trial-editor input')?.focus()} extra={<SeanceButton onOpen={() => setSeance(true)} />} /></section>}
           {screen === 'savings' && <><h1>Savings</h1><Mausoleum graves={graves} /></>}
           {screen === 'settings' && <section className="panel stack"><h1>Settings</h1>
             <p className="muted">Your graves stay in this browser.</p>

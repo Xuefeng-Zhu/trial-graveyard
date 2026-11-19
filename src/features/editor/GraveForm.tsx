@@ -3,9 +3,9 @@ import { validateTrial, type Grave, type TrialInput } from '../../domain/trial'
 import { emptyValues, fromGrave, formToTrial, type FormValues } from './formValues'
 import { TrialFields } from './TrialFields'
 
-export function GraveForm({ grave, values, change, onSave, dateSource }: {
+export function GraveForm({ grave, values, change, onSave, dateSource, id }: {
   grave?: Grave; values?: FormValues; change?: (values: FormValues) => void;
-  onSave: (input: TrialInput) => void; dateSource?: string;
+  onSave: (input: TrialInput) => void; dateSource?: string; id?: string;
 }) {
   const [local, setLocal] = useState(() => grave ? fromGrave(grave) : emptyValues)
   const [submitted, setSubmitted] = useState(false)
@@ -22,7 +22,7 @@ export function GraveForm({ grave, values, change, onSave, dateSource }: {
     }
     onSave(trial)
   }
-  return <form className="stack" noValidate onSubmit={submit}>
+  return <form id={id} className="stack" noValidate onSubmit={submit}>
     <TrialFields values={current} change={change ?? setLocal} errors={submitted ? errors : undefined} autofocus dateSource={dateSource} />
     <div className="actions"><button className="primary" type="submit">{grave ? 'Save changes' : 'Bury trial'}</button></div>
   </form>

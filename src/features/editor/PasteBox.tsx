@@ -1,10 +1,12 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useId, useRef, useState, type ReactNode } from 'react'
 import { parseWithFallback, type ParseResult } from '../../lib/parse'
 import { useGraveyard } from '../../state/store'
+import { ImageReceipt } from './ImageReceipt'
 import styles from './editor.module.css'
 
-export function PasteBox({ now, onParsed, extra }: { now: Date; onParsed: (parsed: ParseResult) => void; extra?: ReactNode }) {
+export function PasteBox({ now, onParsed, onManual, extra }: { now: Date; onParsed: (parsed: ParseResult) => void; onManual: () => void; extra?: ReactNode }) {
   const id = useId()
+  const receipt = useRef<HTMLTextAreaElement>(null)
   const [text, setText] = useState('')
   const [message, setMessage] = useState('')
   const enabled = useGraveyard(state => state.settings.llmFallback)
@@ -17,8 +19,9 @@ export function PasteBox({ now, onParsed, extra }: { now: Date; onParsed: (parse
   }
   return <section className={styles.reader} aria-label="Receipt reader">
     <label htmlFor={id}>Paste a receipt</label>
-    <textarea id={id} value={text} onChange={event => setText(event.target.value)} placeholder="Paste a confirmation email or receipt…" maxLength={50_000} />
+    <textarea ref={receipt} id={id} value={text} onChange={event => setText(event.target.value)} placeholder="Paste a confirmation email or receipt…" maxLength={50_000} />
     <div className="actions"><button type="button" onClick={parse}>Read receipt</button>{extra}</div>
     <p role="status" className="status">{message}</p>
+    <ImageReceipt now={now} onParsed={onParsed} onManual={onManual} clipboardTarget={receipt} />
   </section>
 }

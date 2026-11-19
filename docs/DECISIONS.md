@@ -6,3 +6,4 @@
 - Each saved amount represents one confirmed charge avoided, grouped by currency. Weekly and yearly projections are used only for the monthly equivalent of kept subscriptions.
 - Numeric dates in pasted receipts use US month/day order. An explicit year overrides year inference. The editor exposes the source date and keeps it editable.
 - The feature-flagged fallback reserves a local parser extension. Receipt text stays in the browser with either setting.
+- OCR downloads versioned npm assets from the app origin. Workbox caches the worker, core and language assets after first use. The app has no runtime dependency on a public OCR CDN.
