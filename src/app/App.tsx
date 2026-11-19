@@ -109,6 +109,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const bury = (trial: ValidTrial): void => {
     s.addGrave(trial, clock());
     playSound('creak');
+    // The pasted receipt has been consumed; do not replay it when the form remounts.
+    setPrefill(undefined);
+    setPrefillVersion(0);
     setView('graveyard');
   };
 

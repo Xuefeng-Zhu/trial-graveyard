@@ -467,6 +467,25 @@ describe('navigation and views', () => {
     expect(screen.getByRole('heading', { name: 'Add a trial' })).toBeInTheDocument();
   });
 
+  it('does not replay a consumed receipt prefill when Add reopens', async () => {
+    await settle(setup(true));
+    goTo('Add trial');
+    fireEvent.change(screen.getByLabelText(/Paste a receipt/), {
+      target: { value: 'Your Phantomflix trial ends 2026-10-20. Then $15.49 per month.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Read the receipt' }));
+    await waitFor(() => expect(screen.getByLabelText('Price')).toHaveValue('15.49'));
+    fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
+    goTo('Add trial');
+    expect(screen.getByLabelText('Price')).toHaveValue('');
+    expect(screen.getByLabelText('Charge date')).toHaveValue('');
+  });
+
+  it('keeps an accessible name on the Add navigation button', () => {
+    setup(true);
+    expect(screen.getByRole('button', { name: 'Add trial' })).toBeInTheDocument();
+  });
+
   it('cancels editing back to the graveyard', async () => {
     await settle(setup(true));
     addTrial('Phantomflix', '2026-10-20', '15.49');

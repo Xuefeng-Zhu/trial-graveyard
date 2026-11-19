@@ -37,6 +37,7 @@ export function TopNav({ view, onView, level, saved }: TopNavProps) {
             key={item.view}
             type="button"
             className={`${styles.navItem} ${styles[`nav-${item.view}`] ?? ''}`}
+            aria-label={item.view === 'add' ? item.label : undefined}
             aria-current={view === item.view ? 'page' : undefined}
             onClick={() => onView(item.view)}
           >
