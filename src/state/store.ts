@@ -5,6 +5,7 @@ import type { Mutate } from 'zustand';
 import { createGrave, toLocalIso } from '../domain/trial';
 import type { Grave, ValidTrial } from '../domain/trial';
 import {
+  DEFAULT_PROGRESS,
   DEFAULT_SETTINGS,
   NOTICE_CORRUPT,
   NOTICE_UNAVAILABLE,
@@ -14,6 +15,8 @@ import {
   createPersistStorage,
 } from './storage';
 import type { PersistedSlice, Settings } from './storage';
+import { isStyleUnlocked, progressFor } from '../domain/xp';
+import type { XpKind } from '../domain/xp';
 import type { StateStorage } from 'zustand/middleware';
 
 export const UNDO_WINDOW_MS = 10_000;
@@ -42,6 +45,10 @@ export interface GraveState extends PersistedSlice {
   keepGrave: (id: string, now: Date) => void;
   /** Reverts the last status change if it happened within 10 s of `now`. Returns whether it did. */
   undo: (now: Date) => boolean;
+  /** Records that the user looked at a trial. Earns XP once per trial. Cosmetic only. */
+  reviewGrave: (id: string, now: Date) => void;
+  /** Picks a gravestone style if it is unlocked at the current level. Returns whether it was applied. */
+  selectStyle: (styleId: string) => boolean;
   toggleDaylight: () => void;
   toggleSound: () => void;
   toggleCalm: () => void;
@@ -95,7 +102,7 @@ const demoTrials = (now: Date): Array<[ValidTrial, 'active' | 'cancelled' | 'kep
     [t('Wraithwave Premium', 3 * HOUR, 1199, 'monthly', 'https://www.wraithwave.example/account/subscription/'), 'active'],
     [t('Hollowtv', -2 * HOUR, 799, 'monthly'), 'active'],
     [t('Banshee Box', -3 * DAY, 1199, 'monthly'), 'cancelled'],
-    [t('Calm', 10 * DAY, 6999, 'yearly'), 'kept'],
+    [t('Grimoire+', 10 * DAY, 6999, 'yearly'), 'kept'],
   ];
 };
 
@@ -120,6 +127,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
       (set, get) => ({
         graves: [],
         settings: { ...DEFAULT_SETTINGS },
+        progress: { ...DEFAULT_PROGRESS, ledger: [] },
         persistenceAvailable: true,
         notice: null,
         lastChange: null,
@@ -127,6 +135,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
         addGrave: (trial, now) => {
           const grave = createGrave(trial, newId(), now);
           set((s) => ({ graves: [...s.graves, grave] }));
+          earn('add', grave.id, now);
           return grave;
         },
         updateGrave: (id, trial) =>
@@ -142,7 +151,18 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
             graves: s.graves.filter((g) => g.id !== id),
             lastChange: s.lastChange?.id === id ? null : s.lastChange,
           })),
-        cancelGrave: (id, now) => changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) }),
+        cancelGrave: (id, now) => {
+          if (changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) })) earn('cancel', id, now);
+        },
+        reviewGrave: (id, now) => {
+          if (created.getState().graves.some((g) => g.id === id)) earn('review', id, now);
+        },
+        selectStyle: (styleId) => {
+          const level = progressFor(get().progress.ledger).level;
+          if (!isStyleUnlocked(styleId, level)) return false;
+          set((s) => ({ progress: { ...s.progress, styleId } }));
+          return true;
+        },
         exorcise: (id, now) => get().cancelGrave(id, now),
         keepGrave: (id, now) => changeStatus(id, now, { status: 'kept', keptAt: toLocalIso(now) }),
         undo: (now) => {
@@ -150,12 +170,20 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
           if (!change) return false;
           const withinWindow = now.getTime() - change.atMs <= UNDO_WINDOW_MS;
           const target = get().graves.find((g) => g.id === change.id);
+          const reverted = withinWindow && target !== undefined;
           set((s) => ({
             lastChange: null,
-            graves:
-              withinWindow && target
-                ? s.graves.map((g) => (g.id === change.id ? withStatus(g, change.previous) : g))
-                : s.graves,
+            graves: reverted
+              ? s.graves.map((g) => (g.id === change.id ? withStatus(g, change.previous) : g))
+              : s.graves,
+            // An undone cancellation is no longer confirmed, so its XP goes too.
+            progress:
+              reverted && target.status === 'cancelled'
+                ? {
+                    ...s.progress,
+                    ledger: s.progress.ledger.filter((e) => !(e.kind === 'cancel' && e.graveId === change.id)),
+                  }
+                : s.progress,
           }));
           return withinWindow && target !== undefined;
         },
@@ -177,7 +205,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
         name: STORAGE_KEY,
         version: SCHEMA_VERSION,
         storage,
-        partialize: (s): PersistedSlice => ({ graves: s.graves, settings: s.settings }),
+        partialize: (s): PersistedSlice => ({ graves: s.graves, settings: s.settings, progress: s.progress }),
       },
     ),
   );
@@ -185,13 +213,23 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
   store = created;
   if (Object.keys(pending).length > 0) created.setState(pending);
 
-  function changeStatus(id: string, now: Date, next: Mutable): void {
+  /** Appends a ledger entry unless this kind already exists for the grave. */
+  function earn(kind: XpKind, graveId: string, now: Date): void {
+    created.setState((s) =>
+      s.progress.ledger.some((e) => e.kind === kind && e.graveId === graveId)
+        ? s
+        : { progress: { ...s.progress, ledger: [...s.progress.ledger, { kind, graveId, at: toLocalIso(now) }] } },
+    );
+  }
+
+  function changeStatus(id: string, now: Date, next: Mutable): boolean {
     const target = created.getState().graves.find((g) => g.id === id);
-    if (!target) return;
+    if (!target) return false;
     created.setState((s) => ({
       graves: s.graves.map((g) => (g.id === id ? withStatus(g, next) : g)),
       lastChange: { id, previous: statusOf(target), atMs: now.getTime() },
     }));
+    return true;
   }
 
   return created;

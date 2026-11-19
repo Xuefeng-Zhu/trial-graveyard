@@ -2,9 +2,12 @@
  * Sound helper. Muted by default (R8.9, H3.1) and only ever called from user actions,
  * so sound is never the only signal. Everything is synthesised with Web Audio; there are no audio files.
  */
-export type SoundName = 'cancel' | 'keep' | 'undo' | 'creak' | 'thunder';
+export type SoundName = 'cancel' | 'keep' | 'undo' | 'creak' | 'thunder' | 'select' | 'celebrate';
 
 const FREQUENCY = { cancel: 220, keep: 330, undo: 262 } as const;
+
+/** Square-wave pixel blips: one note for select, a rising arpeggio for celebrate. */
+const BLIPS = { select: [440], celebrate: [523, 659, 784, 1047] } as const;
 
 /** Master gain ceiling for the synthesised effects (H3). */
 export const MAX_GAIN = 0.15;
@@ -75,6 +78,23 @@ function tone(ctx: AudioContext, hz: number): number {
   return 0.25;
 }
 
+/** Short square-wave notes, 80 ms each, kept quiet. Returns the total duration in seconds. */
+function blips(ctx: AudioContext, notes: readonly number[]): number {
+  const step = 0.08;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  notes.forEach((hz, i) => osc.frequency.setValueAtTime(hz, t + i * step));
+  gain.gain.setValueAtTime(MAX_GAIN / 3, t);
+  gain.gain.linearRampToValueAtTime(0, t + notes.length * step);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start();
+  osc.stop(t + notes.length * step);
+  osc.onended = () => void ctx.close();
+  return notes.length * step;
+}
+
 /** Plays a short effect. Does nothing while muted or when Web Audio is unavailable. */
 export function playSound(name: SoundName): void {
   if (!enabled) return;
@@ -84,6 +104,7 @@ export function playSound(name: SoundName): void {
     const ctx = new Ctor();
     if (name === 'creak') creak(ctx);
     else if (name === 'thunder') thunder(ctx);
+    else if (name === 'select' || name === 'celebrate') blips(ctx, BLIPS[name]);
     else tone(ctx, FREQUENCY[name]);
   } catch {
     // Sound is optional; ignore failures.

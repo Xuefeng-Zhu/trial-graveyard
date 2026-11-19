@@ -1,16 +1,28 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { DaylightList, downloadHauntingIcs, downloadIcs } from '../features/daylight';
-import { Scene, useReducedMotion } from '../features/graveyard';
-import { Hud } from '../features/hud';
-import { Intro, MoonlitBackdrop, introSeen, markIntroSeen } from '../features/moonlit';
+import { Celebration } from '../features/atmosphere';
+import { useReducedMotion } from '../features/graveyard';
+import {
+  BottomHud,
+  Cemetery,
+  CollectionView,
+  QuestsView,
+  SavingsView,
+  SettingsView,
+  TopNav,
+} from '../features/cemetery';
+import type { View } from '../features/cemetery';
+import { PixelButton, PixelPanel, pixelLinkClass } from '../design/pixel';
+import { formatMoney, totalSavedByCurrency } from '../domain/savings';
+import { progressFor } from '../domain/xp';
 import { isMotionAllowed } from '../domain/motion';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
 import { Seance } from '../features/seance';
 import { Landing } from '../features/landing';
 import { ShareButton } from '../features/share';
-import { CountdownHero, ExorcismPanel, StatsPanel } from '../features/haunting';
+import { ExorcismPanel } from '../features/haunting';
 import type { Grave, ValidTrial } from '../domain/trial';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
@@ -27,7 +39,6 @@ export interface AppProps {
 }
 
 const defaultClock = (): Date => new Date();
-const NO_GRAVES: Grave[] = [];
 
 export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const s = useStore(store, (state) => state);
@@ -40,31 +51,13 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [prefillVersion, setPrefillVersion] = useState(0);
   const [toastOpen, setToastOpen] = useState(false);
   const [exorcisingId, setExorcisingId] = useState<string | null>(null);
+  const [view, setView] = useState<View>('graveyard');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [celebration, setCelebration] = useState<string | null>(null);
 
   const { daylight, soundOn, calm } = s.settings;
   const osReduced = useReducedMotion();
   const motionAllowed = isMotionAllowed(osReduced, calm);
-  const osReducedRef = useRef(osReduced);
-  osReducedRef.current = osReduced;
-
-  // Saved graves arrive after mount. Hold the scene back until then so the intro can stagger them in.
-  const [hydrated, setHydrated] = useState(() => store.persist.hasHydrated());
-  const [introOn, setIntroOn] = useState(false);
-  useEffect(() => {
-    const ready = (): void => {
-      const { graves, settings } = store.getState();
-      const play =
-        graves.length > 0 && !settings.daylight && isMotionAllowed(osReducedRef.current, settings.calm) && !introSeen();
-      if (play) markIntroSeen();
-      setIntroOn(play);
-      setHydrated(true);
-    };
-    const unsubscribe = store.persist.onFinishHydration(ready);
-    if (store.persist.hasHydrated()) ready();
-    return unsubscribe;
-  }, [store]);
-  const endIntro = useCallback(() => setIntroOn(false), []);
-
   useEffect(() => {
     document.documentElement.dataset.theme = daylight ? 'daylight' : 'night';
   }, [daylight]);
@@ -72,6 +65,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
 
   const lastChange = s.lastChange;
   useEffect(() => setToastOpen(lastChange !== null), [lastChange]);
+  const clearCelebration = useCallback(() => setCelebration(null), []);
   const expireToast = useCallback(() => setToastOpen(false), []);
 
   const exorcising = exorcisingId ? s.graves.find((g) => g.id === exorcisingId) : undefined;
@@ -83,20 +77,53 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     setPrefillVersion((v) => v + 1);
   };
 
+  const celebrate = (id: string): void => {
+    const grave = s.graves.find((g) => g.id === id);
+    if (grave) setCelebration(formatMoney(grave.priceCents, grave.currency));
+    playSound('celebrate');
+  };
+
   const status = (id: string, kind: 'cancel' | 'keep'): void => {
-    if (kind === 'cancel') s.cancelGrave(id, clock());
-    else s.keepGrave(id, clock());
+    if (kind === 'cancel') {
+      s.cancelGrave(id, clock());
+      celebrate(id);
+    } else s.keepGrave(id, clock());
     playSound(kind === 'cancel' ? 'thunder' : 'keep');
+  };
+
+  const go = (next: View): void => {
+    if (next !== 'add') setEditingId(null);
+    setSelectedId(null);
+    setView(next);
+  };
+
+  /** Opening a trial counts as reviewing it (cosmetic XP, once per trial). */
+  const select = (id: string | null): void => {
+    setSelectedId(id);
+    if (id) {
+      s.reviewGrave(id, clock());
+      playSound('select');
+    }
   };
 
   const bury = (trial: ValidTrial): void => {
     s.addGrave(trial, clock());
     playSound('creak');
+    // The pasted receipt has been consumed; do not replay it when the form remounts.
+    setPrefill(undefined);
+    setPrefillVersion(0);
+    setView('graveyard');
   };
 
   const deleteGrave = (id: string): void => {
     if (editingId === id) setEditingId(null);
+    if (selectedId === id) setSelectedId(null);
     s.deleteGrave(id);
+  };
+  const edit = (id: string): void => {
+    setEditingId(id);
+    setSelectedId(null);
+    setView('add');
   };
   const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
 
@@ -104,12 +131,14 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const summon = (): void => {
     s.loadDemo(clock());
     playSound('creak');
+    setView('graveyard');
   };
   const hauntGraves = (graves: Grave[], filename: string): void => downloadHauntingIcs(graves, clock(), filename);
   const confirmExorcism = (id: string): void => {
     s.exorcise(id, clock());
     setExorcisingId(null);
     playSound('cancel');
+    celebrate(id);
   };
 
   const toastMessage = changed
@@ -118,8 +147,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       : `${changed.name} is now a ghost.`
     : '';
 
+  const progress = progressFor(s.progress.ledger);
+  const [primary] = totalSavedByCurrency(s.graves);
+  const saved = `${primary ? formatMoney(primary.cents, primary.currency) : formatMoney(0, 'USD')} saved`;
+
   const addPanel = (
-    <section aria-labelledby="editor-heading" className={styles.editor}>
+    <PixelPanel aria-labelledby="editor-heading" className={styles.editor}>
       <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
       {editing ? (
         <GraveForm
@@ -129,8 +162,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           onSubmit={(trial) => {
             s.updateGrave(editing.id, trial);
             setEditingId(null);
+            setView('graveyard');
           }}
-          onCancel={() => setEditingId(null)}
+          onCancel={() => {
+            setEditingId(null);
+            setView('graveyard');
+          }}
         />
       ) : (
         <>
@@ -142,94 +179,94 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             }
           />
           <Seance existing={s.graves} clock={clock} onBury={bury} />
-          <GraveForm
-            initial={EMPTY_VALUES}
-            prefill={prefill}
-            prefillVersion={prefillVersion}
-            autoFocus={!empty}
-            onSubmit={bury}
-          />
+          <GraveForm initial={EMPTY_VALUES} prefill={prefill} prefillVersion={prefillVersion} onSubmit={bury} />
         </>
       )}
-    </section>
+    </PixelPanel>
+  );
+
+  const actions = {
+    onCancelled: (id: string) => status(id, 'cancel'),
+    onKeep: (id: string) => status(id, 'keep'),
+    onEdit: edit,
+    onDelete: deleteGrave,
+    onExport: exportGraves,
+    onHaunt: hauntGraves,
+    onExorcise: setExorcisingId,
+  };
+
+  const graveyard = empty ? (
+    <Landing daylight={daylight} onSummon={summon} reducedMotion={!motionAllowed} />
+  ) : daylight ? (
+    <DaylightList graves={s.graves} now={now} {...actions} />
+  ) : (
+    <Cemetery
+      graves={s.graves}
+      now={now}
+      styleId={s.progress.styleId}
+      motion={motionAllowed}
+      selectedId={selectedId}
+      onSelect={select}
+      {...actions}
+    >
+      <BottomHud
+        graves={s.graves}
+        now={now}
+        ledger={s.progress.ledger}
+        onOpenQuests={() => go('quests')}
+        onExorcise={setExorcisingId}
+      />
+    </Cemetery>
   );
 
   return (
     <div className={styles.shell}>
-      <MoonlitBackdrop motion={motionAllowed} />
-      {introOn && <Intro onDone={endIntro} />}
-      <header className={styles.header}>
-        <h1>Trial Graveyard</h1>
-      </header>
+      <TopNav view={view} onView={go} level={progress.level} saved={saved} />
 
       {s.notice && (
         <div role="alert" className={styles.notice}>
           <span>{s.notice}</span>
-          <button type="button" className={styles.button} onClick={s.dismissNotice}>
-            Dismiss
-          </button>
+          <PixelButton onClick={s.dismissNotice}>Dismiss</PixelButton>
         </div>
       )}
 
-      <div className={styles.layout}>
-        <main>
-          {empty && !editing && <Landing daylight={daylight} onSummon={summon} reducedMotion={!motionAllowed} />}
-          {daylight ? (
-            <DaylightList
-              graves={s.graves}
-              now={now}
-              onCancelled={(id) => status(id, 'cancel')}
-              onKeep={(id) => status(id, 'keep')}
-              onEdit={setEditingId}
-              onDelete={deleteGrave}
-              onExport={exportGraves}
-              onHaunt={hauntGraves}
-              onExorcise={setExorcisingId}
-            />
-          ) : (
-            <Scene
-              graves={hydrated ? s.graves : NO_GRAVES}
-              now={now}
-              reducedMotion={!motionAllowed}
-              intro={introOn}
-              summonNew={hydrated}
-              onCancelled={(id) => status(id, 'cancel')}
-              onKeep={(id) => status(id, 'keep')}
-              onEdit={setEditingId}
-              onDelete={deleteGrave}
-              onExport={exportGraves}
-              onHaunt={hauntGraves}
-              onExorcise={setExorcisingId}
-            />
-          )}
-        </main>
-        <Hud
-          graves={s.graves}
-          now={now}
-          daylight={daylight}
-          soundOn={soundOn}
-          calm={calm}
-          motion={motionAllowed}
-          onBury={(id) => status(id, 'cancel')}
-          onToggleDaylight={s.toggleDaylight}
-          onToggleSound={s.toggleSound}
-          onToggleCalm={s.toggleCalm}
-          onSummon={empty ? undefined : summon}
-          editing={editingId !== null}
-          extras={
-            <>
-              <CountdownHero graves={s.graves} now={now} reducedMotion={!motionAllowed} />
-              <StatsPanel graves={s.graves} now={now} />
-            </>
-          }
-          addPanel={addPanel}
-          share={<ShareButton graves={s.graves} className={styles.button} />}
-        />
-      </div>
+      <main className={styles.main}>
+        {view === 'graveyard' && graveyard}
+        {view === 'quests' && (
+          <QuestsView progress={progress} ledger={s.progress.ledger} graves={s.graves} now={now} onExorcise={setExorcisingId} />
+        )}
+        {view === 'collection' && (
+          <CollectionView progress={progress} styleId={s.progress.styleId} onSelectStyle={s.selectStyle} />
+        )}
+        {view === 'add' && addPanel}
+        {view === 'savings' && (
+          <SavingsView
+            graves={s.graves}
+            now={now}
+            motion={motionAllowed}
+            onExport={exportGraves}
+            onHaunt={hauntGraves}
+            share={<ShareButton graves={s.graves} className={pixelLinkClass()} />}
+          />
+        )}
+        {view === 'settings' && (
+          <SettingsView
+            daylight={daylight}
+            soundOn={soundOn}
+            calm={calm}
+            onToggleDaylight={s.toggleDaylight}
+            onToggleSound={s.toggleSound}
+            onToggleCalm={s.toggleCalm}
+            onSummon={summon}
+          />
+        )}
+      </main>
 
       {exorcising && (
         <ExorcismPanel grave={exorcising} onExorcised={confirmExorcism} onClose={() => setExorcisingId(null)} />
       )}
+
+      {celebration && <Celebration amount={celebration} motion={motionAllowed} onDone={clearCelebration} />}
 
       {toastOpen && lastChange && changed && (
         <UndoToast

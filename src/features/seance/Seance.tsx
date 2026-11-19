@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { Grave, ValidTrial } from '../../domain/trial';
+import { CrystalBall } from '../../design/pixel';
 import { SeancePanel } from './SeancePanel';
 import { useSeance } from './useSeance';
 import styles from './seance.module.css';
@@ -47,7 +48,8 @@ export function Seance({ existing, clock, onBury, delayMs }: SeanceProps) {
           setOpen(true);
         }}
       >
-        <span aria-hidden="true">🔮 </span>Inbox Séance
+        <CrystalBall scale={2} />
+        Inbox Séance
       </button>
       <p role="status" className={styles.status}>
         {status}

@@ -17,7 +17,22 @@ h2,
 h3 {
   font-family: var(--font-display);
   font-weight: 400;
-  letter-spacing: 0.02em;
+  line-height: 1.6;
+}
+
+h2 {
+  font-size: 0.8rem;
+}
+
+h3 {
+  font-size: 0.7rem;
+}
+
+/* Pixel art is always drawn with hard edges. */
+img,
+canvas,
+svg {
+  image-rendering: pixelated;
 }
 
 a {

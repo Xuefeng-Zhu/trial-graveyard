@@ -1,32 +1,43 @@
 /* Design tokens. Every text/background pair listed in contrast.test.ts is >= 4.5:1 (WCAG AA). */
 :root {
-  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+  --font-display: 'Press Start 2P', 'Courier New', monospace;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
+  /* Palette: Midnight, Deep Purple, Violet, Moon Lavender, Toxic Green, Warning Orange, Critical Red, Moonlight */
+  --palette-midnight: #120f23;
+  --palette-deep-purple: #2c2142;
+  --palette-violet: #8b5cf6;
+  --palette-lavender: #b8a9d9;
+  --palette-green: #a8ff60;
+  --palette-orange: #ffb14a;
+  --palette-red: #ff586e;
+  --palette-moonlight: #f2ecff;
+
   /* Night theme (default) */
-  --color-bg: #0a1030;
-  --color-surface: #141c44;
-  --color-text: #e8eefc;
-  --color-text-muted: #b4c0e0;
-  --color-accent: #7cffb2;
-  --color-accent-contrast: #0a1030;
-  --color-danger: #ff9b9b;
-  --color-border: #3c4a82;
-  --color-moon: #dfe9ff;
+  --color-bg: #120f23;
+  --color-surface: #2c2142;
+  --color-text: #f2ecff;
+  --color-text-muted: #b8a9d9;
+  --color-accent: #a8ff60;
+  --color-accent-contrast: #120f23;
+  --color-danger: #ff586e;
+  --color-warn: #ffb14a;
+  --color-border: #8b5cf6;
+  --color-moon: #f2ecff;
+  --color-focus: #ffb14a;
 
-  /* Scene gradient behind the artwork, and glass panels */
-  --scene-top: #0a1030;
-  --scene-bottom: #14325a;
-  --glass-bg: rgba(20, 28, 68, 0.55);
-  --glass-border: rgba(223, 233, 255, 0.28);
-  --glass-blur: 14px;
-  --color-focus: #ffd866;
+  --stage-sealed: #b8a9d9;
+  --stage-cracked: #f2ecff;
+  --stage-churning: #ffb14a;
+  --stage-zombie: #ff586e;
+  --stage-overdue: #ff586e;
 
-  --stage-sealed: #c9c3d8;
-  --stage-cracked: #e6c88a;
-  --stage-churning: #7cffb2;
-  --stage-zombie: #ffb36b;
-  --stage-overdue: #ff9b9b;
+  /* Legacy glass tokens, still used by the seance, editor and share panels */
+  --scene-top: #120f23;
+  --scene-bottom: #2c2142;
+  --glass-bg: rgba(44, 33, 66, 0.9);
+  --glass-border: #8b5cf6;
+  --glass-blur: 0px;
 
   --focus-ring-width: 3px;
   --focus-ring-offset: 2px;
@@ -39,7 +50,7 @@
   --space-5: 1.5rem;
   --space-6: 2.5rem;
 
-  --radius: 8px;
+  --radius: 0;
   --fade-duration: 150ms;
 }
 
@@ -56,12 +67,13 @@
   --color-accent: #1d6b2a;
   --color-accent-contrast: #ffffff;
   --color-danger: #a31515;
-  --color-border: #8a839c;
+  --color-warn: #7a4b00;
+  --color-border: #5b3fb3;
   --color-focus: #0b57d0;
 
   --stage-sealed: #4d4760;
-  --stage-cracked: #7a4b00;
-  --stage-churning: #1d6b2a;
-  --stage-zombie: #8f3a00;
+  --stage-cracked: #3d3560;
+  --stage-churning: #7a4b00;
+  --stage-zombie: #a31515;
   --stage-overdue: #a31515;
 }

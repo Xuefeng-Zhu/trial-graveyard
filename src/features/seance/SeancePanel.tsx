@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
-import { useReducedMotion } from '../graveyard/useReducedMotion';
+import { CrystalBall, Envelope } from '../../design/pixel';
+import { useMotionAllowed } from '../atmosphere';
 import { PROVIDERS } from '../../lib/email';
 import { ReviewRow } from './ReviewRow';
 import type { useSeance } from './useSeance';
@@ -21,7 +22,7 @@ const FOCUSABLE = 'button:not([disabled]), input, select, [tabindex]:not([tabind
 
 export function SeancePanel({ seance, onClose, onBury }: SeancePanelProps) {
   const { phase, progress, items, message } = seance;
-  const reduced = useReducedMotion();
+  const animated = useMotionAllowed() ? 'true' : 'false';
   const ref = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const mock = PROVIDERS[0];
@@ -62,9 +63,14 @@ export function SeancePanel({ seance, onClose, onBury }: SeancePanelProps) {
       aria-labelledby="seance-title"
       onKeyDown={onKeyDown}
     >
-      <h2 id="seance-title" tabIndex={-1} ref={headingRef}>
-        Inbox Séance
-      </h2>
+      <div className={styles.heading}>
+        <span className={styles.ball} data-animated={animated} aria-hidden="true">
+          <CrystalBall scale={4} />
+        </span>
+        <h2 id="seance-title" tabIndex={-1} ref={headingRef}>
+          Inbox Séance
+        </h2>
+      </div>
 
       {message && (
         <p role="status" className={styles.status}>
@@ -111,11 +117,20 @@ export function SeancePanel({ seance, onClose, onBury }: SeancePanelProps) {
 
       {phase === 'scanning' && (
         <div className={styles.scanning}>
-          <div
-            className={styles.orb}
-            data-animated={reduced ? 'false' : 'true'}
-            aria-hidden="true"
-          />
+          <div className={styles.envelopes} aria-hidden="true">
+            {[0, 1, 2].map((n) => (
+              <span key={n} className={styles.envelope} data-animated={animated}>
+                <Envelope scale={4} />
+              </span>
+            ))}
+          </div>
+          <div className={styles.scan} aria-hidden="true">
+            <span
+              className={styles.scanFill}
+              data-animated={animated}
+              style={{ width: `${Math.min(100, Math.max(8, progress.read * 10))}%` }}
+            />
+          </div>
           <p role="status" aria-live="polite">
             {spirits}
           </p>

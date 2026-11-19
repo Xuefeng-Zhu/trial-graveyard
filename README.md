@@ -38,25 +38,26 @@ The public base path is resolved in `vite.base.ts`: `VITE_BASE` if set, else `/`
 
 ## Screenshots
 
-The Moonlit Cemetery pass (see `.kiro/specs/moonlit-cemetery/`) was captured in headless Chromium with the demo graveyard loaded. The visual target is `docs/design/concept-moonlit.jpg`.
+The Retro Pixel pass (see `.kiro/specs/retro-pixel-graveyard/`) was captured in headless Chromium with the demo graveyard loaded. The visual target is `docs/design/concept-retro-pixel.png`.
 
-![Landing screen over the moonlit parallax scene with the Summon demo graveyard button](docs/screenshots/moonlit-landing.png)
-![Graveyard with tombstones, a ghost and the glass HUD panels](docs/screenshots/moonlit-graveyard.png)
-![Zombie hands rising from the front row of graves with their action buttons](docs/screenshots/moonlit-zombie-hand.png)
-![Tombstone with a personalised epitaph](docs/screenshots/moonlit-tombstone.png)
-![Mobile layout at 360px wide](docs/screenshots/moonlit-mobile-360.png)
-![Mobile front row of zombies as a swipeable strip at 360px](docs/screenshots/moonlit-mobile-360-zombies.png)
+![Desktop graveyard at 1440px: pixel backdrop, gravestones, reaper, daily quest and the Exorcise Trials button](docs/screenshots/retro-pixel-desktop-1440.png)
+![Mobile layout at 360px wide with the swipeable grave row and the bottom navigation](docs/screenshots/retro-pixel-mobile-360.png)
 
 The share card image is still a placeholder (`placeholder-share-card.png`).
 
 ![My Graveyard share card with totals and the hashtag](docs/screenshots/placeholder-share-card.png)
 
-### Moonlit Cemetery
+## Retro Pixel design
 
-- **Scene:** a layered parallax backdrop (sky, hills, graves, fog, foreground) that reacts to pointer, scroll and device tilt, with a lazily loaded canvas atmosphere (fog, fireflies, wisps, shooting star) in its own chunk.
-- **Interactions:** a once-per-session intro (press Escape or skip to dismiss it), stones that tremble and glow as a charge date nears, a zombie hand and soil burst, a bury animation with a "saved" pop, and sound cues that follow the sound toggle.
-- **HUD:** glass panels on the right (a bottom sheet below 900px) hold "Next to rise", the editor and settings.
-- **Calm mode:** a persisted HUD setting that turns off decorative motion, in addition to honouring the OS reduced motion preference. The Daylight list stays available as the accessible view.
+- **Palette:** midnight `#120F23`, deep purple `#2C2142`, violet `#8B5CF6`, lavender `#B8A9D9`, toxic green `#A8FF60`, orange `#FFB14A`, red `#FF586E` and moonlight `#F2ECFF`. They are CSS custom properties in `src/design/tokens.css`, and `src/design/design.test.ts` checks the text and border pairs for WCAG contrast.
+- **Fonts, self-hosted:** Press Start 2P (`@fontsource/press-start-2p`) for titles and HUD labels, Inter for body text and prices. Both ship in the bundle, so there are no font CDN requests and they work offline.
+- **Pixel grid rules:** sprites are drawn from character maps in `src/design/pixel/` and rendered as SVG with `shape-rendering: crispEdges`. The 384x216 backdrop and the reaper are drawn with `image-rendering: pixelated` at a whole-number scale that follows the viewport width. Borders are 4px steps and there are no blurs or gradients on UI chrome.
+- **Graveyard:** the scene fills the viewport. Gravestones sit in a wrapping row on the path (a swipeable snap row on phones) with the reaper beside the first one. The most urgent grave is outlined with green corner brackets by default. The details panel opens only when you activate a grave (a bottom sheet on phones).
+- **States:** normal (plenty of time), approaching (7 days or less: cracks and a warning glow), critical (48 hours or less: red cracks, sparks and a zombie hand), kept (a plain stone) and cancelled (vines and a "saved" badge). The mapping is a pure function in `src/domain/pixelState.ts`.
+- **Cosmetic XP:** levels, streaks, the daily quest and the collection of stone styles and decorations come from `src/domain/xp.ts`. XP never reads or writes the savings math, so the money totals are the same with or without it.
+- **Motion, Calm and sound:** sparks, the rising hand, the reaper bob and the cancellation celebration run only when motion is allowed. That means no OS reduced-motion preference and Calm mode off. Sound cues are muted by default and follow the sound toggle.
+- **Accessibility:** every grave is a button with a full text status for screen readers, targets are at least 44px, focus rings are visible, vitest-axe checks the main views, and the Daylight list stays available as a plain accessible view. The mobile nav is Graveyard, Quests, Add, Savings and Settings, and has no horizontal overflow at 360, 390, 430 and 768px.
+- **Brands:** monogram tiles and fictional service names stand in for real logos.
 
 ## Inbox Séance
 
@@ -82,7 +83,7 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 ## Built with Kiro
 
 - **Steering:** `.kiro/steering/` holds the product metaphor, tech stack and project structure, always included in the agent's context so the costume stays consistent.
-- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts. A fifth, `.kiro/specs/moonlit-cemetery/`, covers the cinematic parallax scene, motion mapping, Calm mode and the glass HUD. A sixth, `.kiro/specs/before-the-bite/`, covers the countdown hero, haunting reminders, exorcism flow and stats.
+- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts. A fifth, `.kiro/specs/moonlit-cemetery/`, covers the earlier parallax scene, which Retro Pixel replaced. A sixth, `.kiro/specs/before-the-bite/`, covers the countdown hero, haunting reminders, exorcism flow and stats. A seventh, `.kiro/specs/retro-pixel-graveyard/`, covers the pixel-art redesign, cosmetic XP and the reaper.
 - **Agent hooks:** `.kiro/hooks/` has five hooks: test-on-save, domain-property-guard, spec-sync, a11y-check and spooky-copy.
 - **MCP:** `.kiro/settings/mcp.json` configures a `fetch` server and a GitHub server, explained in `.kiro/steering/mcp.md`. The token comes from `GITHUB_TOKEN`.
 - **Property-based tests:** fast-check covers stage boundaries, savings math, ICS export and the receipt parser, alongside example tests.
@@ -93,7 +94,7 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 | Feature | Where | What it does here |
 |---|---|---|
 | Steering | `.kiro/steering/` (product, structure, tech, mcp) | Keeps the haunted metaphor, stack and MCP usage consistent. |
-| Specs (6) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/`, `.kiro/specs/moonlit-cemetery/`, `.kiro/specs/before-the-bite/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance, image receipts, the Moonlit Cemetery redesign and before the bite. |
+| Specs (7) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/`, `.kiro/specs/moonlit-cemetery/`, `.kiro/specs/before-the-bite/`, `.kiro/specs/retro-pixel-graveyard/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance, image receipts, the Moonlit Cemetery redesign, before the bite and the Retro Pixel redesign. |
 | Hooks (5) | `.kiro/hooks/` | Test on save, domain property guard, spec sync, a11y check, spooky copy. |
 | MCP | `.kiro/settings/mcp.json` | `fetch` for real cancellation and pricing pages, GitHub for follow-up issues. |
 | Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS, the receipt parser and date math (reminder times, countdown, month ends, leap days and DST). |
