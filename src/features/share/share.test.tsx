@@ -69,6 +69,7 @@ describe('ShareButton', () => {
     await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
     expect(create).toHaveBeenCalledTimes(1);
     expect(revoke).toHaveBeenCalledWith('blob:x');
+    expect(screen.getByRole('status')).toHaveTextContent('Graveyard card downloaded');
   });
 
   it('does nothing more when the user dismisses the share sheet', async () => {

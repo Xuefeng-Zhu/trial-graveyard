@@ -50,7 +50,7 @@ export function Mausoleum({ graves, reduced }: MausoleumProps) {
       <h2 id="scene-mausoleum-heading" className={styles.mausoleumTitle}>
         Mausoleum
       </h2>
-      <p className={styles.soulsLabel}>Souls saved</p>
+      <p className={styles.soulsLabel} aria-hidden="true">Souls saved</p>
       <p className={styles.counter} aria-hidden="true" data-testid="mausoleum-animated">
         {formatMoney(shown, currency)}
       </p>

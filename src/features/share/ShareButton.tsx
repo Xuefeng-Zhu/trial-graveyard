@@ -5,6 +5,7 @@ import { CanvasUnavailableError, SHARE_HASHTAG, drawShareCard } from './drawShar
 
 export const SHARE_FILENAME = 'my-graveyard.png';
 export const NO_CANVAS_TEXT = 'Your browser cannot draw the card, so there is nothing to share yet.';
+export const SHARE_DOWNLOADED_TEXT = 'Graveyard card downloaded';
 export const SHARE_FAILED_TEXT = 'The spirits could not draw the card. Try again.';
 
 export interface ShareButtonProps {
@@ -43,6 +44,7 @@ export function ShareButton({ graves, className }: ShareButtonProps) {
         return;
       }
       download(blob);
+      setMessage(SHARE_DOWNLOADED_TEXT);
     } catch (e) {
       setMessage(e instanceof CanvasUnavailableError ? NO_CANVAS_TEXT : SHARE_FAILED_TEXT);
     }

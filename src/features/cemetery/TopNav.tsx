@@ -41,6 +41,11 @@ export function TopNav({ view, onView, level, saved }: TopNavProps) {
             aria-current={view === item.view ? 'page' : undefined}
             onClick={() => onView(item.view)}
           >
+            {view === item.view && (
+              <span className={styles.navMarker} aria-hidden="true">
+                {'\u25B6'}
+              </span>
+            )}
             {item.view === 'add' ? (
               <>
                 <span className={styles.full}>{item.label}</span>
