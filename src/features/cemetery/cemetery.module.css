@@ -122,13 +122,15 @@
 
 /* ---------- Scene ---------- */
 .scene {
+  --gutter: 2.5rem;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-4);
   min-height: max(34rem, calc(100dvh - 8.5rem));
-  padding: var(--space-4);
+  /* Open sky above the hill shows the moon and castle; side gutters keep glows off the border. */
+  padding: calc(var(--px) * 40px) var(--gutter) var(--space-4);
   overflow: hidden;
   background-color: var(--palette-midnight, #120f23);
   background-repeat: no-repeat;
@@ -151,7 +153,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
   align-items: end;
-  gap: var(--space-4) var(--space-3);
+  gap: var(--space-2) var(--space-3);
   margin: auto 0 0;
   padding: 0;
   list-style: none;
@@ -182,11 +184,23 @@
   transform: translateY(-4px);
 }
 
+/* --s is the integer pixel scale of the stone art (16x20 art pixels); 10 in front, 8 in the back row. */
+.tile {
+  --s: 10;
+  --u: calc(var(--s) * 1px);
+}
+
+/* Back row of the hill: smaller and set higher, drawn behind the front row. */
+.tile[data-depth='back'] {
+  margin-bottom: 5.5rem;
+  filter: brightness(0.82);
+}
+
 .art {
   position: relative;
   display: block;
-  width: 160px;
-  height: 200px;
+  width: calc(16 * var(--u));
+  height: calc(20 * var(--u));
 }
 
 .art > svg {
@@ -195,26 +209,51 @@
 
 .face {
   position: absolute;
-  inset: 50px 20px 30px;
+  inset: calc(5 * var(--u)) calc(2 * var(--u)) auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  z-index: 1;
   gap: 4px;
   color: var(--ink, #120f23);
   text-align: center;
 }
 
-.name {
+/* Opaque plate drawn above the crack sprites so the name and price stay readable. */
+.plaque {
+  position: absolute;
+  z-index: 2;
+  right: calc(1.5 * var(--u));
+  bottom: calc(2.5 * var(--u));
+  left: calc(1.5 * var(--u));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px;
+  color: #f2ecff;
+  text-align: center;
+  background: #120f23;
+  border: 2px solid #b8a9d9;
+}
+
+.name,
+.price {
+  display: block;
   max-width: 100%;
-  font-size: 0.7rem;
-  font-weight: 600;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-weight: 700;
 }
 
 .price {
-  font-size: 0.65rem;
-  line-height: 1.2;
+  color: #d6caf0;
 }
 
 .status {
@@ -618,7 +657,7 @@
     display: flex;
     gap: var(--space-3);
     overflow-x: auto;
-    padding-bottom: var(--space-2);
+    padding: var(--space-3) var(--space-2) var(--space-2);
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
   }
@@ -639,7 +678,8 @@
   }
 
   .scene {
-    padding: var(--space-3);
+    --gutter: 1.5rem;
+    padding-bottom: var(--space-3);
   }
 }
 
