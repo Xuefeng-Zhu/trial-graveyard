@@ -1,0 +1,39 @@
+@import './tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+html { min-width: 320px; background: #120f23; }
+body { margin: 0; font: 400 1rem/1.5 var(--body); }
+button, input, select, textarea { font: inherit; }
+button, a, input, select, textarea, summary { -webkit-tap-highlight-color: transparent; }
+button, a, input, select, textarea, summary { outline-offset: 4px; }
+:focus-visible { outline: 2px solid var(--focus); }
+button, .button {
+  display: inline-flex; min-height: 44px; min-width: 44px; align-items: center; justify-content: center;
+  padding: .55rem .9rem; color: var(--ink); background: var(--raised); border: 1px solid var(--border);
+  border-radius: 4px; cursor: pointer; text-decoration: none; text-align: center; font-weight: 600;
+}
+button:hover:not(:disabled), .button:hover { border-color: var(--accent); }
+button:disabled, .button[aria-disabled='true'] { color: var(--muted); cursor: default; }
+.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 3px 0 #567e34; }
+.danger { color: var(--danger); }
+a { color: var(--accent); }
+h1, h2, h3, p, ul, dl { margin: 0; }
+h1, h2 { font-family: var(--display); line-height: 1.65; }
+h1 { font-size: clamp(.85rem, 2vw, 1.35rem); }
+h2 { font-size: clamp(.78rem, 1.6vw, 1.1rem); }
+h3 { font-size: 1rem; }
+p + p { margin-top: .65rem; }
+small, .muted { color: var(--muted); }
+small { font-size: .86rem; }
+img { display: block; max-width: 100%; }
+.pixel { image-rendering: pixelated; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.stack { display: grid; gap: .85rem; }
+.actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+.panel { padding: clamp(1rem, 2.5vw, 1.7rem); background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+.status { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; transition: none !important; }
+}
+[data-motion='false'] *, [data-motion='false'] *::before, [data-motion='false'] *::after { animation: none !important; transition: none !important; }
