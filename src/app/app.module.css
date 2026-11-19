@@ -67,3 +67,14 @@
     flex-wrap: wrap;
   }
 }
+
+.downloadNote {
+  margin: 0;
+  padding: 0 var(--space-3);
+  font-size: 0.85rem;
+  color: var(--color-text);
+}
+
+.downloadNote:empty {
+  display: none;
+}

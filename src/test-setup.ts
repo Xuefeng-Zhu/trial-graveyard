@@ -6,3 +6,8 @@ fc.configureGlobal({ seed: 20261031, numRuns: 200 });
 
 // jsdom has no canvas. Return no context so components skip drawing without logging errors.
 HTMLCanvasElement.prototype.getContext = (() => null) as unknown as HTMLCanvasElement['getContext'];
+
+// The last open tab is persisted in localStorage; start every test from a clean slate.
+beforeEach(() => {
+  localStorage.clear();
+});

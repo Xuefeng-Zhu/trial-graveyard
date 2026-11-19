@@ -79,13 +79,14 @@ export function CollectionView({ progress, styleId, onSelectStyle }: CollectionV
               <li key={s.id} className={styles.collectItem}>
                 <GravestoneArt kind="normal" styleId={s.id} scale={3} />
                 <PixelButton
+                  className={unlocked ? undefined : styles.lockedButton}
                   aria-pressed={styleId === s.id}
                   disabled={!unlocked}
                   onClick={() => onSelectStyle(s.id)}
                 >
                   {s.label}
                 </PixelButton>
-                {!unlocked && <PixelBadge>Unlocks at level {s.level}</PixelBadge>}
+                {!unlocked && <PixelBadge>Locked: unlocks at level {s.level}</PixelBadge>}
               </li>
             );
           })}
@@ -100,7 +101,7 @@ export function CollectionView({ progress, styleId, onSelectStyle }: CollectionV
                 <Decoration id={d.id} />
                 <span>{d.label}</span>
                 <PixelBadge tone={unlocked ? 'success' : 'neutral'}>
-                  {unlocked ? 'Unlocked' : `Unlocks at level ${d.level}`}
+                  {unlocked ? 'Unlocked' : `Locked: unlocks at level ${d.level}`}
                 </PixelBadge>
               </li>
             );
@@ -167,10 +168,10 @@ export function SettingsView(p: SettingsViewProps) {
     <PixelPanel title="Settings">
       <div className={styles.row}>
         <PixelButton aria-pressed={p.daylight} onClick={p.onToggleDaylight}>
-          Daylight mode
+          {p.daylight ? 'Daylight mode: on' : 'Daylight mode: off'}
         </PixelButton>
         <PixelButton aria-pressed={p.calm} onClick={p.onToggleCalm}>
-          Calm mode
+          {p.calm ? 'Calm mode: on' : 'Calm mode: off'}
         </PixelButton>
         <PixelButton aria-pressed={p.soundOn} onClick={p.onToggleSound}>
           {p.soundOn ? 'Sound: on' : 'Sound: off'}

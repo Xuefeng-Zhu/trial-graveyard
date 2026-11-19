@@ -31,7 +31,9 @@ export function BottomHud({ graves, now, ledger, onOpenQuests, onExorcise }: Bot
       <div className={styles.upcoming} aria-live="polite">
         {next ? (
           <>
-            <span className={styles.upcomingTitle}>Next charge</span>
+            <span className={styles.upcomingTitle}>
+              Next charge<span className={styles.srOnly}>: </span>
+            </span>
             <span>
               {next.name}: {statusText(next, now)}
             </span>

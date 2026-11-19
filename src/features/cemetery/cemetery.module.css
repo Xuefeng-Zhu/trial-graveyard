@@ -89,7 +89,13 @@
   border-color: var(--color-border);
 }
 
+.navMarker {
+  margin-right: var(--space-1);
+}
+
 .navItem[aria-current='page'] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
   color: var(--color-accent);
   border-color: var(--color-accent);
   background: var(--color-bg);
@@ -462,8 +468,8 @@
 }
 
 .hint {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  color: var(--color-text);
 }
 
 .actions {
@@ -521,7 +527,15 @@
 }
 
 .locked {
-  opacity: 0.75;
+  color: var(--color-text-muted);
+}
+
+/* Locked buttons stay legible: no opacity, a dashed border says "unavailable". */
+.lockedButton:disabled {
+  opacity: 1;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-style: dashed;
 }
 
 .row {

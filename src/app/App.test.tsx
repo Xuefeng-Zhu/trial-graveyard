@@ -188,7 +188,7 @@ describe('pixel graveyard scene', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
     expect(screen.getByRole('region', { name: 'Graveyard scene' })).toBeInTheDocument();
     goTo('Settings');
-    fireEvent.click(screen.getByRole('button', { name: 'Daylight mode' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Daylight mode/ }));
     goTo('Graveyard');
     expect(screen.queryByRole('region', { name: 'Graveyard scene' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(8);
@@ -433,7 +433,7 @@ describe('navigation and views', () => {
     goTo('Collection');
     expect(screen.getByRole('button', { name: 'Classic' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Mossy' })).toBeDisabled();
-    expect(screen.getAllByText('Unlocks at level 3').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Locked: unlocks at level 3').length).toBeGreaterThan(0);
     act(() => {
       store.setState((s) => ({
         progress: {
@@ -516,7 +516,7 @@ describe('Calm mode', () => {
     expect(screen.getByRole('region', { name: 'Graveyard scene' })).toHaveAttribute('data-motion', 'animated');
     expect(screen.getByTestId('atmosphere')).toBeInTheDocument();
     goTo('Settings');
-    const toggle = screen.getByRole('button', { name: 'Calm mode' });
+    const toggle = screen.getByRole('button', { name: /^Calm mode/ });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
@@ -581,7 +581,7 @@ describe('Daylight toggle and demo', () => {
   it('toggles Daylight mode with the keyboard-reachable button and persists it', async () => {
     const store = setup(false);
     goTo('Settings');
-    const toggle = screen.getByRole('button', { name: 'Daylight mode' });
+    const toggle = screen.getByRole('button', { name: /^Daylight mode/ });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBe('night');
     fireEvent.click(toggle);
@@ -594,7 +594,7 @@ describe('Daylight toggle and demo', () => {
     render(<App store={reloaded} clock={clock} />);
     goTo('Settings');
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Daylight mode' })).toHaveAttribute('aria-pressed', 'true'),
+      expect(screen.getByRole('button', { name: /^Daylight mode/ })).toHaveAttribute('aria-pressed', 'true'),
     );
   });
 
@@ -694,5 +694,86 @@ describe('sound toggle', () => {
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
     expect(created).toEqual(['osc', 'osc', 'noise']);
     vi.unstubAllGlobals();
+  });
+});
+
+describe('accessibility and feedback (issue 40)', () => {
+  it('shows toggle state as aria-pressed and visible ON/OFF text', () => {
+    setup();
+    goTo('Settings');
+    const daylight = screen.getByRole('button', { name: /^Daylight mode/ });
+    expect(daylight).toHaveTextContent('Daylight mode: on');
+    expect(daylight).toHaveAttribute('aria-pressed', 'true');
+    const calm = screen.getByRole('button', { name: /^Calm mode/ });
+    expect(calm).toHaveTextContent('Calm mode: off');
+    fireEvent.click(calm);
+    expect(calm).toHaveTextContent('Calm mode: on');
+    expect(calm).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('marks only the current tab with aria-current and a visible marker', () => {
+    setup();
+    goTo('Quests');
+    const nav = screen.getByRole('navigation', { name: 'Main' });
+    const current = within(nav).getAllByRole('button').filter((b) => b.getAttribute('aria-current') === 'page');
+    expect(current).toHaveLength(1);
+    expect(current[0]).toHaveTextContent('\u25B6');
+    expect(current[0]).toHaveAccessibleName('Quests');
+  });
+
+  it('remembers the last tab across a reload', () => {
+    const first = render(<App store={createGraveStore()} clock={clock} />);
+    goTo('Savings');
+    first.unmount();
+    render(<App store={createGraveStore()} clock={clock} />);
+    expect(screen.getByRole('button', { name: 'Savings' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('falls back to the graveyard for a stale stored tab', () => {
+    localStorage.setItem('trial-graveyard:view', 'nope');
+    render(<App store={createGraveStore()} clock={clock} />);
+    expect(screen.getByRole('button', { name: 'Graveyard' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('still works when storage is blocked', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    render(<App store={createGraveStore()} clock={clock} />);
+    goTo('Quests');
+    expect(screen.getByRole('button', { name: 'Quests' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('shows Locked text in the collection and de-duplicates the Mausoleum label', () => {
+    setup();
+    goTo('Collection');
+    expect(screen.getAllByText(/^Locked: unlocks at level/).length).toBeGreaterThan(0);
+    goTo('Savings');
+    expect(screen.getByText('Souls saved')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved:');
+  });
+
+  it('announces calendar downloads in the live region', () => {
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: () => 'blob:x', revokeObjectURL: () => {} }));
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    setup();
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    fireEvent.click(screen.getByRole('button', { name: /Add to calendar/ }));
+    expect(screen.getByTestId('download-status')).toHaveTextContent('Calendar file downloaded');
+    goTo('Savings');
+    fireEvent.click(screen.getByRole('button', { name: /Export all active to calendar/ }));
+    expect(screen.getByTestId('download-status')).toHaveTextContent('Calendar file downloaded');
+    fireEvent.click(screen.getByRole('button', { name: /Export all hauntings/ }));
+    expect(screen.getByTestId('download-status')).toHaveTextContent('Calendar file downloaded');
+    vi.unstubAllGlobals();
+  });
+
+  it('has no axe violations in Settings with toggles', async () => {
+    setup();
+    goTo('Settings');
+    expect((await axe(document.body)).violations).toEqual([]);
   });
 });

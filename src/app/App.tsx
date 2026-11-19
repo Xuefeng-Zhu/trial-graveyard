@@ -11,6 +11,7 @@ import {
   SavingsView,
   SettingsView,
   TopNav,
+  NAV_ITEMS,
 } from '../features/cemetery';
 import type { View } from '../features/cemetery';
 import { PixelButton, PixelPanel, pixelLinkClass } from '../design/pixel';
@@ -40,6 +41,27 @@ export interface AppProps {
 
 const defaultClock = (): Date => new Date();
 
+export const VIEW_STORAGE_KEY = 'trial-graveyard:view';
+const VIEWS: readonly View[] = NAV_ITEMS.map((i) => i.view);
+
+/** The last open tab, so a reload returns there. Falls back to the graveyard if storage is blocked or stale. */
+function readStoredView(): View {
+  try {
+    const v = localStorage.getItem(VIEW_STORAGE_KEY);
+    return VIEWS.find((x) => x === v) ?? 'graveyard';
+  } catch {
+    return 'graveyard';
+  }
+}
+
+function storeView(view: View): void {
+  try {
+    localStorage.setItem(VIEW_STORAGE_KEY, view);
+  } catch {
+    // Storage can be blocked; the tab just will not persist.
+  }
+}
+
 export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const s = useStore(store, (state) => state);
   const tick = useNow();
@@ -51,7 +73,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [prefillVersion, setPrefillVersion] = useState(0);
   const [toastOpen, setToastOpen] = useState(false);
   const [exorcisingId, setExorcisingId] = useState<string | null>(null);
-  const [view, setView] = useState<View>('graveyard');
+  const [view, setViewState] = useState<View>(readStoredView);
+  const [downloadNote, setDownloadNote] = useState('');
+  const setView = useCallback((next: View): void => {
+    setViewState(next);
+    storeView(next);
+  }, []);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<string | null>(null);
 
@@ -125,7 +152,14 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     setSelectedId(null);
     setView('add');
   };
-  const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
+  const exportGraves = (graves: Grave[], filename: string): void => {
+    downloadIcs(graves, clock(), filename);
+    announceDownload();
+  };
+
+  // Alternate a trailing space so a repeat download is announced again.
+  const announceDownload = (): void =>
+    setDownloadNote((n) => (n === 'Calendar file downloaded' ? 'Calendar file downloaded ' : 'Calendar file downloaded'));
 
   const empty = s.graves.length === 0;
   const summon = (): void => {
@@ -133,7 +167,10 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     playSound('creak');
     setView('graveyard');
   };
-  const hauntGraves = (graves: Grave[], filename: string): void => downloadHauntingIcs(graves, clock(), filename);
+  const hauntGraves = (graves: Grave[], filename: string): void => {
+    downloadHauntingIcs(graves, clock(), filename);
+    announceDownload();
+  };
   const confirmExorcism = (id: string): void => {
     s.exorcise(id, clock());
     setExorcisingId(null);
@@ -261,6 +298,10 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           />
         )}
       </main>
+
+      <p className={styles.downloadNote} role="status" data-testid="download-status">
+        {downloadNote}
+      </p>
 
       {exorcising && (
         <ExorcismPanel grave={exorcising} onExorcised={confirmExorcism} onClose={() => setExorcisingId(null)} />
