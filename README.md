@@ -15,9 +15,17 @@ npm ci          # install
 npm run dev     # dev server
 npm test        # unit and property tests, with a 100% coverage gate on src/domain/
 npm run typecheck
-npm run build   # typecheck, then build to dist/ (base path /trial-graveyard/)
+npm run build   # typecheck, then build to dist/ (base path /trial-graveyard/ by default, see Deploy)
 npm run preview # serve the production build
 ```
+
+## Deploy
+
+The public base path is resolved in `vite.base.ts`: `VITE_BASE` if set, else `/` when `VERCEL` is set, else `/trial-graveyard/`. The PWA manifest `scope` and `start_url`, the workbox `navigateFallback` and Vite's `base` all use it, and runtime assets use `import.meta.env.BASE_URL`.
+
+- **GitHub Pages:** no configuration needed. `.github/workflows/deploy.yml` runs typecheck, tests and build on every push to `main` with the default `/trial-graveyard/` base, then publishes `dist/`.
+- **Vercel:** import the repo. Vercel sets `VERCEL`, so the base becomes `/`. `vercel.json` sets the build command (`npm run build`), output directory (`dist`), the `vite` framework preset and an SPA rewrite of non-file routes to `/index.html`.
+- **Anywhere else:** set `VITE_BASE` at build time, for example `VITE_BASE=/ npm run build` for a root domain or `VITE_BASE=/apps/graveyard/ npm run build` for a sub-path.
 
 ## Screenshots
 
