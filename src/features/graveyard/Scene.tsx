@@ -348,7 +348,7 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
         Use the arrow keys to move between graves. Press Enter to open the actions for a grave and Escape to close them.
       </p>
       {graves.length === 0 && (
-        <p className={styles.emptyScene}>The graveyard is silent. Add a trial above, or summon a demo graveyard.</p>
+        <p className={styles.emptyScene}>The graveyard is eerily quiet. Bury a trial above, or summon a demo graveyard.</p>
       )}
       {graves.some((g) => g.status === 'active') && (
         <button
