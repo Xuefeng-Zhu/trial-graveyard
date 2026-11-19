@@ -17,11 +17,15 @@ const FOCUSABLE = 'a[href], button:not([disabled])';
 export function ExorcismPanel({ grave, onExorcised, onClose }: ExorcismPanelProps) {
   const guide = getCancelGuide(grave.name, grave.cancelUrl);
   const ref = useRef<HTMLDivElement>(null);
+  const confirmed = useRef(false);
 
   useEffect(() => {
     const opener = document.activeElement as HTMLElement | null;
     ref.current?.focus();
-    return () => opener?.focus?.();
+    // After confirming, the opener is replaced by a tombstone, so the owner moves focus there instead.
+    return () => {
+      if (!confirmed.current) opener?.focus?.();
+    };
   }, []);
 
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>): void => {
@@ -79,7 +83,10 @@ export function ExorcismPanel({ grave, onExorcised, onClose }: ExorcismPanelProp
           </a>
         </p>
         <div className={styles.panelActions}>
-          <button type="button" className={styles.primary} onClick={() => onExorcised(grave.id)}>
+          <button type="button" className={styles.primary} onClick={() => {
+              confirmed.current = true;
+              onExorcised(grave.id);
+            }}>
             It&apos;s exorcised
           </button>
           <button type="button" className={styles.button} onClick={onClose}>

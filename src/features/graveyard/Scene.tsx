@@ -398,7 +398,12 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
             onDelete={onDelete}
             onExport={onExport}
             onHaunt={onHaunt}
-            onExorcise={onExorcise}
+            onExorcise={(id) => {
+              // The panel confirms later; once the grave becomes a tombstone, focus lands on it.
+              pendingFocus.current = { id, kind: 'tombstone' };
+              setActiveId(id);
+              onExorcise(id);
+            }}
             onClose={() => setOpenId(null)}
           />
         ))}
