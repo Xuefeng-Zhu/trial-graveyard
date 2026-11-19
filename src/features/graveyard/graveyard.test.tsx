@@ -55,7 +55,7 @@ function mockMatchMedia(initial: boolean): (matches: boolean) => void {
 
 const noop = () => {};
 const renderScene = (graves: GraveData[], props: Partial<Parameters<typeof Scene>[0]> = {}) =>
-  render(<Scene graves={graves} now={NOW} onCancelled={noop} onKeep={noop} {...props} />);
+  render(<Scene graves={graves} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} {...props} />);
 
 const items = () => Array.from(document.querySelectorAll<HTMLElement>('li[data-item-id]'));
 
@@ -179,7 +179,7 @@ describe('live region and transitions', () => {
     const g = [grave('Netflix', 50 * HOUR)];
     const { rerender } = renderScene(g);
     expect(screen.getByTestId('scene-live')).toBeEmptyDOMElement();
-    rerender(<Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} />);
+    rerender(<Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Netflix is now Zombie, charges in 47 hours.');
   });
 
@@ -187,7 +187,7 @@ describe('live region and transitions', () => {
     const g = grave('Audible', 5 * DAY, { priceCents: 1495 });
     const { rerender } = renderScene([g]);
     const done = { ...g, status: 'cancelled' as const };
-    rerender(<Scene graves={[done]} now={NOW} onCancelled={noop} onKeep={noop} />);
+    rerender(<Scene graves={[done]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
     expect(screen.getByText('Here lies Audible. Saved you $14.95/mo.')).toBeInTheDocument();
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Audible is now a tombstone. Saved $14.95.');
@@ -202,10 +202,64 @@ describe('live region and transitions', () => {
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /Keep it/ }));
     expect(onKeep).toHaveBeenCalledWith('calm');
-    rerender(<Scene graves={[{ ...g, status: 'kept' }]} now={NOW} onCancelled={noop} onKeep={onKeep} />);
+    rerender(<Scene graves={[{ ...g, status: 'kept' }]} now={NOW} onCancelled={noop} onKeep={onKeep} onEdit={noop} onDelete={noop} onExport={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Calm is now a ghost.');
     await waitFor(() => expect(document.activeElement).toHaveAttribute('data-kind', 'ghost'));
+  });
+});
+
+describe('edit, delete and export', () => {
+  it('exposes edit, delete with confirmation and export on an active grave', () => {
+    const g = grave('Calm', 20 * DAY);
+    const onEdit = vi.fn();
+    const onDelete = vi.fn();
+    const onExport = vi.fn();
+    renderScene([g], { onEdit, onDelete, onExport });
+    const li = screen.getByRole('listitem', { name: /Calm/ });
+    li.focus();
+    fireEvent.keyDown(li, { key: 'Enter' });
+    fireEvent.click(within(li).getByRole('button', { name: /Add to calendar/ }));
+    expect(onExport).toHaveBeenCalledWith([g], 'Calm.ics');
+    fireEvent.click(within(li).getByRole('button', { name: /Edit/ }));
+    expect(onEdit).toHaveBeenCalledWith('calm');
+    fireEvent.keyDown(li, { key: 'Enter' });
+    fireEvent.click(within(li).getByRole('button', { name: /^Delete/ }));
+    expect(onDelete).not.toHaveBeenCalled();
+    fireEvent.click(within(li).getByRole('button', { name: /Confirm delete/ }));
+    expect(onDelete).toHaveBeenCalledWith('calm');
+  });
+
+  it('lets tombstones be edited and deleted but not cancelled again', () => {
+    const g = grave('Dead', -DAY, { status: 'cancelled', cancelledAt: NOW.toISOString() });
+    renderScene([g]);
+    const li = screen.getByRole('listitem', { name: /Dead/ });
+    li.focus();
+    fireEvent.keyDown(li, { key: 'Enter' });
+    expect(within(li).getByRole('button', { name: /Edit/ })).toBeInTheDocument();
+    expect(within(li).getByRole('button', { name: /^Delete/ })).toBeInTheDocument();
+    expect(within(li).queryByRole('button', { name: /I cancelled/ })).not.toBeInTheDocument();
+  });
+
+  it('exports all active graves', () => {
+    const onExport = vi.fn();
+    renderScene(ALL, { onExport });
+    fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
+    const [list, name] = onExport.mock.calls[0]!;
+    expect(name).toBe('trial-graveyard.ics');
+    expect(list.every((x: GraveData) => x.status === 'active')).toBe(true);
+    expect(list).toHaveLength(5);
+  });
+
+  it('announces every simultaneous stage change', () => {
+    const g = [grave('Netflix', 50 * HOUR), grave('Hulu', 50 * HOUR)];
+    const { rerender } = renderScene(g);
+    rerender(
+      <Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />,
+    );
+    const live = screen.getByTestId('scene-live');
+    expect(live).toHaveTextContent('Netflix is now Zombie');
+    expect(live).toHaveTextContent('Hulu is now Zombie');
   });
 });
 
@@ -248,7 +302,7 @@ describe('reduced motion', () => {
     mockMatchMedia(true);
     const g = grave('Hulu', DAY);
     const { rerender } = renderScene([g]);
-    rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} onCancelled={noop} onKeep={noop} />);
+    rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
     await waitFor(() => expect(screen.getByText(/Here lies Hulu/)).toBeInTheDocument());
   });
 });

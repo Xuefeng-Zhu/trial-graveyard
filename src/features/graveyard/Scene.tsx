@@ -21,6 +21,9 @@ export interface SceneProps {
   now: Date;
   onCancelled: (id: string) => void;
   onKeep: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onExport: (graves: GraveData[], filename: string) => void;
   /** Overrides the OS setting. Tests and Storybook-style callers use this. */
   reducedMotion?: boolean;
 }
@@ -74,15 +77,20 @@ function announcement(grave: GraveData, view: ViewState): string {
   return `${grave.name} is now a ghost.`;
 }
 
-function Actions({ grave, onCancelled, onKeep, onDone }: {
+function Actions({ grave, onCancelled, onKeep, onEdit, onDelete, onExport, onDone }: {
   grave: GraveData;
   onCancelled: (id: string) => void;
   onKeep: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onExport: (graves: GraveData[], filename: string) => void;
   onDone: () => void;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const active = grave.status === 'active';
   return (
     <div className={styles.actions} role="group" aria-label={`Actions for ${grave.name}`}>
-      {grave.cancelUrl ? (
+      {active && (grave.cancelUrl ? (
         <a href={grave.cancelUrl} target="_blank" rel="noopener noreferrer" className={styles.button}>
           Cancel now<span className={styles.srOnly}> {grave.name} (opens in a new tab)</span>
         </a>
@@ -95,13 +103,37 @@ function Actions({ grave, onCancelled, onKeep, onDone }: {
             {NO_CANCEL_URL_TEXT}
           </span>
         </>
+      ))}
+      {active && (
+        <>
+          <button type="button" className={styles.button} onClick={() => { onCancelled(grave.id); onDone(); }}>
+            I cancelled<span className={styles.srOnly}> {grave.name}</span>
+          </button>
+          <button type="button" className={styles.button} onClick={() => { onKeep(grave.id); onDone(); }}>
+            Keep it<span className={styles.srOnly}> {grave.name}</span>
+          </button>
+          <button type="button" className={styles.button} onClick={() => onExport([grave], `${grave.name}.ics`)}>
+            Add to calendar<span className={styles.srOnly}> for {grave.name}</span>
+          </button>
+        </>
       )}
-      <button type="button" className={styles.button} onClick={() => { onCancelled(grave.id); onDone(); }}>
-        I cancelled<span className={styles.srOnly}> {grave.name}</span>
+      <button type="button" className={styles.button} onClick={() => { onEdit(grave.id); onDone(); }}>
+        Edit<span className={styles.srOnly}> {grave.name}</span>
       </button>
-      <button type="button" className={styles.button} onClick={() => { onKeep(grave.id); onDone(); }}>
-        Keep it<span className={styles.srOnly}> {grave.name}</span>
-      </button>
+      {confirming ? (
+        <>
+          <button type="button" className={styles.button} onClick={() => { onDelete(grave.id); setConfirming(false); onDone(); }}>
+            Confirm delete<span className={styles.srOnly}> {grave.name}</span>
+          </button>
+          <button type="button" className={styles.button} onClick={() => setConfirming(false)}>
+            Keep grave<span className={styles.srOnly}> {grave.name}</span>
+          </button>
+        </>
+      ) : (
+        <button type="button" className={styles.button} onClick={() => setConfirming(true)}>
+          Delete<span className={styles.srOnly}> {grave.name}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -114,14 +146,17 @@ interface ItemProps {
   onToggle: (id: string) => void;
   onCancelled: (id: string) => void;
   onKeep: (id: string) => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onExport: (graves: GraveData[], filename: string) => void;
   onClose: () => void;
 }
 
-function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, onClose }: ItemProps) {
+function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, onEdit, onDelete, onExport, onClose }: ItemProps) {
   const { grave, view } = entry;
   const present = useIsPresent();
   const urgent = isUrgent(view);
-  const showActions = grave.status === 'active' && (urgent || open);
+  const showActions = open || (grave.status === 'active' && urgent);
 
   const motionProps = reduced
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.15 } }
@@ -146,7 +181,7 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
       }
       return;
     }
-    if ((e.key === 'Enter' || e.key === ' ') && grave.status === 'active') {
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onToggle(grave.id);
     } else if (e.key === 'Escape' && open) {
@@ -165,7 +200,7 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
       onKeyDown={onKeyDown}
       onClick={(e) => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).closest('[data-art]')) {
-          if (grave.status === 'active') onToggle(grave.id);
+          onToggle(grave.id);
         }
       }}
     >
@@ -179,12 +214,20 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
         {view.kind === 'tombstone' && <Tombstone grave={grave} epitaph={view.epitaph} savedCents={view.savedCents} />}
         {view.kind === 'ghost' && <Ghost grave={grave} monthlyCents={view.monthlyCents} reduced={reduced} />}
       </div>
-      {showActions && <Actions grave={grave} onCancelled={onCancelled} onKeep={onKeep} onDone={onClose} />}
+      {showActions && <Actions
+          grave={grave}
+          onCancelled={onCancelled}
+          onKeep={onKeep}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onExport={onExport}
+          onDone={onClose}
+        />}
     </motion.li>
   );
 }
 
-export function Scene({ graves, now, onCancelled, onKeep, reducedMotion }: SceneProps) {
+export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onExport, reducedMotion }: SceneProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedMotion ?? osReduced;
 
@@ -207,15 +250,15 @@ export function Scene({ graves, now, onCancelled, onKeep, reducedMotion }: Scene
   // Announce stage and status changes for graves that were already on screen.
   useEffect(() => {
     const next = new Map<string, string>();
-    let last = '';
+    const changes: string[] = [];
     for (const { grave, view } of entries) {
       const key = view.kind === 'grave' ? `grave:${view.stage}` : view.kind;
       next.set(grave.id, key);
       const before = previous.current.get(grave.id);
-      if (before !== undefined && before !== key) last = announcement(grave, view);
+      if (before !== undefined && before !== key) changes.push(announcement(grave, view));
     }
     previous.current = next;
-    if (last) setMessage(last);
+    if (changes.length > 0) setMessage(changes.join(' '));
   }, [entries]);
 
   // After an action the grave remounts as a tombstone or ghost; move focus to it.
@@ -279,6 +322,9 @@ export function Scene({ graves, now, onCancelled, onKeep, reducedMotion }: Scene
             }}
             onCancelled={act(onCancelled, 'tombstone')}
             onKeep={act(onKeep, 'ghost')}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onExport={onExport}
             onClose={() => setOpenId(null)}
           />
         ))}
@@ -303,6 +349,15 @@ export function Scene({ graves, now, onCancelled, onKeep, reducedMotion }: Scene
       </p>
       {graves.length === 0 && (
         <p className={styles.emptyScene}>The graveyard is silent. Add a trial above, or summon a demo graveyard.</p>
+      )}
+      {graves.some((g) => g.status === 'active') && (
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => onExport(graves.filter((g) => g.status === 'active'), 'trial-graveyard.ics')}
+        >
+          Export all active to calendar
+        </button>
       )}
       <div ref={rootRef} className={styles.field} onKeyDown={onKeyDown}>
         {renderRow('ghosts')}

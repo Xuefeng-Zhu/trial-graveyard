@@ -57,6 +57,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     playSound(kind);
   };
 
+  const deleteGrave = (id: string): void => {
+    if (editingId === id) setEditingId(null);
+    s.deleteGrave(id);
+  };
+  const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
+
   const toastMessage = changed
     ? changed.status === 'cancelled'
       ? `${changed.name} is now a tombstone.`
@@ -125,11 +131,8 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             onCancelled={(id) => status(id, 'cancel')}
             onKeep={(id) => status(id, 'keep')}
             onEdit={setEditingId}
-            onDelete={(id) => {
-              if (editingId === id) setEditingId(null);
-              s.deleteGrave(id);
-            }}
-            onExport={(graves: Grave[], filename) => downloadIcs(graves, clock(), filename)}
+            onDelete={deleteGrave}
+            onExport={exportGraves}
           />
         ) : (
           <Scene
@@ -137,6 +140,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             now={now}
             onCancelled={(id) => status(id, 'cancel')}
             onKeep={(id) => status(id, 'keep')}
+            onEdit={setEditingId}
+            onDelete={deleteGrave}
+            onExport={exportGraves}
           />
         )}
       </main>

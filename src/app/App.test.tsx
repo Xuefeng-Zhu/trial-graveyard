@@ -143,6 +143,38 @@ describe('App end to end in the list view', () => {
 });
 
 describe('haunted scene', () => {
+  it('edits, deletes and exports from the night-mode scene', async () => {
+    const blobs: Blob[] = [];
+    URL.createObjectURL = vi.fn((b: Blob | MediaSource) => {
+      blobs.push(b as Blob);
+      return 'blob:x';
+    });
+    URL.revokeObjectURL = vi.fn();
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const store = setup(false);
+    await settle(store);
+    addTrial('Netflx', '2026-10-20', '5');
+    fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
+    expect(blobs).toHaveLength(1);
+    const open = () => {
+      const li = screen.getByRole('listitem', { name: /Netflx|Netflix/ });
+      li.focus();
+      fireEvent.keyDown(li, { key: 'Enter' });
+    };
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^Add to calendar/ }));
+    expect(blobs).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
+    expect(screen.getByLabelText('Name')).toHaveValue('Netflx');
+    type('Name', 'Netflix');
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(screen.getByRole('listitem', { name: /Netflix/ })).toBeInTheDocument();
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
+    expect(store.getState().graves).toHaveLength(0);
+  });
+
   it('shows the scene by default and swaps to the list in Daylight mode', async () => {
     const store = setup(false);
     await settle(store);
