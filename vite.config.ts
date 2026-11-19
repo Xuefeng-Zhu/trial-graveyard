@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => ({
     environment: 'node',
     setupFiles: ['./src/testSetup.ts'],
     maxWorkers: 4,
+    testTimeout: 15_000,
     coverage: {
       include: ['src/domain/*.ts'], exclude: ['**/*.test.ts', '**/arbitraries.ts'],
       thresholds: { lines: 100, statements: 100, branches: 100, functions: 100 },

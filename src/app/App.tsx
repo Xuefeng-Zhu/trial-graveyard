@@ -14,6 +14,9 @@ import { emptyValues, mergeParsed } from '../features/editor/formValues'
 import { Mausoleum } from '../features/graveyard/Mausoleum'
 import { useReducedMotion } from '../features/graveyard/useReducedMotion'
 import type { ParseResult } from '../lib/parse'
+import { SeanceButton } from '../features/seance/SeanceButton'
+import { SeancePanel } from '../features/seance/SeancePanel'
+import { findDuplicate } from '../domain/duplicates'
 import { Landing } from '../features/landing/Landing'
 import { playSound, setSoundEnabled } from '../design/sounds'
 import styles from './app.module.css'
@@ -30,6 +33,8 @@ export function App() {
   const reduced = useReducedMotion()
   const [screen, setScreen] = useState(getScreen)
   const [modal, setModal] = useState<Modal>()
+  const [seance, setSeance] = useState(false)
+  const [duplicate, setDuplicate] = useState<{ trial: TrialInput; existing: Grave; editId?: string }>()
   const [values, setValues] = useState(emptyValues)
   const [dateSource, setDateSource] = useState<string>()
   const [message, announce] = useState('')
@@ -56,7 +61,9 @@ export function App() {
     setValues(previous => mergeParsed(previous, parsed))
     if (parsed.chargeAt) setDateSource(parsed.chargeAt.source)
   }
-  function bury(input: TrialInput) {
+  function bury(input: TrialInput, force = false) {
+    const existing = force ? undefined : findDuplicate(useGraveyard.getState().graves, input)
+    if (existing) { setDuplicate({ trial: input, existing }); return }
     if (!state.addGrave(input, new Date())) return
     playSound('creak')
     setValues(emptyValues)
@@ -64,6 +71,14 @@ export function App() {
     announce('Trial buried. Its charge is tracked.')
     navigate('graveyard')
   }
+  function saveEdit(grave: Grave, input: TrialInput, force = false) {
+    const existing = force ? undefined : findDuplicate(useGraveyard.getState().graves, input, grave.id)
+    if (existing) { close(); setDuplicate({ trial: input, existing, editId: grave.id }); return }
+    state.updateGrave(grave.id, input)
+    close()
+    announce('Trial updated.')
+  }
+
   const actions: GraveActions = {
     edit: grave => setModal({ id: grave.id, kind: 'edit' }),
     remove: grave => setModal({ id: grave.id, kind: 'delete' }),
@@ -93,7 +108,7 @@ export function App() {
               onSummon={() => state.loadDemo(new Date())} onAdd={() => navigate('add')} />)}
           {screen === 'add' && <section className="panel stack"><h1>Add a trial</h1>
             <GraveForm values={values} change={setValues} onSave={bury} dateSource={dateSource} />
-            <PasteBox now={now} onParsed={prefill} /></section>}
+            <PasteBox now={now} onParsed={prefill} extra={<SeanceButton onOpen={() => setSeance(true)} />} /></section>}
           {screen === 'savings' && <><h1>Savings</h1><Mausoleum graves={graves} /></>}
           {screen === 'settings' && <section className="panel stack"><h1>Settings</h1>
             <p className="muted">Your graves stay in this browser.</p>
@@ -107,9 +122,27 @@ export function App() {
         </div>}
       </main>
     </div>
+    {seance && <SeancePanel now={now} onClose={() => setSeance(false)} onBury={trials => {
+      for (const trial of trials) state.addGrave(trial, new Date())
+      setSeance(false)
+      playSound('creak')
+      announce(`${trials.length} ${trials.length === 1 ? 'trial' : 'trials'} buried from the demo inbox.`)
+      navigate('graveyard')
+    }} />}
+    {duplicate && <Dialog title="Grave already found" onClose={() => setDuplicate(undefined)}>
+      <div className="stack"><p>{duplicate.existing.name} already has a grave for this charge date.</p>
+        <div className="actions"><button className="primary" onClick={() => {
+          setDuplicate(undefined); navigate('graveyard'); open(duplicate.existing)
+        }}>Open existing</button><button onClick={() => {
+          setDuplicate(undefined)
+          const edit = graves.find(grave => grave.id === duplicate.editId)
+          if (edit) saveEdit(edit, duplicate.trial, true)
+          else if (!duplicate.editId) bury(duplicate.trial, true)
+        }}>Bury anyway</button></div></div>
+    </Dialog>}
     {modal && selected && <Dialog key={modal.kind} title={modal.kind === 'details' ? selected.name : modal.kind === 'edit' ? 'Edit trial' : 'Delete trial?'} onClose={close}>
       {modal.kind === 'details' && <DetailsPanel grave={selected} now={now} actions={actions} />}
-      {modal.kind === 'edit' && <GraveForm grave={selected} onSave={input => { state.updateGrave(selected.id, input); close(); announce('Trial updated.') }} />}
+      {modal.kind === 'edit' && <GraveForm grave={selected} onSave={input => saveEdit(selected, input)} />}
       {modal.kind === 'delete' && <div className="stack"><p>Remove {selected.name} from your graveyard?</p>
         <div className="actions"><button onClick={close}>Keep grave</button><button className="danger" onClick={() => { state.deleteGrave(selected.id, new Date()); close() }}>Delete grave</button></div></div>}
     </Dialog>}

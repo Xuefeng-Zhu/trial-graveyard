@@ -72,3 +72,21 @@ it('shows a static landing with accessible sound and Daylight settings', async (
     expect(container.querySelector('img[data-static]')).toBeNull()
   } finally { vi.unstubAllGlobals() }
 })
+
+it('asks before saving a duplicate and can open the existing grave', async () => {
+  location.hash = 'add'
+  useGraveyard.getState().addGrave({
+    name: 'Phantomflix', chargeAt: new Date(2027, 10, 15, 9).toISOString(), priceCents: 1399, cadence: 'monthly', currency: 'USD',
+  }, new Date())
+  render(<App />)
+  fireEvent.change(screen.getByLabelText('Paste a receipt'), { target: { value: 'Your PHANTOMFLIX trial ends 2027-11-15. $13.99 monthly.' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Read receipt' }))
+  await screen.findByText(/Fields filled/)
+  fireEvent.click(screen.getByRole('button', { name: 'Bury trial' }))
+  const warning = screen.getByRole('dialog', { name: 'Grave already found' })
+  expect(within(warning).getByRole('button', { name: 'Bury anyway' })).toBeVisible()
+  expect(useGraveyard.getState().graves).toHaveLength(1)
+  fireEvent.click(within(warning).getByRole('button', { name: 'Open existing' }))
+  expect(screen.getByRole('dialog', { name: 'Phantomflix' })).toBeVisible()
+  expect(useGraveyard.getState().graves).toHaveLength(1)
+})

@@ -30,6 +30,10 @@ Add a trial by hand or paste a receipt to review suggested fields. Grave states 
 
 Select **Summon demo graveyard** to explore eight fictional examples. Trial data lives in this browser's IndexedDB. The Mausoleum includes personalized epitaphs and can share an aggregate card with no names or links. Sound effects are synthesized, and start muted.
 
+## Inbox Séance
+
+Open **Inbox Séance** from Add trial to scan 13 fictional messages in the Haunted Demo Inbox. Review and edit the results before burying selected trials. Gmail and Outlook appear as disabled previews. The demo runs in memory and saves only confirmed trial fields.
+
 ## Architecture
 
 - Pure trial, clock, currency and calendar logic in `src/domain/`.
@@ -39,14 +43,14 @@ Select **Summon demo graveyard** to explore eight fictional examples. Trial data
 
 ## Built with Kiro
 
-The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 686 Vitest tests with 100% domain coverage, and the production build.
+The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 696 Vitest tests with 100% domain coverage, and the production build.
 
 ## Kiro features used
 
 | Feature | Usage |
 | --- | --- |
 | Steering | Product, stack, structure and MCP conventions |
-| Specs | 2 · Trial Graveyard MVP, Haunted Polish |
+| Specs | 3 · Trial Graveyard MVP, Haunted Polish, Inbox Séance |
 | Hooks | 5 · Test on save, spec sync, domain properties, accessibility, copy |
 | MCP | GitHub issue context and deployment tools |
 | Property-based tests | Boundary, parser, money and archive invariants |

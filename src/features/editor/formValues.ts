@@ -5,7 +5,7 @@ import type { ParseResult } from '../../lib/parse'
 export interface FormValues { name: string; chargeAt: string; priceCents: string; currency: string; cadence: TrialInput['cadence']; cancelUrl: string }
 export const emptyValues: FormValues = { name: '', chargeAt: '', priceCents: '', currency: 'USD', cadence: 'monthly', cancelUrl: '' }
 
-export function fromGrave(grave: Grave): FormValues {
+export function fromGrave(grave: TrialInput): FormValues {
   return { ...grave, chargeAt: format(grave.chargeAt, 'yyyy-MM-dd'), priceCents: (grave.priceCents / 100).toFixed(2), cancelUrl: grave.cancelUrl ?? '' }
 }
 

@@ -1,9 +1,9 @@
-import { useId, useState } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { parseWithFallback, type ParseResult } from '../../lib/parse'
 import { useGraveyard } from '../../state/store'
 import styles from './editor.module.css'
 
-export function PasteBox({ now, onParsed }: { now: Date; onParsed: (parsed: ParseResult) => void }) {
+export function PasteBox({ now, onParsed, extra }: { now: Date; onParsed: (parsed: ParseResult) => void; extra?: ReactNode }) {
   const id = useId()
   const [text, setText] = useState('')
   const [message, setMessage] = useState('')
@@ -18,7 +18,7 @@ export function PasteBox({ now, onParsed }: { now: Date; onParsed: (parsed: Pars
   return <section className={styles.reader} aria-label="Receipt reader">
     <label htmlFor={id}>Paste a receipt</label>
     <textarea id={id} value={text} onChange={event => setText(event.target.value)} placeholder="Paste a confirmation email or receipt…" maxLength={50_000} />
-    <div><button type="button" onClick={parse}>Read receipt</button></div>
+    <div className="actions"><button type="button" onClick={parse}>Read receipt</button>{extra}</div>
     <p role="status" className="status">{message}</p>
   </section>
 }

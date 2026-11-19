@@ -1,0 +1,10 @@
+.row { min-width: 0; margin: 0; padding: .85rem; border: 1px solid var(--border); }
+.row legend { font-weight: 700; padding-inline: .35rem; }
+.row p { margin: .4rem 0 .65rem; overflow-wrap: anywhere; }
+.check { display: inline-flex; align-items: center; min-height: 44px; margin-right: .7rem; gap: .4rem; }
+.check input { width: 1.15rem; height: 1.15rem; accent-color: var(--accent); }
+.badge { color: var(--accent); font-size: .85rem; }
+.orb { display: grid; place-items: center; width: 64px; height: 64px; color: var(--accent); font-size: 2rem; background: var(--raised);
+  clip-path: polygon(25% 0, 75% 0, 75% 12%, 88% 12%, 88% 25%, 100% 25%, 100% 75%, 88% 75%, 88% 88%, 75% 88%, 75% 100%, 25% 100%, 25% 88%, 12% 88%, 12% 75%, 0 75%, 0 25%, 12% 25%, 12% 12%, 25% 12%);
+  animation: seance 1.2s steps(4, end) infinite; }
+@keyframes seance { 50% { transform: rotate(30deg); } }
