@@ -40,7 +40,7 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 8.2 `PasteBox`: calls parser, prefills form, shows the empty-result message. [R5.5, R5.6]
   - [x] 8.3 Component tests for validation and prefill. Manually time a new trial entry (target under 10 s). [R1] (Manual timing not possible in the sandbox; the form is a single screen with 6 fields, native tab order and Enter to submit.)
 
-- [ ] 9. Daylight mode list (built first so the app is usable before the scene)
+- [x] 9. Daylight mode list (built first so the app is usable before the scene)
   - `src/features/daylight/DaylightList`: sorted list, stage badge text, countdown, "Cancel now", "I cancelled", "Keep it", undo toast, ICS buttons, Mausoleum total. [R2.8, R3, R6, R7, R8.2]
   - App shell with the Daylight toggle persisted in settings, "Summon demo graveyard" action. [R8.1, R8.3, R9.4]
   - Tests and axe check.
