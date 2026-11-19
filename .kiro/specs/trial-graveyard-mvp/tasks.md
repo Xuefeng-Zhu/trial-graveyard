@@ -52,15 +52,15 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 10.4 `Mausoleum` counter with animated count-up. [R7]
   - [x] 10.5 Reduced-motion variants (`useReducedMotion`), static poses and the opacity-only fade. Tests with mocked `matchMedia`. [R8.4, R8.5]
 
-- [ ] 11. Offline and polish
+- [x] 11. Offline and polish
   - Configure vite-plugin-pwa precache and manifest, verify load offline after first visit. [R9.2]
   - Playful copy pass for empty states, errors and epitaphs. [R10]
   - Manual keyboard-only and screen reader pass, Lighthouse accessibility check.
 
-- [ ] 12. Checkpoint
+- [x] 12. Checkpoint
   - Run `npm run typecheck`, `npm test` (with coverage gate on `src/domain/`) and `npm run build`. All must pass.
 
-- [ ] 13. Deploy to a public URL
+- [x] 13. Deploy to a public URL
   - Deploy `dist/` to Netlify, Vercel or GitHub Pages (set Vite `base` if using Pages).
   - Open the public URL, run "Summon demo graveyard", test Daylight mode, reduced motion and offline reload.
   - Add the public URL, screenshots and a short "Built with Kiro" section to README.md. Confirm LICENSE is MIT and `.kiro/` is committed. [R11]

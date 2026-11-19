@@ -6,7 +6,7 @@ import styles from './daylight.module.css';
 
 export const NO_CANCEL_URL_TEXT = 'No cancel link saved. Edit this grave to add one.';
 export const EMPTY_MAUSOLEUM_TEXT = 'No souls saved yet. Cancel a trial and it will rest in peace here.';
-export const EMPTY_LIST_TEXT = 'The graveyard is empty. Add a trial above, or summon a demo graveyard.';
+export const EMPTY_LIST_TEXT = 'The graveyard is dead quiet. Bury a trial above, or summon a demo graveyard.';
 
 const CADENCE_SUFFIX = { 'one-time': '', weekly: '/wk', monthly: '/mo', yearly: '/yr' } as const;
 

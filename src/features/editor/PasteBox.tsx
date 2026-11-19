@@ -3,7 +3,7 @@ import { parseReceipt } from '../../lib/parse';
 import type { ParseResult } from '../../lib/parse';
 import styles from './editor.module.css';
 
-export const NOTHING_FOUND = 'Nothing haunting here. Try the form instead.';
+export const NOTHING_FOUND = 'Nothing haunting that receipt. Try the form instead, it bites less.';
 
 export interface PasteBoxProps {
   /** Called with the parsed fields. The parser never saves anything itself (R5.5). */
