@@ -342,6 +342,18 @@ describe('selection and the details panel', () => {
     expect(store.getState().progress.ledger.filter((e) => e.kind === 'review')).toHaveLength(1);
   });
 
+  it('lays the details out with a title bar, a close icon and a primary Exorcise button', async () => {
+    await withGrave();
+    fireEvent.click(stone(/Phantomflix/));
+    const panel = screen.getByRole('dialog', { name: 'Phantomflix' });
+    const heading = within(panel).getByRole('heading', { name: 'Phantomflix' });
+    const head = heading.parentElement as HTMLElement;
+    expect(within(head).getByRole('button', { name: /^Close details for Phantomflix/ })).toBeInTheDocument();
+    expect(within(panel).getAllByText(/^(Price|Cadence|Next charge|Remaining|Status)$/)).toHaveLength(5);
+    const exorcise = within(panel).getByRole('button', { name: /^Exorcise Trial/ });
+    expect(exorcise.className).toMatch(/primary/);
+  });
+
   it('moves between gravestones with the arrow keys', async () => {
     await withGrave();
     const first = stone(/Phantomflix/);

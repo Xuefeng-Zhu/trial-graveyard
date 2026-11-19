@@ -75,6 +75,7 @@ export function GraveForm({
     name: keyof FormValues,
     label: string,
     input: (props: Record<string, unknown>) => JSX.Element,
+    wide = false,
   ) => {
     const id = `grave-form-${name}`;
     const error = errors[name];
@@ -86,7 +87,7 @@ export function GraveForm({
       'aria-describedby': error ? `${id}-error` : undefined,
     };
     return (
-      <div className={styles.field}>
+      <div className={wide ? `${styles.field} ${styles.fieldWide}` : styles.field}>
         <label htmlFor={id}>{label}</label>
         {input(props)}
         {error && (
@@ -152,7 +153,7 @@ export function GraveForm({
           value={values.cancelUrl}
           onChange={(e) => set('cancelUrl')(e.target.value)}
         />
-      ))}
+      ), true)}
       <div className={styles.actions}>
         <button type="submit" className={styles.primary}>
           {submitLabel}

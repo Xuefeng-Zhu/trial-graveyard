@@ -6,39 +6,6 @@
   z-index: 0;
 }
 
-.moonGlow {
-  position: absolute;
-  top: 4%;
-  right: 12%;
-  width: 7rem;
-  height: 7rem;
-  background: radial-gradient(circle, rgb(242 236 255 / 0.35), transparent 70%);
-  animation: glow 6s steps(6) infinite alternate;
-}
-
-.cloud {
-  position: absolute;
-  width: 6rem;
-  height: 1.25rem;
-  background: rgb(184 169 217 / 0.28);
-  box-shadow:
-    1rem -0.5rem 0 0 rgb(184 169 217 / 0.28),
-    2.5rem -0.25rem 0 0 rgb(184 169 217 / 0.28);
-  animation: drift 70s linear infinite;
-}
-
-.cloudA {
-  top: 12%;
-  left: -8rem;
-}
-
-.cloudB {
-  top: 24%;
-  left: -8rem;
-  animation-duration: 110s;
-  animation-delay: -40s;
-}
-
 .lantern {
   position: absolute;
   bottom: 34%;
@@ -108,18 +75,6 @@
 
 .popAnimated {
   animation: pop 0.5s steps(5) both;
-}
-
-@keyframes glow {
-  to {
-    opacity: 0.6;
-  }
-}
-
-@keyframes drift {
-  to {
-    transform: translateX(calc(100vw + 16rem));
-  }
 }
 
 @keyframes flicker {

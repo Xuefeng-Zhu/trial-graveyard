@@ -3,7 +3,20 @@ import { dailyQuest, DECORATIONS, GRAVESTONE_STYLES, XP_VALUES } from '../../dom
 import type { Progress, XpEntry } from '../../domain/xp';
 import { toLocalIso } from '../../domain/trial';
 import type { Grave } from '../../domain/trial';
-import { Decoration, PixelBadge, PixelButton, PixelPanel, GravestoneArt, Scroll } from '../../design/pixel';
+import {
+  Coin,
+  CrystalBall,
+  Decoration,
+  Flame,
+  Flower,
+  GravestoneArt,
+  PixelBadge,
+  PixelButton,
+  PixelPanel,
+  Scroll,
+  Skull,
+  Spark,
+} from '../../design/pixel';
 import { AtRisk, CountdownHero, StatsPanel } from '../haunting';
 import { Mausoleum } from '../graveyard';
 import { nextToRise, statusText } from './format';
@@ -35,6 +48,11 @@ export function QuestsView({ progress, ledger, graves, now, onExorcise }: Quests
         ) : (
           <p>Nothing is stirring. Every grave is quiet.</p>
         )}
+        <div className={styles.viewArt} aria-hidden="true">
+          <Flame scale={6} />
+          <Scroll scale={6} />
+          <Flame scale={6} />
+        </div>
       </PixelPanel>
       <PixelPanel title="Level and XP">
         <p>
@@ -57,6 +75,11 @@ export function QuestsView({ progress, ledger, graves, now, onExorcise }: Quests
             Next to rise: <strong>{next.name}</strong> ({statusText(next, now)})
           </p>
         )}
+        <div className={styles.viewArt} aria-hidden="true">
+          <Coin scale={6} />
+          <Spark scale={6} />
+          <Coin scale={6} />
+        </div>
       </PixelPanel>
     </div>
   );
@@ -90,6 +113,10 @@ export function CollectionView({ progress, styleId, onSelectStyle }: CollectionV
             );
           })}
         </ul>
+        <div className={styles.viewArt} aria-hidden="true">
+          <Skull scale={6} />
+          <Flower scale={6} />
+        </div>
       </PixelPanel>
       <PixelPanel title="Decorations">
         <ul className={styles.collection}>
@@ -106,6 +133,11 @@ export function CollectionView({ progress, styleId, onSelectStyle }: CollectionV
             );
           })}
         </ul>
+        <div className={styles.viewArt} aria-hidden="true">
+          <Flame scale={6} />
+          <Skull scale={6} />
+          <Flame scale={6} />
+        </div>
       </PixelPanel>
     </div>
   );
@@ -126,6 +158,11 @@ export function SavingsView({ graves, now, motion, onExport, onHaunt, share }: S
     <div className={styles.viewGrid}>
       <PixelPanel aria-label="Savings">
         <Mausoleum graves={graves} reduced={!motion} />
+        <div className={styles.viewArt} aria-hidden="true">
+          <Skull scale={6} />
+          <Coin scale={6} />
+          <Skull scale={6} />
+        </div>
       </PixelPanel>
       <PixelPanel>
         <AtRisk graves={graves} now={now} />
@@ -148,6 +185,11 @@ export function SavingsView({ graves, now, motion, onExport, onHaunt, share }: S
             </>
           )}
         </div>
+        <div className={styles.viewArt} aria-hidden="true">
+          <Coin scale={6} />
+          <Coin scale={6} />
+          <Coin scale={6} />
+        </div>
       </PixelPanel>
     </div>
   );
@@ -167,7 +209,7 @@ export interface SettingsViewProps {
 
 export function SettingsView(p: SettingsViewProps) {
   return (
-    <PixelPanel title="Settings">
+    <PixelPanel title="Settings" className={styles.viewScreen}>
       <div className={styles.row}>
         <PixelButton aria-pressed={p.daylight} onClick={p.onToggleDaylight}>
           Daylight mode
@@ -185,6 +227,11 @@ export function SettingsView(p: SettingsViewProps) {
         it on.
       </p>
       {p.dataTools}
+      <div className={styles.viewArt} aria-hidden="true">
+          <CrystalBall scale={8} />
+          <Spark scale={8} />
+          <CrystalBall scale={8} />
+        </div>
     </PixelPanel>
   );
 }

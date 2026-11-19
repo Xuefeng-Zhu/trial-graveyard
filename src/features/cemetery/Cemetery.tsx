@@ -80,7 +80,7 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
                 data-motion={motion ? 'animated' : 'still'}
               />
             </li>
-            {sorted.map((g) => (
+            {sorted.map((g, i) => (
               <Gravestone
                 key={g.id}
                 ref={(el) => {
@@ -92,6 +92,7 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
                 selected={g.id === selectedId}
                 highlighted={g.id === highlightId}
                 styleId={styleId}
+                back={!narrow && i % 2 === 1}
                 motion={motion}
                 onSelect={select}
               />

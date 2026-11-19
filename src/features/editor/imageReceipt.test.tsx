@@ -46,6 +46,23 @@ describe('ImageReceipt', () => {
     expect(screen.getByText('Try a sample screenshot')).toBeInTheDocument();
   });
 
+  it('opens a larger preview from the thumbnail, closes with Escape and returns focus', async () => {
+    const { onParsed } = setup(createFakeEngine({ text: TEXT, confidence: 90 }));
+    choose(png());
+    await waitFor(() => expect(onParsed).toHaveBeenCalledOnce());
+    const open = screen.getByRole('button', { name: /open larger preview/i });
+    fireEvent.click(open);
+    const dialog = screen.getByRole('dialog', { name: 'Larger receipt preview' });
+    expect(dialog).toHaveFocus();
+    expect((await axe(document.body)).violations).toEqual([]);
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(open).toHaveFocus();
+    fireEvent.click(open);
+    fireEvent.click(screen.getByRole('button', { name: 'Close preview' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
   it('reads a file, shows a preview, prefills and shows the raw text', async () => {
     const { onParsed } = setup(createFakeEngine({ text: TEXT, confidence: 90 }));
     choose(png());

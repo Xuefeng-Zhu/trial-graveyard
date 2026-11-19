@@ -3,6 +3,24 @@
   display: grid;
   gap: var(--space-3);
   max-width: 32rem;
+  color-scheme: dark;
+}
+
+.form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 44rem;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 4px solid var(--color-border);
+  box-shadow:
+    0 4px 0 0 var(--color-bg),
+    inset 0 0 0 2px var(--color-bg);
+}
+
+.form > .actions,
+.form > .field:first-child,
+.form > .fieldWide {
+  grid-column: 1 / -1;
 }
 
 .form label,
@@ -24,9 +42,18 @@
   font: inherit;
   padding: var(--space-2) var(--space-3);
   color: var(--color-text);
-  background: var(--color-surface);
-  border: 2px solid var(--color-border);
+  min-height: 44px;
+  color-scheme: dark;
+  background: var(--color-bg);
+  border: 4px solid var(--color-border);
   border-radius: 0;
+  box-shadow: inset 0 0 0 2px var(--color-surface);
+}
+
+.input:focus,
+.input:focus-visible {
+  border-color: var(--color-accent);
+  outline: var(--focus-ring);
 }
 
 .input[aria-invalid='true'] {
@@ -128,10 +155,59 @@
   gap: var(--space-3);
 }
 
-.thumb {
-  max-width: 8rem;
-  max-height: 8rem;
+.thumbButton {
+  flex: none;
+  padding: 0;
+  line-height: 0;
+  background: none;
   border: 4px solid var(--color-border);
+  cursor: zoom-in;
+}
+
+.thumbButton:focus-visible {
+  outline: var(--focus-ring);
+}
+
+.thumb {
+  display: block;
+  width: 10rem;
+  max-width: 100%;
+  height: auto;
+  max-height: 14rem;
+  object-fit: contain;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: rgba(18, 15, 35, 0.85);
+}
+
+.lightboxCard {
+  display: grid;
+  gap: var(--space-3);
+  max-width: min(100%, 40rem);
+  max-height: 100%;
+  padding: var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 4px solid var(--color-border);
+}
+
+.lightboxCard:focus {
+  outline: var(--focus-ring);
+}
+
+.lightboxImg {
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  margin: 0 auto;
+  object-fit: contain;
 }
 
 .progress {
@@ -175,6 +251,12 @@
 }
 
 /* Mobile pass (H5) */
+@media (max-width: 600px) {
+  .form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
   .form,
   .paste {
@@ -187,4 +269,13 @@
     min-height: 44px;
     min-width: 44px;
   }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

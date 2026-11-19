@@ -16,6 +16,15 @@ describe('GraveForm', () => {
     expect(screen.getByLabelText('Name')).toHaveFocus();
   });
 
+  it('renders pixel-styled controls that are all labelled', () => {
+    render(<GraveForm onSubmit={vi.fn()} />);
+    for (const label of ['Name', 'Charge date', 'Price', 'Currency', 'Cadence', 'Cancel URL (optional)']) {
+      expect(screen.getByLabelText(label).className).toMatch(/input/);
+    }
+    expect(screen.getByLabelText('Charge date')).toHaveAttribute('type', 'date');
+    expect(screen.getByLabelText('Cadence').tagName).toBe('SELECT');
+  });
+
   it('saves a valid grave and resets the form', () => {
     const onSubmit = vi.fn();
     render(<GraveForm onSubmit={onSubmit} />);
