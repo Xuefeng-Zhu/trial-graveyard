@@ -67,6 +67,18 @@ describe('backup export and import', () => {
     expect(parseBackup(text).ok).toBe(false);
   });
 
+  it('rejects a backup with duplicate grave ids', () => {
+    const text = exportBackup(slice([graveWith({ id: 'a' }), graveWith({ id: 'a', name: 'Other' })]), NOW);
+    expect(parseBackup(text).ok).toBe(false);
+  });
+
+  it('rejects a cancelled grave with an invalid cancelledAt', () => {
+    const bad = graveWith({ id: 'a', status: 'cancelled', cancelledAt: 'invalid' });
+    expect(parseBackup(exportBackup(slice([bad]), NOW)).ok).toBe(false);
+    const good = graveWith({ id: 'a', status: 'cancelled', cancelledAt: '2026-10-02T09:00:00.000Z' });
+    expect(parseBackup(exportBackup(slice([good]), NOW)).ok).toBe(true);
+  });
+
   it('merge keeps current graves and adds only new ids', () => {
     const mine = slice([graveWith({ id: 'a', name: 'Mine' })]);
     const theirs = slice([graveWith({ id: 'a', name: 'Theirs' }), graveWith({ id: 'b', name: 'New' })]);

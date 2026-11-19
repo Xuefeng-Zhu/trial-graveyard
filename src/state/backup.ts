@@ -32,6 +32,12 @@ export function parseBackup(text: string): ParseBackupResult {
   const result = deserialize(text);
   if (!result.ok) return { ok: false, error: BACKUP_ERROR };
   const { graves, settings, progress } = result.state;
+  const ids = new Set<string>();
+  for (const g of graves) {
+    if (ids.has(g.id)) return { ok: false, error: BACKUP_ERROR };
+    ids.add(g.id);
+    if (g.cancelledAt !== undefined && Number.isNaN(Date.parse(g.cancelledAt))) return { ok: false, error: BACKUP_ERROR };
+  }
   return { ok: true, data: { graves, settings, progress: progress ?? { ...DEFAULT_PROGRESS, ledger: [] } } };
 }
 
