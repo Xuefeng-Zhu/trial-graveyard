@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => ({
     maxWorkers: 4,
     testTimeout: 15_000,
     coverage: {
+      enabled: true,
       include: ['src/domain/*.ts'], exclude: ['**/*.test.ts', '**/arbitraries.ts'],
       thresholds: { lines: 100, statements: 100, branches: 100, functions: 100 },
     },

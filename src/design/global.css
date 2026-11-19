@@ -40,3 +40,7 @@ img { display: block; max-width: 100%; }
 .fileButton { position: relative; }
 .fileButton input { position: absolute; inset: 0; width: 100%; padding: 0; opacity: 0; cursor: pointer; }
 .fileButton:focus-within { outline: 2px solid var(--focus); outline-offset: 4px; }
+
+button, .button { border-radius: 2px; }
+:where(input:not([type='file']):not([type='checkbox']), textarea, select) { min-height: 44px; width: 100%; color: var(--ink); background: var(--bg); border: 1px solid var(--border); padding: .5rem; }
+button[aria-pressed='true'] { border-color: var(--accent); }

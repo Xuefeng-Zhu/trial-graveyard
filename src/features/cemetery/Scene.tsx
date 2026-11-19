@@ -1,38 +1,62 @@
-import { useState } from 'react'
-import { countdown, getViewState } from '../../domain/stage'
-import { formatMoney } from '../../domain/savings'
+import { useRef, useState, type KeyboardEvent } from 'react'
 import type { Grave } from '../../domain/trial'
+import { pixelStateFor, type PixelKind } from '../../domain/pixelState'
+import type { summarize } from '../../domain/selectors'
+import type { ProgressState } from '../../state/storage'
+import { PixelIcon } from '../../design/pixel/PixelIcon'
+import { useMediaQuery } from '../../design/useMediaQuery'
+import { Fireflies } from '../atmosphere/Fireflies'
+import { Gravestone } from './Gravestone'
+import { Hud, SceneTotals } from './Hud'
 import styles from './scene.module.css'
 
-export function Scene({ graves, now, onOpen }: { graves: Grave[]; now: Date; onOpen: (grave: Grave) => void }) {
-  const [focus, setFocus] = useState(0)
+const depth: Record<PixelKind, number> = { normal: 0, kept: 1, cancelled: 1, warning: 2, critical: 3 }
+const directions: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 }
+
+export function Scene({ graves, now, selected, summary, progress, onOpen, onExorcise }: {
+  graves: Grave[]; now: Date; selected?: string; summary: ReturnType<typeof summarize>; progress: ProgressState;
+  onOpen: (grave: Grave) => void; onExorcise: (grave: Grave) => void;
+}) {
+  const handheld = useMediaQuery('(max-width: 800px)')
+  const field = useRef<HTMLDivElement>(null)
+  const [focusId, setFocusId] = useState<string>()
+  const tiles = graves.map(grave => ({ grave, rank: depth[pixelStateFor(grave, now).kind] })).sort((a, b) => a.rank - b.rank)
+  const preferredId = focusId ?? selected ?? (handheld ? summary.next?.id : undefined)
+  const currentIndex = Math.max(0, tiles.findIndex(tile => tile.grave.id === preferredId))
+  const urgent = tiles.filter(tile => tile.rank >= depth.warning).length
+  const wrap = (index: number) => (index + tiles.length) % tiles.length
+
+  function turn(step: number) {
+    const next = wrap(currentIndex + step)
+    setFocusId(tiles[next].grave.id)
+  }
+
+  function navigate(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const direction = directions[event.key]
+    if (!direction) return
+    event.preventDefault()
+    const next = wrap(index + (handheld ? Math.sign(direction) : direction))
+    const target = tiles[next].grave.id
+    setFocusId(target)
+    requestAnimationFrame(() => field.current?.querySelectorAll<HTMLButtonElement>('button')[next]?.focus())
+  }
+
   return <section className={styles.scene} aria-label="Pixel graveyard">
-    <div className={styles.graves}>
-      {graves.map((grave, index) => {
-        const state = getViewState(grave, now)
-        const pose = state.kind === 'grave' ? state.stage : state.kind
-        const label = state.kind === 'grave' ? countdown(state.remainingMs) : grave.status
-        return <button className={styles.stone} data-pose={pose} key={grave.id}
-          aria-describedby={`grave-description-${grave.id}`}
-          tabIndex={index === Math.min(focus, graves.length - 1) ? 0 : -1}
-          onFocus={() => setFocus(index)} onClick={() => onOpen(grave)} onKeyDown={event => {
-            const directions: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -3, ArrowDown: 3 }
-            const offset = directions[event.key]
-            if (!offset) return
-            event.preventDefault()
-            const buttons = event.currentTarget.parentElement?.querySelectorAll('button')
-            buttons?.[(index + offset + graves.length) % graves.length]?.focus()
-          }}>
-          <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true" shapeRendering="crispEdges">
-            <path fill="#5e517d" d="M2 38V33H6V12H9V7H14V3H26V7H31V12H34V33H38V38Z"/>
-            <path fill="#cbbbe7" d="M7 33V13H11V8H16V5H24V8H29V13H32V33Z"/>
-            {pose !== 'sealed' && <path fill="none" stroke="#50366b" d="M25 6v8h-5v7h4v9h-3"/>}
-          </svg>
-          <strong>{grave.name}</strong>{' '}<small>{label}</small>
-          <span hidden id={`grave-description-${grave.id}`}>{pose}, {formatMoney(grave.priceCents, grave.currency)}</span>
-        </button>
-      })}
+    <SceneTotals summary={summary} />
+    <Fireflies />
+    <div className={styles.field}>
+      <button type="button" className={styles.arrow} aria-label="Previous grave" onClick={() => turn(-1)} disabled={tiles.length < 2}><PixelIcon name="left" size={3} /></button>
+      <div className={styles.graves} ref={field} aria-label="Gravestones">
+        {tiles.map(({ grave }, index) => <div key={grave.id} data-current={currentIndex === index}
+          data-front={tiles.length < 5 || index >= Math.ceil(tiles.length / 2)}>
+          <Gravestone grave={grave} now={now} style={progress.styleId} focused={index === currentIndex}
+            selected={grave.id === selected} onFocus={() => setFocusId(grave.id)} onOpen={() => onOpen(grave)}
+            onKeyDown={event => navigate(event, index)} />
+        </div>)}
+      </div>
+      <button type="button" className={styles.arrow} aria-label="Next grave" onClick={() => turn(1)} disabled={tiles.length < 2}><PixelIcon name="right" size={3} /></button>
+      <p className={styles.position} aria-live="polite">Grave {currentIndex + 1} of {tiles.length}</p>
     </div>
-    <img className={`${styles.reaper} pixel`} src={`${import.meta.env.BASE_URL}pixel/reaper.png`} width="98" height="112" alt="" />
+    <Hud summary={summary} progress={progress} now={now} urgent={urgent} onExorcise={onExorcise} />
   </section>
 }

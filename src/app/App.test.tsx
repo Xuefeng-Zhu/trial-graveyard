@@ -4,11 +4,12 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { axe } from 'vitest-axe'
 import { beforeEach, expect, it, vi } from 'vitest'
 import { App } from './App'
+import { defaultProgress } from '../state/storage'
 import { useGraveyard } from '../state/store'
 
 beforeEach(async () => {
   await vi.waitFor(() => expect(useGraveyard.getState().ready).toBe(true))
-  useGraveyard.setState({ graves: [], undoEntry: undefined, settings: { daylight: false, soundOn: false, calm: false, llmFallback: false } })
+  useGraveyard.setState({ graves: [], progress: defaultProgress, undoEntry: undefined, settings: { daylight: false, soundOn: false, calm: false, llmFallback: false } })
   location.hash = ''
 })
 
@@ -29,13 +30,13 @@ it('fills a receipt, validates inline, saves and resets the next editor', async 
   expect(screen.getByLabelText('Service name')).toHaveValue('')
 })
 
-it('supports arrow navigation, explicit cancellation and undo', () => {
+it('supports arrow navigation, explicit cancellation and undo', async () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }))
   const first = screen.getByRole('button', { name: /^Phantomflix / })
   first.focus()
   fireEvent.keyDown(first, { key: 'ArrowRight' })
-  expect(screen.getByRole('button', { name: /^Hexlingo / })).toHaveFocus()
+  await vi.waitFor(() => expect(screen.getByRole('button', { name: /^Hexlingo / })).toHaveFocus())
   fireEvent.click(first)
   const dialog = screen.getByRole('dialog')
   expect(useGraveyard.getState().graves.find(grave => grave.name === 'Phantomflix')?.status).toBe('active')
@@ -94,7 +95,7 @@ it('asks before saving a duplicate and can open the existing grave', async () =>
 it('exorcises a trial only after confirmation and restores it on undo', () => {
   render(<App />)
   fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }))
-  fireEvent.click(screen.getByRole('button', { name: 'Exorcise next trial' }))
+  fireEvent.click(screen.getByRole('button', { name: /Exorcise Trials/ }))
   const dialog = screen.getByRole('dialog', { name: 'Exorcise Wraithwave Premium' })
   expect(within(dialog).getByText('Cancel with the provider')).toBeVisible()
   expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('active')
@@ -102,4 +103,17 @@ it('exorcises a trial only after confirmation and restores it on undo', () => {
   expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('cancelled')
   fireEvent.click(screen.getByRole('button', { name: 'Undo' }))
   expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('active')
+})
+
+it('retains the last page and exposes Calm mode and collection states as text', () => {
+  const first = render(<App />)
+  fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Calm mode: OFF', pressed: false }))
+  expect(screen.getByRole('button', { name: 'Calm mode: ON', pressed: true })).toBeVisible()
+  first.unmount()
+  render(<App />)
+  expect(screen.getByRole('link', { name: 'Settings', current: 'page' })).toBeVisible()
+  fireEvent.click(screen.getByRole('link', { name: 'Collection' }))
+  expect(screen.getByRole('button', { name: /Classic Selected/, pressed: true })).toBeVisible()
+  expect(screen.getByRole('button', { name: /Mossy Locked/ })).toBeDisabled()
 })

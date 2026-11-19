@@ -9,4 +9,5 @@ if (typeof document !== 'undefined') {
   afterEach(cleanup)
   // jsdom has no native canvas. Canvas-specific tests supply their own context.
   HTMLCanvasElement.prototype.getContext = () => null
+  window.scrollTo = () => {}
 }

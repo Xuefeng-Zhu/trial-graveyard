@@ -1,7 +1,12 @@
 .dialog {
-  color: var(--ink); background: var(--panel); border: 2px solid var(--border); border-radius: 6px;
+  color: var(--ink); background: var(--panel); border: 2px solid var(--border); border-radius: 2px;
   box-shadow: 0 0 0 4px var(--bg), 0 15px 60px #000a; width: min(680px, calc(100% - 2rem));
   max-height: calc(100% - 2rem); padding: clamp(.85rem, 3vw, 1.5rem); overflow: auto;
 }
 .dialog::backdrop { background: #0a071acb; }
-.title { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.title { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem; margin-bottom: .8rem; background: var(--raised); border: 1px solid var(--border); }
+
+.label { display: flex; min-width: 0; align-items: center; gap: .5rem; }
+.label > div { min-width: 0; }
+.label h2 { overflow-wrap: anywhere; }
+.title button { flex: none; padding: 0; }

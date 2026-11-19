@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { PixelIcon } from '../../design/pixel/PixelIcon'
 import styles from './dialog.module.css'
 
-export function Dialog({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function Dialog({ title, onClose, children, leading, badge }: { title: string; onClose: () => void; children: ReactNode; leading?: ReactNode; badge?: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null)
   const id = useId()
   useEffect(() => {
@@ -26,7 +27,7 @@ export function Dialog({ title, onClose, children }: { title: string; onClose: (
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus() }
       if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
     }}>
-    <header className={styles.title}><h2 id={id}>{title}</h2><button type="button" onClick={onClose} aria-label="Close dialog">✕</button></header>
+    <header className={styles.title}><div className={styles.label}>{leading}<div><h2 id={id}>{title}</h2>{badge}</div></div><button type="button" onClick={onClose} aria-label="Close dialog"><PixelIcon name="x" /></button></header>
     {children}
   </dialog>
 }

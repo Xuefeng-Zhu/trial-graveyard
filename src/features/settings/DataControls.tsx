@@ -1,23 +1,26 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { exportGraveyard, importGraveyard } from '../../state/backup'
 import type { PersistedState } from '../../state/storage'
 import { useGraveyard } from '../../state/store'
 import { downloadFile } from '../daylight/downloadIcs'
 import { Dialog } from '../dialog/Dialog'
 
-export function DataControls({ announce }: { announce: (message: string) => void }) {
+export function DataControls({ announce, onClear }: { announce: (message: string) => void; onClear: () => void }) {
   const [incoming, setIncoming] = useState<PersistedState>()
   const [clear, setClear] = useState(false)
   const [confirmation, setConfirmation] = useState('')
   const [error, setError] = useState('')
   const state = useGraveyard()
+  const revision = useRef(0)
   async function read(file: File) {
+    const request = ++revision.current
     setError('')
     try {
       const backup = importGraveyard(await file.text())
+      if (request !== revision.current) return
       if (backup) { setIncoming(backup); return }
     } catch { /* Show the schema error for inaccessible files too. */ }
-    setError('This file is not a valid Trial Graveyard backup.')
+    if (request === revision.current) setError('This file is not a valid Trial Graveyard backup.')
   }
   function exportData() {
     const json = exportGraveyard(state.snapshot())
@@ -47,6 +50,7 @@ export function DataControls({ announce }: { announce: (message: string) => void
         <label className="stack">Confirmation<input value={confirmation} onChange={event => setConfirmation(event.target.value)} /></label>
         <div><button className="danger" disabled={confirmation !== 'CLEAR'} onClick={() => {
           state.clearData()
+          onClear()
           setClear(false)
           announce('All graveyard data cleared.')
         }}>Clear everything</button></div>

@@ -1,0 +1,7 @@
+.actionGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .45rem; }
+.actionGrid > * { padding: .4rem .45rem; font-size: .82rem; }
+.full { grid-column: 1 / -1; display: flex; gap: .35rem; }
+.status { color: var(--accent); font-size: .82rem; }
+.state[data-kind='warning'] { color: var(--warning); }
+.state[data-kind='critical'] { color: var(--danger); }
+.state[data-kind='cancelled'] { color: var(--accent); }

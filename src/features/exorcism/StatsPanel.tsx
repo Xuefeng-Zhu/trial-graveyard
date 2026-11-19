@@ -1,3 +1,5 @@
+import { PixelIcon } from '../../design/pixel/PixelIcon'
+import menus from '../cemetery/menus.module.css'
 import { deriveStats, formatDaysUsed } from '../../domain/stats'
 import { formatMoney } from '../../domain/savings'
 import type { Grave } from '../../domain/trial'
@@ -7,7 +9,8 @@ export const displayTotals = (totals: Record<string, number>) =>
 
 export function StatsPanel({ graves, now }: { graves: Grave[]; now: Date }) {
   const stats = deriveStats(graves, now)
-  return <section className="panel stack" aria-label="Trial hacker stats">
+  return <section className={menus.card} aria-label="Trial hacker stats">
+    <div className={menus.art}><PixelIcon name="quest" size={5} /></div>
     <h2>Trial hacker stats</h2>
     <dl className="facts">
       <div><dt>Confirmed cancellations</dt><dd>{stats.confirmedCancellations}</dd></div>

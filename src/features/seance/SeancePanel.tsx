@@ -1,3 +1,4 @@
+import { PixelIcon } from '../../design/pixel/PixelIcon'
 import { useState } from 'react'
 import { findDuplicate, trialKey } from '../../domain/duplicates'
 import { validateTrial, type TrialInput } from '../../domain/trial'
@@ -61,7 +62,7 @@ export function SeancePanel({ now, onClose, makeProvider, onBury }: {
         <div className="actions"><button className="primary" onClick={() => void seance.scan()}>Allow</button><button onClick={seance.disconnect}>Decline</button></div>
       </section>}
       {seance.phase === 'scanning' && <>
-        <span className={styles.orb} aria-hidden="true">✤</span>
+        <span className={styles.orb} aria-hidden="true"><PixelIcon name="crystal" size={4} /></span>
         <p role="status">{scanMessage(seance.progress)}</p>
       </>}
       {seance.phase === 'error' && <p role="alert">The connection went quiet. You can review any trials already found.</p>}

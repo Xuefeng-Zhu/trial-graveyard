@@ -1,6 +1,6 @@
 # Trial Graveyard
 
-Catch free trials before the first charge. Trial Graveyard is a private, on-device tracker with a pixel-art graveyard and a high-contrast Daylight list.
+Catch free trials before the first charge. Trial Graveyard is a private, on-device tracker with a 16-bit pixel cemetery and a high-contrast Daylight list.
 
 [Play Trial Graveyard](https://trial-graveyard-pixel.vercel.app/)
 
@@ -16,58 +16,62 @@ npm test
 npm run build
 ```
 
-The static build is in `dist/`. Set `VITE_BASE=/your-path/` at build time for a subdirectory deployment. The default is `/`. Serve the production build over HTTPS or localhost to enable the offline service worker.
+The static build is in `dist/`. Set `VITE_BASE=/your-path/` for a subdirectory deployment. The default is `/`. The included Vercel configuration serves app routes through the SPA. Serve the production build over HTTPS or localhost for installability and offline use.
 
 ## Screenshots
 
-![Trial Graveyard on desktop](docs/screenshots/desktop.png)
+![Desktop cemetery at 1440 px with eight pixel gravestones, the Reaper HUD, and Wraithwave Premium's details](docs/screenshots/desktop.png)
 
-![Animated walkthrough of the 360 px layout](docs/screenshots/walkthrough.gif)
+![Handheld cemetery at 360 px with a single selected grave, directional controls, and bottom navigation](docs/screenshots/mobile.png)
+
+![Animated walkthrough of the landing screen, mobile cemetery, and a cancelled grave's epitaph](docs/screenshots/walkthrough.gif)
+
+[Daylight list](docs/screenshots/daylight.png)
+
+<img src="docs/screenshots/share-card.png" alt="Aggregate share card showing savings and cancellation count for the fictional demo" width="320">
 
 ## Features
 
-Add a trial by hand or paste a receipt to review suggested fields. Grave states show charge urgency, a kept subscription shows its monthly equivalent, and a confirmed cancellation adds one charge to your savings. Export a calendar reminder for one or all trials. Daylight mode keeps the same controls in a calm list, and motion follows your OS setting.
-
-Select **Summon demo graveyard** to explore eight fictional examples. Trial data lives in this browser's IndexedDB. The Mausoleum includes personalized epitaphs and can share an aggregate card with no names or links. Sound effects are synthesized, and start muted.
+- **Track a trial.** Enter details by hand, paste a receipt, or read a screenshot. Each grave shows its charge and urgency. The default date-only charge time is 09:00 local. Numeric receipt dates use US month/day order.
+- **Cancel before the bite.** The HUD and Savings show the same soonest future charge. Overdue trials and upcoming charges at risk this week are separate. Exorcise opens a provider guide and records a cancellation only when you confirm. Cancel, Keep it, and Delete offer ten seconds to undo.
+- **Set calendar reminders.** Download a charge-day event with a 24-hour alarm, or add two hauntings at 48 hours before the charge and at 09:00 on the charge date. An earlier charge moves its morning reminder up to the charge time.
+- **See savings.** The Mausoleum shows one saved charge per confirmed cancellation, grouped by currency. The stats also show the subset cancelled before its charge this calendar year. The shareable PNG contains only aggregate totals and a count.
+- **Explore the cemetery.** Summon eight fictional examples. Add, review, and confirm cancellations to earn cosmetic XP for local quests and gravestone styles. Daylight and Calm modes, OS reduced-motion support, and muted-by-default audio are available.
+- **Back up your data.** Export a JSON backup in Settings. Import with schema validation, choose merge or replacement, or clear all saved data with typed confirmation.
 
 ## Inbox Séance
 
-Open **Inbox Séance** from Add trial to scan 13 fictional messages in the Haunted Demo Inbox. Review and edit the results before burying selected trials. Gmail and Outlook appear as disabled previews. The demo runs in memory and saves only confirmed trial fields.
+Open **Inbox Séance** from Add trial to scan 13 fictional messages in the Haunted Demo Inbox. Review and edit candidates before saving. Gmail and Outlook are disabled. The scanner processes email in memory and saves only fields from trials you select and confirm.
 
 ## Image receipts
 
-Choose a screenshot, use the rear camera, or paste/drop an image in the receipt reader. English OCR runs in a local Tesseract worker. Review the extracted text and date source before saving. Try the included Phantomflix screenshot to see the flow.
+Choose a screenshot, use the rear camera, or paste or drop an image in the receipt reader. English OCR runs in a local Tesseract worker. Check the exact text used for the charge date before saving, or edit the extracted text and parse it again. **Try a sample screenshot** opens the included Phantomflix receipt.
 
-The app serves the worker, core and language data from its own origin and caches them on first use for offline reading. Receipt images and OCR text stay in memory.
+The worker, core, and language data load from the app's origin on first use. The service worker caches them for later offline reading. Images and extracted text stay in memory.
 
-## Before the Bite
+## Architecture and tests
 
-The shared countdown highlights the soonest upcoming active charge. Overdue trials and the next seven days of risk are shown separately. Exorcise opens a local cancellation guide and records a cancellation only when you confirm. The calendar can export reminders 48 hours before and on the morning of the charge.
+- Pure trial, clock, urgency, savings, reminder, and XP functions in `src/domain/`.
+- Deterministic receipt parsing and an in-memory email provider and scanner in `src/lib/`.
+- Zustand with versioned IndexedDB persistence in `src/state/`. A storage notice appears if IndexedDB is unavailable.
+- React 18 views and CSS modules in `src/features/`. The palette, SVG pixel sprites, synthesized audio, and self-hosted Press Start 2P and Inter fonts live in `src/design/`.
+- Vite and Workbox precache the app shell. A separate runtime cache holds the OCR tools after first use.
 
-Settings can export a local JSON backup, validate one for merge or replacement, and clear browser data after typed confirmation.
-
-## Architecture
-
-- Pure trial, clock, currency and calendar logic in `src/domain/`.
-- Deterministic receipt parsing in `src/lib/parse/`.
-- Zustand with versioned IndexedDB persistence in `src/state/`.
-- React views, CSS modules and self-hosted pixel typography in `src/features/` and `src/design/`.
+GitHub Actions runs strict TypeScript checking, **779 Vitest tests** with **100% domain coverage**, and the production build. The suite includes Testing Library and axe checks plus fast-check properties for dates, money, backups, parsing, and XP isolation. The six checkpoints passed 673, 686, 696, 710, 727, and 779 tests in order.
 
 ## Built with Kiro
 
-The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 727 Vitest tests with 100% domain coverage, and the production build.
-
-## Kiro features used
+The product rules, six spec milestones, and hooks are tracked in `.kiro/`. Implementation choices and validation notes are in [docs/DECISIONS.md](docs/DECISIONS.md).
 
 | Feature | Usage |
 | --- | --- |
-| Steering | Product, stack, structure and MCP conventions |
-| Specs | 5 · Trial Graveyard MVP, Haunted Polish, Inbox Séance, Image Receipts, Before the Bite |
-| Hooks | 5 · Test on save, spec sync, domain properties, accessibility, copy |
-| MCP | GitHub issue context and deployment tools |
-| Property-based tests | Boundary, parser, money and archive invariants |
-| Agent PRs | The specs and QA notes reference prior agent reviews. This build is committed in six local milestones. |
+| Steering | Product, stack, structure, and MCP conventions |
+| Specs | 6 · Trial Graveyard MVP, Haunted Polish, Inbox Séance, Image Receipts, Before the Bite, Retro Pixel Graveyard |
+| Hooks | 5 · Test on save, spec sync, domain properties, accessibility, and copy |
+| MCP | GitHub issue context for the milestones |
+| Property-based tests | Calendar boundaries, parser behavior, cents arithmetic, backups, and XP independence |
+| Agent PRs | The project issues and QA notes incorporate prior agent reviews. This build is recorded in six milestone commits. |
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE). Self-hosted fonts and the Tesseract runtime retain their respective upstream licenses.

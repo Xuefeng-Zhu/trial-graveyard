@@ -1,9 +1,129 @@
-.scene { isolation: isolate; position: relative; overflow: hidden; min-height: 450px; display: grid; align-content: end;
-  background: #211646 url('/pixel/graveyard-bg.png') center 60% / 1152px 648px repeat-x; image-rendering: pixelated; }
-.graves { position: relative; display: grid; justify-content: center; grid-template-columns: repeat(auto-fit, minmax(min(25%, 128px), 145px)); gap: .6rem; padding: 1rem 1rem 6rem; }
-.stone { flex-direction: column; min-width: 0; min-height: 95px; background: #241b37; color: #f2ecff; border-color: #9e87be; font-size: .85rem; }
-.stone small { color: #c8b9e5; text-transform: capitalize; }
-.stone[data-pose='zombie'], .stone[data-pose='overdue'] { border-color: #ff8092; }
-.stone[data-pose='churning'] { border-color: #ffb14a; }
-.reaper { position: absolute; bottom: 0; left: calc(50% - 49px); pointer-events: none; }
-@media (max-width: 480px) { .scene { background-size: 768px 432px; min-height: 420px; } .graves { grid-template-columns: repeat(3, minmax(0, 1fr)); } .stone { font-size: .75rem; padding: .2rem; } }
+.scene {
+  --game-ink: #f2ecff;
+  --game-muted: #d1c3ef;
+  --game-border: #a086c8;
+  isolation: isolate;
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 620px;
+  min-width: 0;
+  border: 1px solid #8a6eae;
+  box-shadow: inset 0 0 0 3px #19112f, 0 3px 0 #080613;
+  background: #19132f url('/pixel/graveyard-bg.png') center top / 1152px 648px repeat-x;
+  image-rendering: pixelated;
+}
+.scene::before { content: ''; position: absolute; inset: 2px; z-index: -1; background: #4c238c48; mix-blend-mode: screen; pointer-events: none; }
+.totals { position: relative; z-index: 2; padding: 16px 18px; display: flex; justify-content: space-between; align-items: start; gap: .5rem; }
+.totals p, .quest, .charge dl { color: var(--game-ink); border: 1px solid var(--game-border); background: #160f2bea; box-shadow: 2px 2px 0 #0b0719; }
+.totals p { padding: .42rem .62rem; display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; margin: 0; font-size: .78rem; }
+.risk strong { color: #ffcc83; }
+.risk span { margin-left: .4rem; padding-left: .5rem; border-left: 1px solid #856bb1; }
+.coins { color: #b9ff7b !important; white-space: nowrap; }
+.coins strong, .questInfo > div:last-child strong { font: .61rem/1.5 var(--display); }
+.coins svg, .questIcon { color: #ffcc83; flex: none; }
+.field { position: relative; z-index: 2; display: grid; align-items: end; padding: clamp(48px, 8vw, 106px) clamp(14px, 3vw, 44px) 8px; }
+.graves { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: .45rem; justify-items: center; align-items: end; }
+.graves > div { min-width: 0; }
+.grave {
+  --stone-width: 96px;
+  --stone-height: 104px;
+  --stone-light: #d9c9f4;
+  --stone-face: #9b89bd;
+  --stone-shadow: #675686;
+  --stone-edge: #554371;
+  --badge: #e4d8ff;
+  position: relative;
+  display: flex; flex-direction: column; gap: 0;
+  min-width: 0; min-height: 44px; width: var(--stone-width); padding: 0 0 2px;
+  border: 1px solid transparent; border-radius: 0; background: transparent;
+  color: var(--game-ink); line-height: 1.2;
+}
+.grave:hover:not(:disabled) { border-color: #a086c8; }
+.grave[aria-pressed='true'], .grave:focus-visible { border-color: #a8ff60; outline: 2px solid #a8ff60; outline-offset: 1px; background: #17102c90; }
+.grave[data-style='mossy'] { --stone-face: #91a485; --stone-light: #d2e0a9; --stone-shadow: #596e53; --stone-edge: #3f5346; }
+.grave[data-style='obsidian'] { --stone-face: #5b526e; --stone-light: #9993ad; --stone-shadow: #30263e; --stone-edge: #30283b; }
+.grave[data-style='rose-quartz'] { --stone-face: #c488ab; --stone-light: #fac4df; --stone-shadow: #925a81; --stone-edge: #6d4260; }
+.graves [data-front='true'] .grave { --stone-width: 144px; --stone-height: 156px; }
+.stone { display: block; position: relative; width: var(--stone-width); height: var(--stone-height); }
+.stoneArt { display: block; width: 100%; height: 100%; }
+.monogram { position: absolute; inset: 22% auto auto 50%; translate: -50% 0; z-index: 1; display: grid; place-content: center;
+  min-width: 28px; min-height: 24px; padding: 4px 3px; background: var(--brand-color); color: #fff;
+  border: 1px solid #ece3ff; box-shadow: 2px 2px 0 #21152e; font: 8px var(--display); }
+.graves [data-front='true'] .monogram { min-width: 36px; min-height: 31px; font-size: 10px; }
+.plaque { position: absolute; inset: 50% 2px auto; z-index: 2; display: grid; gap: 1px;
+  padding: .19rem .24rem; background: #e9dcff; color: #211633; border: 2px solid #49385e; box-shadow: 2px 2px 0 #21152e;
+  font-size: .74rem; line-height: 1.15; overflow: hidden; }
+.graves [data-front='true'] .plaque { inset: 52% 10px auto; padding: .35rem .3rem; font-size: .82rem; }
+.plaque strong, .plaque span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { max-width: 100%; overflow-wrap: anywhere; position: relative; z-index: 2; margin-top: -4px; padding: .14rem .38rem;
+  color: var(--badge); background: #180f2e; border: 1px solid #876ea9; font-size: .76rem; font-weight: 700; }
+.grave[data-kind='warning'] { --badge: #ffcf86; --crack: #ffa655; }
+.grave[data-kind='critical'] { --badge: #ffb1bc; --crack: #ff586e; }
+.grave[data-kind='cancelled'] { --badge: #c5ff90; }
+.grave[data-kind='kept'] { --badge: #d8edff; }
+.crack { stroke: var(--crack); }
+.grave[data-kind='warning'] .stoneArt, .grave[data-kind='critical'] .stoneArt { filter: drop-shadow(2px 0 0 var(--crack)); }
+.hand { transform-origin: 44px 48px; animation: rise 2.1s steps(2, end) infinite; }
+.sparks { animation: spark 1.6s steps(3, end) infinite; }
+@keyframes rise { 50% { translate: 0 -3px; } }
+@keyframes spark { 50% { opacity: .25; translate: 0 -4px; } }
+.hud { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) 100px minmax(0, 1fr);
+  padding: 0 16px 15px; align-items: end; gap: 12px; }
+.reaper { position: relative; grid-column: 2; grid-row: 1; justify-self: center; animation: reaper 3s steps(3, end) infinite; }
+@keyframes reaper { 50% { translate: 0 -6px; } }
+.quest { grid-column: 1; grid-row: 1; padding: .46rem .6rem; display: flex; align-items: center; gap: .5rem; width: min(100%, 265px); }
+.questInfo { min-width: 0; width: 100%; display: grid; gap: .35rem; font-size: .76rem; }
+.questInfo > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .12rem .4rem; }
+.questInfo span { color: var(--game-muted); }
+.questInfo progress { flex: 1; min-width: 45px; height: 8px; accent-color: #b8ff6a; }
+.charge { grid-column: 3; grid-row: 1; justify-self: end; min-width: 0; width: min(100%, 244px); display: grid; gap: .45rem; }
+.charge dl { padding: .27rem .58rem; font-size: .73rem; }
+.charge dt { color: var(--game-muted); }
+.charge dl[data-urgency='restless'] { border-color: #ffb14a; }
+.charge dl[data-urgency='rising'] { border-color: #ff8092; animation: pulse-border 2s steps(2, end) infinite; }
+.nextPrice { color: var(--game-muted); white-space: nowrap; }
+@keyframes pulse-border { 50% { border-color: #ffc2ce; } }
+.charge dd { margin: 0; font-weight: 700; }
+.charge button { color: #172408; background: #b5ff66; border-color: #c8ff92; align-items: center; gap: .45rem; }
+.charge button:disabled { color: #263a19; }
+.decorations { position: absolute; bottom: 9px; left: 47%; display: flex; color: #ffd279; gap: .75rem; }
+.arrow, .position { display: none; }
+
+@media (max-width: 950px) and (min-width: 801px) {
+  .field { padding-top: 88px; }
+  .scene { min-height: 600px; }
+}
+@media (max-width: 800px) {
+  .scene { min-height: 550px; background-size: 768px 432px; background-position: center 29px; }
+  .totals { padding: 10px; align-items: stretch; }
+  .totals p { font-size: .72rem; padding: .34rem .45rem; }
+  .risk span { margin-left: 0; padding-left: .25rem; }
+  .field { grid-template-columns: 44px minmax(0, 1fr) 44px; padding: 110px 14px 0; align-items: center; }
+  .graves { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .graves > div:not([data-current='true']) { display: none; }
+  .graves .grave, .graves [data-front='true'] .grave { --stone-width: 144px; --stone-height: 156px; }
+  .graves .plaque { inset: 53% 10px auto; font-size: .86rem; padding: .35rem .3rem; }
+  .graves .monogram { min-width: 36px; min-height: 31px; font-size: 10px; }
+  .arrow { display: inline-grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; background: #18102cbd; border-color: #a086c8; color: #eee4ff; }
+  .position { display: block; grid-column: 2; color: var(--game-ink); background: #160f2be8; justify-self: center; padding: .1rem .55rem; margin: .35rem 0; font-size: .74rem; }
+  .hud { grid-template-columns: minmax(0, 1fr) 49px; padding: 7px 10px 12px; gap: .5rem; }
+  .quest { grid-column: 1; grid-row: 1; width: 100%; }
+  .questInfo > div { justify-content: space-between; }
+  .reaper { grid-row: 1; width: 49px; height: 56px; }
+  .charge { grid-row: 2; grid-column: 1 / -1; width: 100%; grid-template-columns: 1fr 1fr; align-items: stretch; }
+  .charge button { font-size: .81rem; padding: .3rem; }
+  .charge dl { font-size: .7rem; }
+  .decorations { display: none; }
+}
+
+@media (max-width: 500px) {
+  .scene { background-size: 384px 216px; background-position: center 54px; background-repeat: no-repeat; }
+  .scene::after {
+    content: ''; position: absolute; z-index: -2; inset: 264px 0 0;
+    background: #12182c url('/pixel/graveyard-bg.png') center bottom / 1152px 648px no-repeat;
+    pointer-events: none;
+  }
+  .field { padding-top: 77px; }
+}

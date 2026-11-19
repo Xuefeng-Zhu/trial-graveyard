@@ -2,7 +2,7 @@ import { expect, it, vi } from 'vitest'
 import fc from 'fast-check'
 import { graveArb, reference, trial } from '../domain/arbitraries'
 import { exportGraveyard, importGraveyard, mergeGraveyards } from './backup'
-import { defaultSettings } from './storage'
+import { defaultProgress, defaultSettings } from './storage'
 import { createGraveyardStore } from './store'
 
 it('exports and imports the same graves and settings for arbitrary valid backups', () => {
@@ -31,9 +31,9 @@ it('merges by ID with local settings and supports replace and reset', async () =
   store.getState().restore(imported, 'merge')
   expect(store.getState().snapshot()).toEqual(merged)
   store.getState().restore(imported, 'replace')
-  expect(store.getState().snapshot()).toEqual(imported)
+  expect(store.getState().snapshot()).toEqual({ ...imported, progress: defaultProgress })
   store.getState().clearData()
-  expect(store.getState().snapshot()).toEqual({ graves: [], settings: defaultSettings })
+  expect(store.getState().snapshot()).toEqual({ graves: [], settings: defaultSettings, progress: defaultProgress })
 })
 it('keeps exorcism confirmation reversible', async () => {
   const store = createGraveyardStore('exorcise-test')
