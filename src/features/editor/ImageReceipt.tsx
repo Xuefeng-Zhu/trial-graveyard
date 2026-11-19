@@ -20,8 +20,10 @@ export const LOW_CONFIDENCE_MESSAGE =
   'The spirits could only squint at this one. Check what they read below, or enter the trial by hand.';
 export const NO_FIELDS = 'The spirits read some words but found no trial in them. Fix the text below, or enter it by hand.';
 export const ENGINE_FAILED = 'The spirits lost their voice. You can still enter the trial by hand.';
+export const UNREADABLE_IMAGE =
+  'This browser cannot open that kind of picture (HEIC, for example). Try a PNG or JPEG screenshot, or enter the trial by hand.';
 export const PRIVACY_NOTE =
-  'Your image never leaves this device. Only the trial you confirm is saved, never the image or the words read from it.';
+  'Your image never leaves this device. Only the trial you confirm is saved, never the image or the words read from it. The first read downloads the reading tools from public CDNs (cdn.jsdelivr.net and tessdata.projectnaptha.com), which can see that you used this feature but never receive your image.';
 export const SAMPLE_PATH = 'samples/disney-plus.png';
 
 const HINTS: Record<ConfidenceHint, string> = {
@@ -93,15 +95,16 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
     setDraft(result.text);
     setPhase('done');
     setMessage(result.problem ? PROBLEMS[result.problem] : 'Fields summoned. Check them below before saving.');
-    if (Object.keys(result.parsed).length > 0) onParsed(result.parsed);
+    if (result.problem !== 'low-confidence' && Object.keys(result.parsed).length > 0) onParsed(result.parsed);
   };
 
   const handleFile = async (file: File | Blob): Promise<void> => {
-    abortRef.current?.abort();
+    // Validate first so a bad drop does not cancel a read that is running.
     if (!file.type.startsWith('image/')) {
       setMessage(NOT_AN_IMAGE);
       return;
     }
+    abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
     setUrl(file);
@@ -110,7 +113,16 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
     setMessage('');
     setPhase('reading');
     try {
-      const image = await (preprocess ?? preprocessImage)(file);
+      let image: OcrImage;
+      try {
+        image = await (preprocess ?? preprocessImage)(file);
+      } catch (e) {
+        if (controller.signal.aborted) throw e;
+        if (abortRef.current !== controller) return;
+        setPhase('error');
+        setMessage(UNREADABLE_IMAGE);
+        return;
+      }
       const result = await readImageReceipt(engine ?? lazyDefaultEngine(), image, now(), {
         signal: controller.signal,
         onProgress: (p) => {

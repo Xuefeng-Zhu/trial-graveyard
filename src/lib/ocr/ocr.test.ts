@@ -70,6 +70,7 @@ describe('preprocessImage', () => {
 
 describe('normaliseOcrText', () => {
   it('cleans noise', () => {
+    expect(normaliseOcrText('Jan 5-\n2026 and 5 -\n2026')).toBe('Jan 5-\n2026 and 5 -\n2026');
     expect(normaliseOcrText('  \u201cHi\u201d\u200b  there \r\ndou-\nble\n\n\n\nend  ')).toBe('"Hi" there\ndouble\n\nend');
   });
   it('is idempotent (property)', () => {

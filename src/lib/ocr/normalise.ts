@@ -16,7 +16,7 @@ export function normaliseOcrText(raw: string): string {
     .replace(/\r\n?/g, '\n')
     .replace(/[^\S\n]+/g, ' ')
     .replace(/ ?\n ?/g, '\n')
-    .replace(/(?<=\w)-\n(?=\w)/g, '')
+    .replace(/(?<=\p{L})-\n(?=\p{L})/gu, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }

@@ -9,6 +9,7 @@ import {
   ENGINE_FAILED,
   LOW_CONFIDENCE_MESSAGE,
   NOT_AN_IMAGE,
+  UNREADABLE_IMAGE,
   NO_TEXT,
   PRIVACY_NOTE,
 } from './ImageReceipt';
@@ -90,10 +91,40 @@ describe('ImageReceipt', () => {
     await waitFor(() => expect(onParsed).toHaveBeenCalled());
   });
 
+  it('keeps a running read when a non-image is dropped', async () => {
+    const { onParsed } = setup(createFakeEngine({ text: TEXT, confidence: 90, steps: [40], hang: true }));
+    choose(png());
+    expect(await screen.findByText(DECIPHERING)).toBeInTheDocument();
+    fireEvent.drop(screen.getByTestId('image-zone'), {
+      dataTransfer: { files: [new File(['x'], 'a.txt', { type: 'text/plain' })] },
+    });
+    expect(await screen.findByText(NOT_AN_IMAGE)).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByText(CANCELLED)).toBeNull();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    expect(onParsed).not.toHaveBeenCalled();
+  });
+
+  it('explains an image the browser cannot decode', async () => {
+    const onManual = vi.fn();
+    render(
+      <PasteBox
+        now={() => NOW}
+        onParsed={vi.fn()}
+        onManual={onManual}
+        engine={createFakeEngine({ text: TEXT, confidence: 90 })}
+        preprocess={() => Promise.reject(new Error('decode'))}
+      />,
+    );
+    choose(new File(['x'], 'a.heic', { type: 'image/heic' }));
+    expect(await screen.findByText(UNREADABLE_IMAGE)).toBeInTheDocument();
+  });
+
   it('shows a friendly message and manual fallback for low confidence', async () => {
-    const { onManual } = setup(createFakeEngine({ text: TEXT, confidence: 20 }));
+    const { onManual, onParsed } = setup(createFakeEngine({ text: TEXT, confidence: 20 }));
     choose(png());
     expect(await screen.findByText(LOW_CONFIDENCE_MESSAGE)).toBeInTheDocument();
+    expect(onParsed).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Enter it by hand' }));
     expect(onManual).toHaveBeenCalled();
     expect((await axe(document.body)).violations).toEqual([]);

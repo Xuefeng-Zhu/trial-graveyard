@@ -53,7 +53,7 @@ User story: As a user with a screenshot of a confirmation email, I want to add i
 6. THE normaliser SHALL be idempotent: normalising its own output SHALL return the same text.
 
 ### G6. Privacy
-1. THE app SHALL tell the user in the interface that the image never leaves the device and that only the confirmed trial is saved.
+1. THE app SHALL tell the user in the interface that the image never leaves the device and that only the confirmed trial is saved, and SHALL disclose that the reading tools are downloaded from public CDNs on first use.
 2. THE app SHALL NOT store the image, the preview URL or the OCR text in the store, IndexedDB or any other persistent storage.
 3. WHEN the user removes the image or the box unmounts, THE app SHALL drop the image and the OCR text from memory.
 
