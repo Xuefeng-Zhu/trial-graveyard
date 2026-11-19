@@ -18,6 +18,7 @@ import {
 import { UNDO_WINDOW_MS, createGraveStore } from './store';
 
 const NOW = new Date('2026-10-01T12:00:00.000Z');
+const DAY_MS = 86_400_000;
 const at = (ms: number) => new Date(NOW.getTime() + ms);
 
 const TRIAL: ValidTrial = {
@@ -51,7 +52,7 @@ describe('actions', () => {
     store.getState().updateGrave('missing', TRIAL);
     expect(store.getState().graves).toHaveLength(1);
 
-    store.getState().deleteGrave('id-1');
+    store.getState().deleteGrave('id-1', NOW);
     expect(store.getState().graves).toEqual([]);
   });
 
@@ -98,13 +99,13 @@ describe('actions', () => {
     expect(store.getState().undo(NOW)).toBe(false);
 
     store.getState().cancelGrave('id-1', NOW);
-    store.getState().deleteGrave('id-1');
+    store.getState().deleteGrave('id-1', NOW);
     expect(store.getState().lastChange).toBeNull();
 
     store.getState().addGrave(TRIAL, NOW);
     store.getState().addGrave(TRIAL, NOW);
     store.getState().cancelGrave('id-2', NOW);
-    store.getState().deleteGrave('id-3');
+    store.getState().deleteGrave('id-3', NOW);
     expect(store.getState().lastChange?.id).toBe('id-2');
     store.setState({ graves: [] });
     expect(store.getState().undo(NOW)).toBe(false);
@@ -177,6 +178,52 @@ describe('actions', () => {
     expect([...stages].sort()).toEqual(['churning', 'cracked', 'overdue', 'sealed', 'zombie']);
     expect(graves.filter((g) => g.status === 'cancelled')).toHaveLength(1);
     expect(graves.filter((g) => g.status === 'kept')).toHaveLength(1);
+  });
+
+  it('seeds the demo idempotently with stable ids', () => {
+    const store = newStore();
+    store.getState().loadDemo(NOW);
+    const ids = store.getState().graves.map((g) => g.id);
+    store.getState().loadDemo(at(DAY_MS));
+    expect(store.getState().graves.map((g) => g.id)).toEqual(ids);
+    expect(new Set(ids).size).toBe(8);
+  });
+
+  it('only adds the missing demo graves after one is deleted', () => {
+    const store = newStore();
+    store.getState().loadDemo(NOW);
+    store.getState().deleteGrave('demo-phantomflix', NOW);
+    store.getState().loadDemo(NOW);
+    expect(store.getState().graves).toHaveLength(8);
+  });
+
+  it('undoes a delete within 10 s and restores the position', () => {
+    const store = newStore();
+    store.getState().loadDemo(NOW);
+    const before = store.getState().graves;
+    store.getState().deleteGrave('demo-cryptic-cloud', NOW);
+    expect(store.getState().graves).toHaveLength(7);
+    expect(store.getState().undoDelete(at(UNDO_WINDOW_MS))).toBe(true);
+    expect(store.getState().graves).toEqual(before);
+    expect(store.getState().lastDelete).toBeNull();
+  });
+
+  it('does not undo a delete after the window', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().deleteGrave('id-1', NOW);
+    expect(store.getState().undoDelete(at(UNDO_WINDOW_MS + 1))).toBe(false);
+    expect(store.getState().graves).toHaveLength(0);
+  });
+
+  it('clearAll empties graves and progress but keeps settings', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().toggleDaylight();
+    store.getState().clearAll();
+    expect(store.getState().graves).toEqual([]);
+    expect(store.getState().progress.ledger).toEqual([]);
+    expect(store.getState().settings.daylight).toBe(true);
   });
 });
 

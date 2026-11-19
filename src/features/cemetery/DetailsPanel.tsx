@@ -7,7 +7,7 @@ import { formatMoney } from '../../domain/savings';
 import { getViewState } from '../../domain/stage';
 import type { Grave } from '../../domain/trial';
 import { Envelope, Monogram, PixelBadge, PixelButton, pixelLinkClass } from '../../design/pixel';
-import { longStatus, statusText, toneOf } from './format';
+import { longStatus, stateLabel, statusText, toneOf } from './format';
 import styles from './cemetery.module.css';
 
 export const NO_CANCEL_URL_TEXT = 'No cancel link saved. Edit this grave to add one.';
@@ -73,7 +73,7 @@ export function DetailsPanel({ grave, now, modal, onClose, ...actions }: Details
     ['Cadence', grave.cadence],
     ['Next charge', dateTime(charge)],
     ['Remaining', view.kind === 'grave' ? longStatus(grave, now) : 'Not charging'],
-    ['Status', statusText(grave, now)],
+    ['Status', stateLabel(grave, now)],
   ];
 
   return (

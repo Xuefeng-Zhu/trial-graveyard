@@ -4,6 +4,8 @@ import { useStore } from 'zustand';
 import type { Mutate } from 'zustand';
 import { createGrave, toLocalIso } from '../domain/trial';
 import type { Grave, ValidTrial } from '../domain/trial';
+import { applyBackup } from './backup';
+import type { ImportMode } from './backup';
 import {
   DEFAULT_PROGRESS,
   DEFAULT_SETTINGS,
@@ -30,15 +32,29 @@ interface LastChange {
   atMs: number;
 }
 
+interface LastDelete {
+  grave: Grave;
+  /** Position in the list, so an undo puts the grave back where it was. */
+  index: number;
+  atMs: number;
+}
+
 export interface GraveState extends PersistedSlice {
   persistenceAvailable: boolean;
   notice: string | null;
   lastChange: LastChange | null;
+  lastDelete: LastDelete | null;
 
   addGrave: (trial: ValidTrial, now: Date) => Grave;
   /** Editing moves a cancelled or kept grave back to active. */
   updateGrave: (id: string, trial: ValidTrial) => void;
-  deleteGrave: (id: string) => void;
+  deleteGrave: (id: string, now: Date) => void;
+  /** Restores the last deleted grave if it was deleted within 10 s of `now`. Returns whether it did. */
+  undoDelete: (now: Date) => boolean;
+  /** Replaces or merges validated backup data. Merge skips graves whose ids already exist. */
+  importData: (data: PersistedSlice, mode: ImportMode) => void;
+  /** Removes every grave and all progress. Settings are kept. */
+  clearAll: () => void;
   cancelGrave: (id: string, now: Date) => void;
   /** Confirms an exorcism: buries the trial like a cancellation, so it counts as souls saved and can be undone. */
   exorcise: (id: string, now: Date) => void;
@@ -53,7 +69,7 @@ export interface GraveState extends PersistedSlice {
   toggleSound: () => void;
   toggleCalm: () => void;
   dismissNotice: () => void;
-  /** Appends about 8 sample graves covering every stage, one cancelled and one kept. */
+  /** Appends about 8 sample graves covering every stage, one cancelled and one kept. Demo ids are stable, so graves already present are skipped. */
   loadDemo: (now: Date) => void;
 }
 
@@ -77,6 +93,8 @@ function withStatus(g: Grave, status: Mutable): Grave {
   const { cancelledAt: _c, keptAt: _k, status: _s, ...rest } = g;
   return { ...rest, ...status };
 }
+
+const demoId = (name: string): string => `demo-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
 
 const demoTrials = (now: Date): Array<[ValidTrial, 'active' | 'cancelled' | 'kept']> => {
   const at = (offsetMs: number): string => toLocalIso(new Date(now.getTime() + offsetMs));
@@ -131,6 +149,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
         persistenceAvailable: true,
         notice: null,
         lastChange: null,
+        lastDelete: null,
 
         addGrave: (trial, now) => {
           const grave = createGrave(trial, newId(), now);
@@ -146,10 +165,43 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
               return { ...rest, ...trial };
             }),
           })),
-        deleteGrave: (id) =>
+        deleteGrave: (id, now) =>
+          set((s) => {
+            const index = s.graves.findIndex((g) => g.id === id);
+            const grave = s.graves[index];
+            if (!grave) return s;
+            return {
+              graves: s.graves.filter((g) => g.id !== id),
+              lastChange: s.lastChange?.id === id ? null : s.lastChange,
+              lastDelete: { grave, index, atMs: now.getTime() },
+            };
+          }),
+        undoDelete: (now) => {
+          const del = get().lastDelete;
+          if (!del) return false;
+          const ok = now.getTime() - del.atMs <= UNDO_WINDOW_MS && !get().graves.some((g) => g.id === del.grave.id);
+          set((s) => {
+            if (!ok) return { lastDelete: null };
+            const graves = [...s.graves];
+            graves.splice(Math.min(del.index, graves.length), 0, del.grave);
+            return { graves, lastDelete: null };
+          });
+          return ok;
+        },
+        importData: (data, mode) => {
           set((s) => ({
-            graves: s.graves.filter((g) => g.id !== id),
-            lastChange: s.lastChange?.id === id ? null : s.lastChange,
+            ...applyBackup({ graves: s.graves, settings: s.settings, progress: s.progress }, data, mode),
+            lastChange: null,
+            lastDelete: null,
+          }));
+        },
+        clearAll: () =>
+          set((s) => ({
+            graves: [],
+            progress: { ...DEFAULT_PROGRESS, ledger: [] },
+            settings: s.settings,
+            lastChange: null,
+            lastDelete: null,
           })),
         cancelGrave: (id, now) => {
           if (changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) })) earn('cancel', id, now);
@@ -193,12 +245,15 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
         dismissNotice: () => set({ notice: null }),
         loadDemo: (now) => {
           const added = demoTrials(now).map(([trial, status]) => {
-            const grave = createGrave(trial, newId(), now);
+            const grave = createGrave(trial, demoId(trial.name), now);
             if (status === 'cancelled') return { ...grave, status, cancelledAt: toLocalIso(now) };
             if (status === 'kept') return { ...grave, status, keptAt: toLocalIso(now) };
             return grave;
           });
-          set((s) => ({ graves: [...s.graves, ...added] }));
+          set((s) => {
+            const have = new Set(s.graves.map((g) => g.id));
+            return { graves: [...s.graves, ...added.filter((g) => !have.has(g.id))] };
+          });
         },
       }),
       {
@@ -228,6 +283,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
     created.setState((s) => ({
       graves: s.graves.map((g) => (g.id === id ? withStatus(g, next) : g)),
       lastChange: { id, previous: statusOf(target), atMs: now.getTime() },
+      lastDelete: null,
     }));
     return true;
   }
