@@ -16,3 +16,7 @@ export const graveArb = fc.record({
   currency: currencyArb, cadence: fc.constantFrom(...cadences), status: fc.constantFrom('active', 'cancelled', 'kept'),
   chargeAt: offsetArb.map(offset => new Date(+reference + offset).toISOString()),
 }).map(input => trial(input))
+
+export const cancelledArb = fc.tuple(graveArb, offsetArb).map(([grave, offset]): Grave => ({
+  ...grave, status: 'cancelled', cancelledAt: new Date(+reference + offset).toISOString(),
+}))

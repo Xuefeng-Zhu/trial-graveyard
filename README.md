@@ -22,11 +22,13 @@ The static build is in `dist/`. Set `VITE_BASE=/your-path/` at build time for a 
 
 ![Trial Graveyard on desktop](docs/screenshots/desktop.png)
 
+![Animated walkthrough of the 360 px layout](docs/screenshots/walkthrough.gif)
+
 ## Features
 
 Add a trial by hand or paste a receipt to review suggested fields. Grave states show charge urgency, a kept subscription shows its monthly equivalent, and a confirmed cancellation adds one charge to your savings. Export a calendar reminder for one or all trials. Daylight mode keeps the same controls in a calm list, and motion follows your OS setting.
 
-Select **Summon demo graveyard** to explore eight fictional examples. Trial data lives in this browser's IndexedDB.
+Select **Summon demo graveyard** to explore eight fictional examples. Trial data lives in this browser's IndexedDB. The Mausoleum includes personalized epitaphs and can share an aggregate card with no names or links. Sound effects are synthesized, and start muted.
 
 ## Architecture
 
@@ -37,7 +39,18 @@ Select **Summon demo graveyard** to explore eight fictional examples. Trial data
 
 ## Built with Kiro
 
-The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 673 Vitest tests with 100% domain coverage, and the production build.
+The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 686 Vitest tests with 100% domain coverage, and the production build.
+
+## Kiro features used
+
+| Feature | Usage |
+| --- | --- |
+| Steering | Product, stack, structure and MCP conventions |
+| Specs | 2 · Trial Graveyard MVP, Haunted Polish |
+| Hooks | 5 · Test on save, spec sync, domain properties, accessibility, copy |
+| MCP | GitHub issue context and deployment tools |
+| Property-based tests | Boundary, parser, money and archive invariants |
+| Agent PRs | The specs and QA notes reference prior agent reviews. This build is committed in six local milestones. |
 
 ## License
 

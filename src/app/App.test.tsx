@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { axe } from 'vitest-axe'
 import { beforeEach, expect, it, vi } from 'vitest'
@@ -54,5 +56,19 @@ it('exposes Daylight and nav state, honours reduced motion and passes axe', asyn
     expect(screen.getByRole('link', { name: 'Graveyard', current: 'page' })).toBeVisible()
     expect(screen.getByRole('list', { name: 'Trials by charge date' })).toBeVisible()
     expect((await axe(container)).violations).toEqual([])
+  } finally { vi.unstubAllGlobals() }
+})
+
+it('shows a static landing with accessible sound and Daylight settings', async () => {
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }))
+  try {
+    const { container } = render(<App />)
+    expect(screen.getByText('Every free trial is a grave. Cancel before it rises.')).toBeVisible()
+    expect(container.querySelector('img[data-static="true"]')).toBeTruthy()
+    expect((await axe(container)).violations).toEqual([])
+    fireEvent.click(screen.getByRole('button', { name: 'Sound: OFF', pressed: false }))
+    expect(screen.getByRole('button', { name: 'Sound: ON', pressed: true })).toBeVisible()
+    fireEvent.click(screen.getByRole('button', { name: 'Daylight mode: OFF' }))
+    expect(container.querySelector('img[data-static]')).toBeNull()
   } finally { vi.unstubAllGlobals() }
 })

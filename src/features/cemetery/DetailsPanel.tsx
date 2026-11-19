@@ -3,6 +3,7 @@ import { buildIcs } from '../../domain/ics'
 import { countdown, getViewState } from '../../domain/stage'
 import { cadenceSuffix, formatMoney } from '../../domain/savings'
 import type { Grave } from '../../domain/trial'
+import { Tombstone } from '../graveyard/Tombstone'
 import { downloadIcs } from '../daylight/downloadIcs'
 
 export interface GraveActions {
@@ -20,7 +21,7 @@ export function DetailsPanel({ grave, now, actions }: { grave: Grave; now: Date;
       <div><dt>Remaining</dt><dd>{state.kind === 'grave' ? countdown(state.remainingMs) : '—'}</dd></div>
       <div><dt>Status</dt><dd>{status}</dd></div>
     </dl>
-    {state.kind === 'tombstone' && <p>{state.epitaph}</p>}
+    {state.kind === 'tombstone' && <Tombstone grave={grave} />}
     {state.kind === 'ghost' && <p>{formatMoney(state.monthlyCents, grave.currency)} monthly equivalent</p>}
     <div className="actions">
       {grave.status === 'active' && <>

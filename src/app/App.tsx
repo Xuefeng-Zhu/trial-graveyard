@@ -14,6 +14,8 @@ import { emptyValues, mergeParsed } from '../features/editor/formValues'
 import { Mausoleum } from '../features/graveyard/Mausoleum'
 import { useReducedMotion } from '../features/graveyard/useReducedMotion'
 import type { ParseResult } from '../lib/parse'
+import { Landing } from '../features/landing/Landing'
+import { playSound, setSoundEnabled } from '../design/sounds'
 import styles from './app.module.css'
 
 type Screen = 'graveyard' | 'add' | 'savings' | 'settings'
@@ -45,6 +47,8 @@ export function App() {
     return () => window.clearTimeout(timer)
   }, [undoEntry, state.dismissUndo])
 
+  useEffect(() => setSoundEnabled(settings.soundOn), [settings.soundOn])
+
   const close = () => setModal(undefined)
   function open(grave: Grave) { setModal({ kind: 'details', id: grave.id }) }
   function navigate(target: Screen) { setScreen(target); location.hash = target; close() }
@@ -54,6 +58,7 @@ export function App() {
   }
   function bury(input: TrialInput) {
     if (!state.addGrave(input, new Date())) return
+    playSound('creak')
     setValues(emptyValues)
     setDateSource(undefined)
     announce('Trial buried. Its charge is tracked.')
@@ -62,7 +67,7 @@ export function App() {
   const actions: GraveActions = {
     edit: grave => setModal({ id: grave.id, kind: 'edit' }),
     remove: grave => setModal({ id: grave.id, kind: 'delete' }),
-    cancel: grave => { state.cancelGrave(grave.id, new Date()); close() },
+    cancel: grave => { state.cancelGrave(grave.id, new Date()); playSound('thunder'); close() },
     keep: grave => { state.keepGrave(grave.id, new Date()); close() },
     announce,
   }
@@ -74,6 +79,7 @@ export function App() {
         <nav aria-label="Main navigation">{Object.entries(screens).map(([key, label]) => <a key={key}
           href={`#${key}`} aria-current={screen === key ? 'page' : undefined} onClick={() => navigate(key as Screen)}>{label}</a>)}</nav>
         <button aria-pressed={settings.daylight} onClick={() => state.toggle('daylight')}>Daylight mode: {settings.daylight ? 'ON' : 'OFF'}</button>
+        <button aria-pressed={settings.soundOn} onClick={() => state.toggle('soundOn')}>Sound: {settings.soundOn ? 'ON' : 'OFF'}</button>
       </header>
       <main className="stack">
         {state.notice && <p role="alert" className="panel">{state.notice}</p>}
@@ -83,15 +89,15 @@ export function App() {
             {settings.daylight ? <DaylightList graves={graves} now={now} actions={actions} /> : <Scene graves={graves} now={now} onOpen={open} />}
             <div className="actions"><button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button></div>
             <Mausoleum graves={graves} />
-          </> : <section className="panel stack"><h1>Trial Graveyard</h1><p>Every free trial is a grave. Cancel before it rises.</p>
-            <div className="actions"><button className="primary" onClick={() => state.loadDemo(new Date())}>Summon demo graveyard</button>
-              <button onClick={() => navigate('add')}>Add your first trial</button></div></section>)}
+          </> : <Landing daylight={settings.daylight} reduced={reduced || settings.calm}
+              onSummon={() => state.loadDemo(new Date())} onAdd={() => navigate('add')} />)}
           {screen === 'add' && <section className="panel stack"><h1>Add a trial</h1>
             <GraveForm values={values} change={setValues} onSave={bury} dateSource={dateSource} />
             <PasteBox now={now} onParsed={prefill} /></section>}
           {screen === 'savings' && <><h1>Savings</h1><Mausoleum graves={graves} /></>}
           {screen === 'settings' && <section className="panel stack"><h1>Settings</h1>
             <p className="muted">Your graves stay in this browser.</p>
+            <button aria-pressed={settings.calm} onClick={() => state.toggle('calm')}>Calm mode: {settings.calm ? 'ON' : 'OFF'}</button>
             <div className="actions"><button onClick={() => { state.loadDemo(new Date()); navigate('graveyard') }}>Summon demo graveyard</button>
               <button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button></div></section>}
         </>}

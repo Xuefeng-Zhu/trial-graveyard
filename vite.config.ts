@@ -17,7 +17,7 @@ export default defineConfig(({ mode }) => ({
     workbox: { globPatterns: ['**/*.{html,js,css,png,woff2,svg}'], cleanupOutdatedCaches: true },
   })],
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     setupFiles: ['./src/testSetup.ts'],
     maxWorkers: 4,
     coverage: {
