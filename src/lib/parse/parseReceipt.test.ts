@@ -66,6 +66,8 @@ describe('units', () => {
     expect(extractName('nothing', ['https://www.example.co.uk/x'])?.value).toBe('Example');
     expect(extractName('nothing', ['https://foo.com'])?.value).toBe('Foo');
     expect(extractName('nothing', [])).toBeUndefined();
+    expect(extractName('Welcome to The New York Times. Your trial ends November 15.', [])?.value).toBe('The New York Times');
+    expect(extractName('Welcome to Phantomflix Your trial ends soon', [])?.value).toBe('Phantomflix');
   });
 
   it('truncates input to 50 KB', () => {

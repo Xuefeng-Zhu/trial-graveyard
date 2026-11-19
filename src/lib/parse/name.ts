@@ -4,12 +4,20 @@ const WELCOME = /\bwelcome\s+to\s+([^.,;!:?]{1,40})/gi;
 const YOUR = /\byour\s+([^.,;!:?]{1,40}?)\s+(?:free\s+)?(?:trial|subscription|membership)\b/gi;
 const CAPITALIZED = /^[A-Z][\w&+'’.-]*$/;
 const MAX_WORDS = 4;
+/** Words that start the next sentence or describe the offer, never part of a brand name. */
+const STOP_WORDS = new Set(
+  ['your', 'you', 'free', 'trial', 'subscription', 'membership', 'has', 'is', 'are', 'was', 'the', 'a', 'an', 'and', 'to', 'thanks', 'thank', 'enjoy', 'start', 'started'],
+);
+const ARTICLES = new Set(['the', 'a', 'an']);
+const isStopWord = (w: string): boolean => STOP_WORDS.has(w.toLowerCase().replace(/[^a-z]/g, ''));
 const MAX_TRIES = 50;
 
 function leadingCapitalized(segment: string): string | undefined {
   const words: string[] = [];
   for (const w of segment.split(' ')) {
-    if (words.length >= MAX_WORDS || !CAPITALIZED.test(w)) break;
+    // A leading article is part of the brand ("The New York Times"); elsewhere it ends the name.
+    const leadingArticle = words.length === 0 && ARTICLES.has(w.toLowerCase());
+    if (words.length >= MAX_WORDS || !CAPITALIZED.test(w) || (isStopWord(w) && !leadingArticle)) break;
     words.push(w);
   }
   return words.length > 0 ? words.join(' ') : undefined;

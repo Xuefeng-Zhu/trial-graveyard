@@ -14,11 +14,40 @@ export function candidateKey(name: string, chargeAt: string): string {
   return `${name.trim().toLowerCase()}|${dayOf(chargeAt)}`;
 }
 
+/**
+ * Cuts `text` to at most `max` characters at a word boundary and adds an
+ * ellipsis. A URL is kept whole or dropped, never cut in the middle.
+ */
+export function truncateSnippet(text: string, max: number): string {
+  const body = text.trim();
+  if (body.length <= max) return body;
+  const words = body.split(' ');
+  const kept: string[] = [];
+  let len = 0;
+  for (const w of words) {
+    const next = len + (kept.length > 0 ? 1 : 0) + w.length;
+    if (next > max - 1) break;
+    kept.push(w);
+    len = next;
+  }
+  const out = kept.join(' ').replace(/[\s,;:\-–(\[]+$/, '');
+  return out === '' ? '' : `${out}\u2026`;
+}
+
 function snippetAround(text: string, source: string): string {
   const body = normalizeText(text);
   const at = Math.max(0, body.indexOf(source));
-  const start = Math.max(0, at - SNIPPET_CHARS / 2);
-  return body.slice(start, start + SNIPPET_CHARS).trim();
+  let start = Math.max(0, at - SNIPPET_CHARS / 2);
+  let lead = '';
+  if (start > 0) {
+    // Begin at a word boundary, and never inside a URL.
+    const sp = body.indexOf(' ', start);
+    start = sp === -1 ? start : sp + 1;
+    lead = '\u2026';
+  }
+  const rest = body.slice(start);
+  const cut = truncateSnippet(rest, SNIPPET_CHARS);
+  return `${lead}${cut}`.trim();
 }
 
 /** Turns one email into a candidate, or undefined when it is not a trial. */

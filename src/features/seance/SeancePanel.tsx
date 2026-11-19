@@ -7,6 +7,7 @@ import { ReviewRow } from './ReviewRow';
 import type { useSeance } from './useSeance';
 import styles from './seance.module.css';
 
+export const pluralize = (n: number, word: string): string => `${n} ${word}${n === 1 ? '' : 's'}`;
 export const PRIVACY_NOTE =
   'Everything stays on this device. The spirits read receipts in memory, only the trials you confirm are saved, and email bodies are never stored. Disconnect to forget what they saw.';
 
@@ -51,7 +52,7 @@ export function SeancePanel({ seance, onClose, onBury }: SeancePanelProps) {
     }
   };
 
-  const spirits = `${progress.found} ${progress.found === 1 ? 'spirit' : 'spirits'} found`;
+  const spirits = `${pluralize(progress.found, 'spirit')} found`;
   const checkedCount = items.filter((i) => i.checked).length;
 
   return (
@@ -134,7 +135,7 @@ export function SeancePanel({ seance, onClose, onBury }: SeancePanelProps) {
           <p role="status" aria-live="polite">
             {spirits}
           </p>
-          <p className={styles.muted}>The spirits have read {progress.read} letters so far.</p>
+          <p className={styles.muted}>The spirits have read {pluralize(progress.read, 'letter')} so far.</p>
         </div>
       )}
 
