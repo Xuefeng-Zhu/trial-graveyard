@@ -9,6 +9,8 @@ export const SCHEMA_VERSION = 1;
 export interface Settings {
   daylight: boolean;
   soundOn: boolean;
+  /** Calm mode: turns off decorative motion. */
+  calm: boolean;
   llmFallback: boolean;
 }
 
@@ -21,7 +23,7 @@ export interface PersistedState {
 /** The slice of store state that is written to storage. */
 export type PersistedSlice = Pick<PersistedState, 'graves' | 'settings'>;
 
-export const DEFAULT_SETTINGS: Settings = { daylight: false, soundOn: false, llmFallback: false };
+export const DEFAULT_SETTINGS: Settings = { daylight: false, soundOn: false, calm: false, llmFallback: false };
 
 export const NOTICE_CORRUPT = 'The crypt records were damaged, so the graveyard was reset. Fresh start.';
 export const NOTICE_UNAVAILABLE =
@@ -62,6 +64,7 @@ export function isValidSettings(v: unknown): v is Settings {
     isRecord(v) &&
     typeof v.daylight === 'boolean' &&
     typeof v.soundOn === 'boolean' &&
+    typeof v.calm === 'boolean' &&
     typeof v.llmFallback === 'boolean'
   );
 }
@@ -86,6 +89,10 @@ export function migrate(data: unknown): unknown {
   const version = data.version ?? 0;
   if (version === 0) {
     return { version: SCHEMA_VERSION, graves: data.graves, settings: { ...DEFAULT_SETTINGS } };
+  }
+  // Settings written before Calm mode existed load with it off.
+  if (isRecord(data.settings) && data.settings.calm === undefined) {
+    return { ...data, settings: { ...data.settings, calm: false } };
   }
   return data;
 }

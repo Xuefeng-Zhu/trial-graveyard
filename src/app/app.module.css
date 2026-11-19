@@ -1,7 +1,29 @@
 .shell {
-  max-width: 56rem;
+  max-width: 78rem;
   margin: 0 auto;
   padding: var(--space-4);
+}
+
+/* Scene on the left, glass HUD on the right. Below 900px the HUD becomes a bottom sheet. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 23rem;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shell {
+    padding-bottom: 4.5rem;
+  }
+
+  .toast {
+    bottom: 4.5rem;
+  }
 }
 
 .header {
@@ -14,13 +36,9 @@
 
 .header h1 {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 2.4rem;
-}
-
-.headerActions {
-  display: flex;
-  gap: var(--space-2);
-  flex-wrap: wrap;
+  text-shadow: 0 2px 12px rgba(3, 6, 24, 0.8);
 }
 
 .button,
@@ -56,14 +74,16 @@
 }
 
 .editor {
-  margin: var(--space-5) 0;
+  margin: 0;
 }
 
 .editor h2 {
-  font-size: 1.6rem;
+  margin-top: 0;
+  font-size: 1.3rem;
 }
 
 .toast {
+  z-index: 30;
   position: fixed;
   bottom: var(--space-4);
   left: 50%;
@@ -86,10 +106,6 @@
 
   .header h1 {
     font-size: 1.9rem;
-  }
-
-  .headerActions {
-    width: 100%;
   }
 
   .button,

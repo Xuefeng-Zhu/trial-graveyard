@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { clear } from 'idb-keyval';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { axe } from 'vitest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app/App';
@@ -170,6 +170,10 @@ describe.each([
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     const store = setup();
+    // The moonlit scene holds saved graves back until the store has hydrated.
+    await act(async () => {
+      await store.persist.rehydrate();
+    });
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Phantomflix' } });
     fireEvent.change(screen.getByLabelText('Charge date'), { target: { value: '2026-10-20' } });
     fireEvent.change(screen.getByLabelText('Price'), { target: { value: '15.49' } });

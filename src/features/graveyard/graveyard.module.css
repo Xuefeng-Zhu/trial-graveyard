@@ -1,16 +1,22 @@
-/* The haunted scene. Colours come from the design tokens; stage colours also come with text labels. */
+/* The moonlit graveyard. The sky, hills and fog come from the backdrop behind the page. */
 .scene {
   --glow: var(--stage-churning);
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   min-height: 34rem;
   margin-block: var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, #0a0816 0%, #171230 45%, #1e1a2b 100%);
+  padding: var(--space-4) var(--space-2);
   color: var(--color-text);
+}
+
+.scene > .button {
+  align-self: flex-start;
+  position: relative;
+  z-index: 3;
+  margin-bottom: var(--space-3);
 }
 
 .srOnly {
@@ -20,50 +26,6 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
-}
-
-/* Sky */
-.sky {
-  position: absolute;
-  inset: 0;
-  z-index: -3;
-}
-
-.moon {
-  position: absolute;
-  top: 1.5rem;
-  right: 12%;
-  width: 5rem;
-  height: 5rem;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #fffbe8, #e9e2b8 60%, #bdb68c);
-  box-shadow: 0 0 40px 12px rgb(255 248 205 / 0.25), 0 0 120px 40px rgb(255 248 205 / 0.12);
-}
-
-.stars {
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(1.5px 1.5px at 10% 12%, #fff, transparent),
-    radial-gradient(1px 1px at 24% 30%, #dcd8f5, transparent),
-    radial-gradient(1.5px 1.5px at 38% 8%, #fff, transparent),
-    radial-gradient(1px 1px at 52% 22%, #dcd8f5, transparent),
-    radial-gradient(1.5px 1.5px at 66% 14%, #fff, transparent),
-    radial-gradient(1px 1px at 78% 34%, #dcd8f5, transparent),
-    radial-gradient(1px 1px at 90% 10%, #fff, transparent),
-    radial-gradient(1px 1px at 16% 44%, #dcd8f5, transparent);
-  animation: twinkle 5s ease-in-out infinite alternate;
-}
-
-.hills {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 45%;
-  z-index: -2;
-  background:
-    radial-gradient(ellipse 60% 100% at 20% 100%, #120f22 60%, transparent 61%),
-    radial-gradient(ellipse 70% 90% at 80% 100%, #0e0c1b 60%, transparent 61%),
-    linear-gradient(180deg, transparent, #0a0816);
 }
 
 /* Fog */
@@ -104,22 +66,23 @@
   animation: none;
 }
 
-/* Layout: ghosts above, graves, tombstones, zombies at the front */
+/* Depth rows: far rows are smaller, darker and higher up the hill; the front row is the biggest. */
 .field {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: 0;
 }
 
 .row {
+  --depth: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
   justify-content: center;
   align-items: flex-end;
-  margin: 0;
+  margin: 0 0 calc(var(--depth) * -1.2rem);
   padding: 0;
   list-style: none;
 }
@@ -129,271 +92,319 @@
 }
 
 .row_ghosts {
-  min-height: 7rem;
+  --depth: 0.62;
   align-items: flex-start;
 }
 
-.row_back .item {
-  opacity: 0.92;
+.row_back {
+  --depth: 0.78;
 }
 
-.row_stones .item {
-  transform: scale(0.95);
+.row_stones {
+  --depth: 0.92;
 }
 
 .row_front {
-  position: relative;
-  z-index: 4;
-  margin-top: var(--space-4);
+  --depth: 1.12;
 }
 
 .item {
+  --stone-w: 8.5rem;
+  /* Contains the absolutely positioned srOnly text so it cannot widen the page inside a scroll strip. */
   position: relative;
-  width: 9.5rem;
-  padding: var(--space-2);
+  width: calc(var(--stone-w) * var(--depth));
+  list-style: none;
   border-radius: var(--radius);
-  text-align: center;
-  cursor: default;
+  /* Far rows sit in the dark; brightness is on the li so the stone keeps its own filters. */
+  filter: brightness(calc(0.55 + 0.45 * var(--depth)));
 }
 
 .item:focus-visible {
   outline: var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
-  background: rgb(255 255 255 / 0.06);
 }
 
 .urgentItem {
-  width: 12rem;
-  z-index: 5;
-  background: radial-gradient(ellipse at 50% 90%, rgb(255 179 107 / 0.18), transparent 70%);
+  filter: none;
 }
 
 .figure {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.art {
-  width: 5.5rem;
-  height: auto;
-  overflow: visible;
-}
-
-.urgentItem .art {
-  width: 8rem;
-}
-
-.name {
-  margin: var(--space-1) 0 0;
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  line-height: 1.1;
-}
-
-.stageText,
-.price,
-.epitaph {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-.epitaph {
-  font-style: italic;
-  color: var(--color-text);
-}
-
-/* Stone */
-.stone {
-  fill: #5d5878;
-  stroke: #8b86a6;
-  stroke-width: 1.5;
-}
-
-.stoneShade {
-  fill: #7b7699;
-  opacity: 0.35;
-}
-
-.stoneMossy {
-  fill: #4a4a5a;
-  stroke: #7d8a78;
-  stroke-width: 1.5;
-}
-
-.cross,
-.engrave {
-  fill: none;
-  stroke: #b5aec9;
-  stroke-width: 3;
-  stroke-linecap: round;
-  opacity: 0.7;
-}
-
-.engrave {
-  stroke-width: 2;
-  opacity: 0.55;
-}
-
-.rip {
-  fill: #cfd6c8;
-  font-family: var(--font-display);
-  font-size: 15px;
-}
-
-.moss {
-  fill: #3d6b3a;
-}
-
-.cracks {
-  fill: none;
-  stroke: #12101a;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.cracked .cracks {
-  stroke: #e6c88a;
-  stroke-width: 1.4;
-  opacity: 0.85;
-}
-
-.mound {
-  fill: #2a2236;
-}
-
-/* Churning: dirt and a pulsing green glow */
-.churning .art {
-  filter: drop-shadow(0 0 6px var(--glow));
-}
-
-.churning .mound {
-  fill: #2f2a1f;
-}
-
-.churning .cracks {
-  stroke: var(--stage-churning);
-}
-
-.scene[data-motion='animated'] .churning .art {
-  animation: glowPulse 2.4s ease-in-out infinite;
-}
-
-.dirt {
-  fill: #5a4a34;
-}
-
-.dirt[data-motion='animated'] circle {
-  animation: dirtHop 1.6s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-.dirt[data-motion='animated'] circle:nth-child(2) {
-  animation-delay: 0.4s;
-}
-
-.dirt[data-motion='animated'] circle:nth-child(3) {
-  animation-delay: 0.8s;
-}
-
-.dirt[data-motion='animated'] circle:nth-child(4) {
-  animation-delay: 1.2s;
-}
-
-/* Zombie */
-.zombie .art,
-.overdue .art {
-  filter: drop-shadow(0 0 10px rgb(255 179 107 / 0.55));
-}
-
-.overdue .art {
-  filter: drop-shadow(0 0 10px rgb(255 155 155 / 0.7));
-}
-
-.shamble {
+  --lift: 0px;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
+  transform: translateY(var(--lift));
+  transition: transform 180ms ease-out;
 }
 
-.zombieHead {
-  fill: #86a874;
-  stroke: #4d6b40;
-  stroke-width: 2;
+.item:hover .figure,
+.item:focus-visible .figure,
+.item:focus-within .figure {
+  --lift: -8px;
 }
 
-.eye {
-  fill: #fff3b0;
-  stroke: #12101a;
-  stroke-width: 1.5;
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-.mouth {
+.stone {
+  fill: #7d8aa8;
+}
+
+.stoneMossy {
+  fill: #6c7f78;
+}
+
+.stoneShade {
+  fill: rgb(10 16 48 / 0.35);
+}
+
+.rim {
   fill: none;
-  stroke: #12101a;
+  stroke: rgb(223 233 255 / 0.5);
   stroke-width: 2;
+  transition: stroke 180ms ease-out, filter 180ms ease-out;
+}
+
+.item:hover .rim,
+.item:focus-visible .rim,
+.item:focus-within .rim {
+  stroke: #ffffff;
+  filter: drop-shadow(0 0 5px rgb(223 233 255 / 0.95));
+}
+
+.cross {
+  fill: none;
+  stroke: rgb(10 16 48 / 0.45);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.engraved,
+.engravedPrice,
+.rip {
+  font-family: var(--font-display);
+  font-weight: 600;
+  fill: #1b2340;
+  paint-order: stroke;
+  stroke: rgb(223 233 255 / 0.35);
+  stroke-width: 0.5;
+}
+
+.engraved {
+  font-size: 15px;
+}
+
+.engravedPrice {
+  font-size: 12px;
+}
+
+.rip {
+  font-size: 20px;
+}
+
+.moss {
+  fill: #3e6b52;
+}
+
+.mound {
+  fill: #1d2440;
+  opacity: 0.85;
+}
+
+.name,
+.stageText,
+.price,
+.epitaph {
+  margin: var(--space-1) 0 0;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  text-shadow: 0 1px 6px rgb(3 6 24 / 0.9);
+  /* Captions paint above the zombie hand that rises beside them. */
+  position: relative;
+  z-index: 1;
+}
+
+.epitaph {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+.stageText {
+  font-weight: 600;
+}
+
+.cracks {
+  fill: none;
+  stroke: #1b2340;
+  stroke-width: 1.6;
+  stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.arm {
-  fill: #86a874;
-  stroke: #4d6b40;
-  stroke-width: 1.5;
+.cracks path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
 }
 
-.rags {
-  fill: #3b3350;
-  stroke: #12101a;
-  stroke-width: 1.5;
+.cracks[data-spread='true'] {
+  stroke: var(--stage-churning);
+  filter: drop-shadow(0 0 2px var(--stage-churning));
 }
 
-.rise {
-  animation: rise 1.4s ease-out both;
-  transform-box: fill-box;
-  transform-origin: bottom center;
+.spread path {
+  animation: crackSpread 2.4s ease-out both;
+}
+
+/* Restlessness: glow grows with intensity; tremble and spread only run when motion is allowed. */
+.glow {
+  filter: drop-shadow(0 0 calc(4px + 12px * var(--intensity)) rgb(124 255 178 / calc(0.35 + 0.5 * var(--intensity))));
+}
+
+.tremble .art {
+  animation: tremble 0.32s linear infinite;
+}
+
+.zombie,
+.overdue {
+  --glow: var(--stage-zombie);
 }
 
 .zombie .stageText {
   color: var(--stage-zombie);
-  font-weight: 600;
 }
 
 .overdue .stageText {
   color: var(--stage-overdue);
-  font-weight: 600;
 }
 
 .overdueTag {
   position: absolute;
   top: 0;
-  right: -0.25rem;
+  right: 0;
   padding: 0 var(--space-2);
-  border: 1px solid var(--stage-overdue);
-  border-radius: var(--radius);
-  background: #2b1018;
-  color: var(--stage-overdue);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--color-accent-contrast);
+  background: var(--stage-overdue);
+  border-radius: var(--radius);
 }
 
-/* Ghost */
-.ghost .art {
-  width: 4.5rem;
-  filter: drop-shadow(0 0 12px rgb(210 225 255 / 0.55));
+.ticker {
+  margin: 0;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+  text-shadow: 0 1px 6px rgb(3 6 24 / 0.9);
+}
+
+/* Zombie hand and dirt */
+.hand {
+  position: absolute;
+  left: 50%;
+  bottom: 1.2rem;
+  width: 38%;
+  margin-left: -4%;
+  pointer-events: none;
+  /* Hide the part of the arm below the soil line. */
+  clip-path: inset(-20% -20% 0 -20%);
+}
+
+.hand svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.arm {
+  fill: #7fa86a;
+  stroke: #2f4a2a;
+  stroke-width: 1.2;
+}
+
+.rags {
+  fill: #4a3f5e;
+}
+
+.handBurst {
+  transform-origin: 50% 100%;
+  animation: burst 0.9s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.wiggle {
+  transform-origin: 50% 100%;
+  animation: wiggle 1.8s ease-in-out 1s infinite;
+}
+
+.dirtSvg,
+.burst {
+  position: absolute;
+  left: 0;
+  bottom: 0.4rem;
+  width: 100%;
+  pointer-events: none;
+}
+
+.dirt {
+  fill: #5a4636;
+}
+
+.dirtHop circle {
+  animation: dirtHop 1.4s ease-in-out infinite;
+}
+
+.dirtHop circle:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dirtHop circle:nth-child(3) {
+  animation-delay: 0.45s;
+}
+
+.dirtHop circle:nth-child(4) {
+  animation-delay: 0.7s;
+}
+
+.burst .dirt circle {
+  animation: soilBurst 1.2s ease-out both;
+}
+
+/* Summon: stone rises, engraving writes itself in */
+.summoned .art {
+  animation: stoneRise 1.1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.writeIn {
+  animation: writeIn 1.1s steps(14, end) 0.9s both;
+}
+
+/* Ghost above a kept grave */
+.ghostFloat {
+  position: absolute;
+  top: -2.4rem;
+  left: 50%;
+  width: 40%;
+  margin-left: -20%;
+  pointer-events: none;
+}
+
+.ghostFloat svg {
+  display: block;
+  width: 100%;
 }
 
 .sheet {
-  fill: rgb(235 240 255 / 0.85);
+  fill: rgb(235 245 255 / 0.85);
+  filter: drop-shadow(0 0 8px rgb(200 225 255 / 0.8));
 }
 
 .ghostEye {
-  fill: #1e1a2b;
+  fill: #1b2340;
 }
 
 .drift {
@@ -401,19 +412,82 @@
 }
 
 .ghost .price {
-  color: #d8def5;
+  color: var(--color-accent);
+}
+
+/* Effects layer: bury scoop and wandering ghost */
+.fxLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.buryFx {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.shovel {
+  position: absolute;
+  left: -2rem;
+  top: -3rem;
+  width: 4rem;
+  transform-origin: 50% 100%;
+}
+
+.shovelHandle {
+  stroke: #a98d5f;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.shovelBlade {
+  fill: #c3cde0;
+}
+
+.wisp {
+  position: absolute;
+  left: -0.6rem;
+  top: -0.6rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff, rgb(124 255 178 / 0.2));
+  box-shadow: 0 0 16px 6px rgb(124 255 178 / 0.6);
+}
+
+.saved {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-shadow: 0 0 12px rgb(124 255 178 / 0.7), 0 2px 6px rgb(3 6 24 / 0.9);
+}
+
+.wanderer {
+  position: absolute;
+  top: 8%;
+  width: 3.5rem;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.wanderer svg {
+  display: block;
+  width: 100%;
 }
 
 /* Mausoleum */
 .mausoleum {
-  position: relative;
-  z-index: 5;
-  width: fit-content;
-  margin: 0 0 var(--space-4) auto;
-  padding: var(--space-2) var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: rgb(30 26 43 / 0.9);
+  margin: 0;
   text-align: center;
 }
 
@@ -440,13 +514,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.emptyScene {
-  position: relative;
-  z-index: 5;
-  text-align: center;
-  color: var(--color-text-muted);
-}
-
 /* Actions */
 .actions {
   display: flex;
@@ -461,7 +528,7 @@
   font-size: 0.85rem;
   padding: var(--space-1) var(--space-2);
   color: var(--color-accent);
-  background: #12101a;
+  background: rgb(10 16 48 / 0.7);
   border: 1px solid var(--color-accent);
   border-radius: var(--radius);
   text-align: center;
@@ -480,16 +547,6 @@
   color: var(--color-text-muted);
 }
 
-/* Keyframes */
-@keyframes twinkle {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes fogDrift {
   from {
     transform: translateX(-4%);
@@ -499,13 +556,49 @@
   }
 }
 
-@keyframes glowPulse {
+@keyframes crackSpread {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes tremble {
   0%,
   100% {
-    filter: drop-shadow(0 0 3px var(--glow));
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-0.8px, 0.4px);
   }
   50% {
-    filter: drop-shadow(0 0 12px var(--glow));
+    transform: translate(0.8px, -0.4px);
+  }
+  75% {
+    transform: translate(-0.4px, -0.6px);
+  }
+}
+
+@keyframes burst {
+  from {
+    transform: translateY(100%) scaleY(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(5deg);
   }
 }
 
@@ -515,18 +608,38 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
+    transform: translateY(-6px);
   }
 }
 
-@keyframes rise {
+@keyframes soilBurst {
   from {
-    transform: translateY(60%) scaleY(0.6);
+    transform: translateY(8px) scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-26px) scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes stoneRise {
+  from {
+    transform: translateY(45%);
     opacity: 0;
   }
   to {
     transform: none;
     opacity: 1;
+  }
+}
+
+@keyframes writeIn {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -540,35 +653,51 @@
   }
 }
 
-/* Safety net on top of global.css: no keyframes at all under reduced motion (R8.4). */
+/* Calm mode (in-app setting): no decorative hover lift. */
+.scene[data-motion='still'] .figure {
+  transition: none;
+}
+
+.scene[data-motion='still'] .item:hover .figure,
+.scene[data-motion='still'] .item:focus-visible .figure,
+.scene[data-motion='still'] .item:focus-within .figure {
+  --lift: 0px;
+}
+
+/* Safety net on top of global.css: no keyframes at all under reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   .scene *,
   .scene *::before,
   .scene *::after {
     animation: none !important;
+    transition: none !important;
   }
 }
 
-/* Mobile pass (H5): 360px wide, single column, 44px touch targets */
-@media (max-width: 480px) {
+/* Mobile pass (360px): each row becomes a swipeable strip, stacked like a hill. */
+@media (max-width: 640px) {
   .scene {
-    overflow-x: hidden;
+    padding-inline: 0;
+    min-height: 28rem;
+    /* Room for the collapsed bottom sheet. */
+    padding-bottom: 4.5rem;
   }
 
-  .field,
   .row {
-    flex-direction: column;
-    align-items: center;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    padding: 1.5rem var(--space-4) 0;
+    margin-bottom: calc(var(--depth) * -1rem);
+    gap: var(--space-3);
   }
 
-  .item,
-  .urgentItem {
-    width: 100%;
-    max-width: 14rem;
-  }
-
-  .mausoleum {
-    max-width: 100%;
+  .item {
+    --stone-w: 7.5rem;
+    flex: 0 0 auto;
+    scroll-snap-align: center;
   }
 
   .button {

@@ -4,7 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Grave as GraveData } from '../../domain/trial';
 import { Fog, MAX_FOG_PARTICLES, createParticles as createParticlesForTest } from './Fog';
 import { COUNT_UP_MS, Mausoleum } from './Mausoleum';
-import { Scene } from './Scene';
+import { SUMMON_MS, Scene } from './Scene';
+import { formatTick } from './Stone';
+import { BURY_FX_MS } from './BuryFx';
 
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
 const HOUR = 3_600_000;
@@ -73,8 +75,9 @@ describe('Scene stages', () => {
     renderScene(ALL);
     const stages = items().map((li) => li.querySelector('[data-stage]')?.getAttribute('data-stage'));
     expect(stages).toEqual(['ghost', 'churning', 'cracked', 'sealed', 'tombstone', 'overdue', 'zombie']);
-    expect(screen.getAllByTestId('cracks')).toHaveLength(2); // cracked + churning
-    expect(screen.getByTestId('dirt')).toBeInTheDocument();
+    expect(screen.getAllByTestId('cracks')).toHaveLength(4); // cracked, churning, zombie, overdue
+    expect(screen.getAllByTestId('cracks').filter((c) => c.dataset.spread === 'true')).toHaveLength(3); // within 72 hours
+    expect(screen.getAllByTestId('dirt')).toHaveLength(2); // hand within 24 hours
     expect(screen.getByText('Overdue')).toBeInTheDocument();
     expect(screen.getByText('Here lies Dead One · $14.95/mo · slain Oct 2026')).toBeInTheDocument();
     expect(screen.getByText(/Haunting you for \$2\.00\/mo/)).toBeInTheDocument();
@@ -230,6 +233,22 @@ describe('edit, delete and export', () => {
     expect(onDelete).toHaveBeenCalledWith('calm');
   });
 
+  it('exposes Add haunting to calendar and Exorcise on an active grave, and exports all hauntings', () => {
+    const g = grave('Calm', 20 * DAY);
+    const onHaunt = vi.fn();
+    const onExorcise = vi.fn();
+    renderScene([g], { onHaunt, onExorcise });
+    const li = screen.getByRole('listitem', { name: /Calm/ });
+    li.focus();
+    fireEvent.keyDown(li, { key: 'Enter' });
+    fireEvent.click(within(li).getByRole('button', { name: /Add haunting to calendar/ }));
+    expect(onHaunt).toHaveBeenCalledWith([g], 'Calm-haunting.ics');
+    fireEvent.click(within(li).getByRole('button', { name: /Exorcise/ }));
+    expect(onExorcise).toHaveBeenCalledWith('calm');
+    fireEvent.click(screen.getByRole('button', { name: 'Export all hauntings' }));
+    expect(onHaunt).toHaveBeenLastCalledWith([g], 'trial-graveyard-hauntings.ics');
+  });
+
   it('lets tombstones be edited and deleted but not cancelled again', () => {
     const g = grave('Dead', -DAY, { status: 'cancelled', cancelledAt: NOW.toISOString() });
     renderScene([g]);
@@ -269,7 +288,6 @@ describe('reduced motion', () => {
   it('uses animated variants by default', () => {
     renderScene(ALL);
     expect(animated().length).toBeGreaterThan(0);
-    expect(document.querySelector('canvas')).not.toBeNull();
   });
 
   it('renders static poses, no canvas and no looping animation when reduced', () => {
@@ -401,5 +419,137 @@ describe('Mausoleum', () => {
       vi.advanceTimersByTime(COUNT_UP_MS);
     });
     expect(screen.getByTestId('mausoleum-animated')).toHaveTextContent('$20.00');
+  });
+});
+
+describe('accessible list', () => {
+  it('mirrors every grave with one focusable list item and the same labels', () => {
+    renderScene(ALL);
+    const lists = screen.getAllByRole('list');
+    expect(lists.every((l) => l.getAttribute('aria-label'))).toBe(true);
+    const listItems = screen.getAllByRole('listitem');
+    expect(listItems).toHaveLength(ALL.length);
+    for (const g of ALL) {
+      const matches = listItems.filter((li) => li.dataset.itemId === g.id);
+      expect(matches).toHaveLength(1);
+      expect(matches[0]!.getAttribute('aria-label')).toMatch(new RegExp(`^${g.name}, `));
+    }
+  });
+});
+
+describe('hover and focus', () => {
+  it('starts a second-by-second countdown on hover and stops when the pointer leaves', () => {
+    renderScene(ALL);
+    const zombie = screen.getByRole('listitem', { name: /Zombie One/ });
+    expect(within(zombie).queryByTestId('ticker')).toBeNull();
+    fireEvent.pointerEnter(zombie);
+    expect(within(zombie).getByTestId('ticker')).toHaveTextContent('05:00:00');
+    fireEvent.pointerLeave(zombie);
+    expect(within(zombie).queryByTestId('ticker')).toBeNull();
+  });
+
+  it('shows the countdown on keyboard focus too, but never when motion is reduced', () => {
+    renderScene(ALL);
+    const zombie = screen.getByRole('listitem', { name: /Zombie One/ });
+    act(() => zombie.focus());
+    expect(within(zombie).getByTestId('ticker')).toBeInTheDocument();
+    act(() => zombie.blur());
+    expect(within(zombie).queryByTestId('ticker')).toBeNull();
+    cleanup();
+    renderScene(ALL, { reducedMotion: true });
+    fireEvent.pointerEnter(screen.getByRole('listitem', { name: /Zombie One/ }));
+    expect(screen.queryByTestId('ticker')).toBeNull();
+  });
+
+  it('formats ticks with days only when needed', () => {
+    expect(formatTick(5 * HOUR)).toBe('05:00:00');
+    expect(formatTick(2 * DAY + 3_723_000)).toBe('2d 01:02:03');
+    expect(formatTick(-5)).toBe('00:00:00');
+  });
+});
+
+describe('summon', () => {
+  const g = grave('Phantomflix', 20 * DAY);
+  const added = grave('Hollowtv', 10 * DAY);
+
+  it('bursts soil and writes the engraving in for a grave added after the first render', () => {
+    vi.useFakeTimers();
+    const { rerender } = renderScene([g]);
+    expect(screen.queryByTestId('soil-burst')).toBeNull();
+    rerender(<Scene graves={[g, added]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
+    const li = screen.getByRole('listitem', { name: /Hollowtv/ });
+    expect(within(li).getByTestId('soil-burst')).toBeInTheDocument();
+    expect(li.querySelector('text[data-motion="animated"]')).not.toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(SUMMON_MS + 1);
+    });
+    expect(screen.queryByTestId('soil-burst')).toBeNull();
+  });
+
+  it('does not summon in reduced motion or while saved graves are still loading', () => {
+    const { rerender } = renderScene([g], { reducedMotion: true });
+    rerender(<Scene graves={[g, added]} now={NOW} reducedMotion onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
+    expect(screen.queryByTestId('soil-burst')).toBeNull();
+    cleanup();
+    const second = renderScene([g], { summonNew: false });
+    second.rerender(<Scene graves={[g, added]} now={NOW} summonNew={false} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
+    expect(screen.queryByTestId('soil-burst')).toBeNull();
+  });
+});
+
+describe('bury', () => {
+  const g = grave('Necro Audiobooks', 5 * DAY, { priceCents: 1599 });
+  const rerenderCancelled = (rerender: ReturnType<typeof renderScene>['rerender'], reducedMotion = false) =>
+    rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} reducedMotion={reducedMotion} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
+
+  it('floats the saved amount up from the buried grave, then removes the effect', () => {
+    vi.useFakeTimers();
+    const { rerender } = renderScene([g]);
+    rerenderCancelled(rerender);
+    expect(screen.getByTestId('bury-fx')).toHaveTextContent('+$15.99 saved');
+    act(() => {
+      vi.advanceTimersByTime(BURY_FX_MS + 1);
+    });
+    expect(screen.queryByTestId('bury-fx')).toBeNull();
+  });
+
+  it('plays no bury effect in reduced motion', () => {
+    const { rerender } = renderScene([g], { reducedMotion: true });
+    rerenderCancelled(rerender, true);
+    expect(screen.queryByTestId('bury-fx')).toBeNull();
+  });
+});
+
+describe('wandering ghost', () => {
+  it('drifts across and flees when clicked', async () => {
+    renderScene(ALL, { wanderDelayMs: 0 });
+    const ghost = await screen.findByTestId('wandering-ghost');
+    expect(ghost).toHaveAttribute('data-phase', 'drift');
+    expect(ghost.closest('[aria-hidden="true"]')).not.toBeNull();
+    fireEvent.click(ghost);
+    expect(screen.getByTestId('wandering-ghost')).toHaveAttribute('data-phase', 'flee');
+  });
+
+  it('never appears when motion is reduced', async () => {
+    renderScene(ALL, { wanderDelayMs: 0, reducedMotion: true });
+    await new Promise((r) => setTimeout(r, 20));
+    expect(screen.queryByTestId('wandering-ghost')).toBeNull();
+  });
+});
+
+describe('restless mapping', () => {
+  it('maps urgency to glow, cracks, hand and ghost', () => {
+    renderScene(ALL);
+    const levels = Object.fromEntries(items().map((li) => [li.dataset.itemId, li.querySelector('[data-level]')?.getAttribute('data-level')]));
+    expect(levels).toEqual({
+      'sealed-one': 'calm',
+      'cracked-one': 'calm',
+      'churning-one': 'restless',
+      'zombie-one': 'rising',
+      'overdue-one': 'rising',
+      'dead-one': 'calm',
+      'kept-one': 'ghost',
+    });
+    expect(screen.getAllByTestId('zombie-pose')).toHaveLength(2);
   });
 });

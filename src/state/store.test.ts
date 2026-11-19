@@ -132,6 +132,21 @@ describe('actions', () => {
     expect(g?.cancelledAt).toBeUndefined();
   });
 
+  it('toggles calm mode', () => {
+    const store = newStore();
+    expect(store.getState().settings.calm).toBe(false);
+    store.getState().toggleCalm();
+    expect(store.getState().settings.calm).toBe(true);
+    store.getState().toggleCalm();
+    expect(store.getState().settings.calm).toBe(false);
+  });
+
+  it('loads settings stored before calm mode existed with calm off', () => {
+    const { calm: _c, ...old } = DEFAULT_SETTINGS;
+    const result = deserialize(JSON.stringify({ version: 1, graves: [], settings: { ...old, daylight: true } }));
+    expect(result.ok && result.state.settings).toEqual({ ...DEFAULT_SETTINGS, daylight: true });
+  });
+
   it('toggles daylight and dismisses notices', () => {
     const store = newStore();
     store.getState().toggleDaylight();
@@ -247,7 +262,7 @@ describe('migrate and validation', () => {
 });
 
 describe('P-X1 persistence round trip', () => {
-  const arbSettings = fc.record({ daylight: fc.boolean(), soundOn: fc.boolean(), llmFallback: fc.boolean() });
+  const arbSettings = fc.record({ daylight: fc.boolean(), soundOn: fc.boolean(), calm: fc.boolean(), llmFallback: fc.boolean() });
   const arbState: fc.Arbitrary<PersistedState> = fc.record({
     version: fc.constant(1 as const),
     graves: arbGraves,

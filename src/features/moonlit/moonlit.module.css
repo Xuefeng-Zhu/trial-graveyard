@@ -1,0 +1,126 @@
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--scene-top) 0%, var(--scene-bottom) 100%);
+}
+
+.layer {
+  position: absolute;
+  /* Oversized so parallax travel never reveals an edge. */
+  inset: -5%;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: cover;
+  will-change: transform;
+}
+
+.sky {
+  background-image: var(--scene-sky);
+  background-position: center top;
+}
+
+.hills {
+  background-image: var(--scene-hills);
+}
+
+.graves {
+  pointer-events: none;
+}
+
+.fog {
+  background: linear-gradient(0deg, rgba(190, 215, 235, 0.18) 0%, rgba(190, 215, 235, 0) 45%);
+}
+
+.foreground {
+  background-image: var(--scene-foreground);
+}
+
+.moonGlow {
+  position: absolute;
+  top: 6%;
+  right: 14%;
+  width: 40vmin;
+  height: 40vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 235, 255, 0.45) 0%, rgba(220, 235, 255, 0) 70%);
+  opacity: 0.8;
+}
+
+.pulse {
+  animation: moon-pulse 7s ease-in-out infinite;
+}
+
+@keyframes moon-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
+:global(:root[data-theme='daylight']) .scene {
+  opacity: 0.18;
+}
+
+:global(:root[data-theme='daylight']) .atmosphere {
+  display: none;
+}
+
+/* Intro overlay */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: linear-gradient(180deg, #050a22 0%, #0a1030 60%, #14325a 100%);
+  will-change: transform;
+}
+
+.introMoon {
+  width: min(40vmin, 14rem);
+  height: min(40vmin, 14rem);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #dfe9ff 55%, #aab8e0);
+  box-shadow: 0 0 60px 20px rgba(223, 233, 255, 0.35), 0 0 160px 60px rgba(223, 233, 255, 0.15);
+}
+
+.introTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  color: var(--color-moon);
+}
+
+.introSkip {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  font: inherit;
+  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
+  color: var(--color-moon);
+  background: rgba(10, 16, 48, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}

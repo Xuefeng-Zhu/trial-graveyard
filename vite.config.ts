@@ -11,7 +11,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.png', 'icon-512.png'],
+      includeAssets: ['icon-192.png', 'icon-512.png', 'scene/*.webp'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,webmanifest}'],
         navigateFallback: `${base}index.html`,

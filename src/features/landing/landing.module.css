@@ -6,9 +6,9 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, #12101a 0%, #2a2140 100%);
-  color: #ece8f5;
+  max-width: 36rem;
+  margin: var(--space-4) auto;
+  color: var(--color-text);
 }
 
 .plain {
@@ -26,8 +26,8 @@
 
 .moon {
   position: absolute;
-  top: 1.5rem;
-  right: 12%;
+  top: 1rem;
+  right: 1.5rem;
   width: 5rem;
   height: 5rem;
 }
@@ -67,9 +67,9 @@
   min-height: 44px;
   min-width: 44px;
   padding: var(--space-2) var(--space-5);
-  color: #12101a;
-  background: #9be28c;
-  border: 2px solid #9be28c;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border: 2px solid var(--color-accent);
   border-radius: var(--radius);
   cursor: pointer;
 }
