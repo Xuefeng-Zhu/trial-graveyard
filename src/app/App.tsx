@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { DaylightList, downloadIcs } from '../features/daylight';
+import { Scene } from '../features/graveyard';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
 import type { Grave } from '../domain/trial';
@@ -56,6 +57,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     playSound(kind);
   };
 
+  const deleteGrave = (id: string): void => {
+    if (editingId === id) setEditingId(null);
+    s.deleteGrave(id);
+  };
+  const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
+
   const toastMessage = changed
     ? changed.status === 'cancelled'
       ? `${changed.name} is now a tombstone.`
@@ -91,13 +98,6 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       )}
 
       <main>
-        {!daylight && (
-          <p className={styles.sceneNote}>
-            The haunted scene is still being dug. Until then, here is the plain list. Turn on Daylight mode for a
-            lighter theme.
-          </p>
-        )}
-
         <section aria-labelledby="editor-heading" className={styles.editor}>
           <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
           {editing ? (
@@ -124,18 +124,27 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           )}
         </section>
 
-        <DaylightList
-          graves={s.graves}
-          now={now}
-          onCancelled={(id) => status(id, 'cancel')}
-          onKeep={(id) => status(id, 'keep')}
-          onEdit={setEditingId}
-          onDelete={(id) => {
-            if (editingId === id) setEditingId(null);
-            s.deleteGrave(id);
-          }}
-          onExport={(graves: Grave[], filename) => downloadIcs(graves, clock(), filename)}
-        />
+        {daylight ? (
+          <DaylightList
+            graves={s.graves}
+            now={now}
+            onCancelled={(id) => status(id, 'cancel')}
+            onKeep={(id) => status(id, 'keep')}
+            onEdit={setEditingId}
+            onDelete={deleteGrave}
+            onExport={exportGraves}
+          />
+        ) : (
+          <Scene
+            graves={s.graves}
+            now={now}
+            onCancelled={(id) => status(id, 'cancel')}
+            onKeep={(id) => status(id, 'keep')}
+            onEdit={setEditingId}
+            onDelete={deleteGrave}
+            onExport={exportGraves}
+          />
+        )}
       </main>
 
       {toastOpen && lastChange && changed && (

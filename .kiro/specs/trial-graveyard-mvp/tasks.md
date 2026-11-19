@@ -45,12 +45,12 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - App shell with the Daylight toggle persisted in settings, "Summon demo graveyard" action. [R8.1, R8.3, R9.4]
   - Tests and axe check.
 
-- [ ] 10. Haunted scene
-  - [ ] 10.1 `Grave`, `Tombstone`, `Ghost`, `Zombie` components per stage with SVG art and CSS keyframes. [R2.2 to R2.6, R3.3, R3.4, R7.2]
-  - [ ] 10.2 `Scene` layout, zombie move-to-front, roving tabindex and arrow-key navigation, aria labels, live region. [R8.6, R8.8]
-  - [ ] 10.3 `Fog` canvas layer with capped particles, paused when hidden. Framer Motion transitions for cancel and keep.
-  - [ ] 10.4 `Mausoleum` counter with animated count-up. [R7]
-  - [ ] 10.5 Reduced-motion variants (`useReducedMotion`), static poses and the opacity-only fade. Tests with mocked `matchMedia`. [R8.4, R8.5]
+- [x] 10. Haunted scene
+  - [x] 10.1 `Grave`, `Tombstone`, `Ghost`, `Zombie` components per stage with SVG art and CSS keyframes. [R2.2 to R2.6, R3.3, R3.4, R7.2]
+  - [x] 10.2 `Scene` layout, zombie move-to-front, roving tabindex and arrow-key navigation, aria labels, live region. [R8.6, R8.8]
+  - [x] 10.3 `Fog` canvas layer with capped particles, paused when hidden. Framer Motion transitions for cancel and keep.
+  - [x] 10.4 `Mausoleum` counter with animated count-up. [R7]
+  - [x] 10.5 Reduced-motion variants (`useReducedMotion`), static poses and the opacity-only fade. Tests with mocked `matchMedia`. [R8.4, R8.5]
 
 - [ ] 11. Offline and polish
   - Configure vite-plugin-pwa precache and manifest, verify load offline after first visit. [R9.2]

@@ -10,9 +10,11 @@ import { App } from './App';
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
 const clock = () => NOW;
 
-function setup() {
+/** Most tests exercise the plain list, so Daylight mode is on unless a test asks for the scene. */
+function setup(daylight = true) {
   let n = 0;
   const store = createGraveStore({ newId: () => `id-${++n}` });
+  if (daylight) store.setState((s) => ({ settings: { ...s.settings, daylight: true } }));
   render(<App store={store} clock={clock} />);
   return store;
 }
@@ -140,6 +142,60 @@ describe('App end to end in the list view', () => {
   });
 });
 
+describe('haunted scene', () => {
+  it('edits, deletes and exports from the night-mode scene', async () => {
+    const blobs: Blob[] = [];
+    URL.createObjectURL = vi.fn((b: Blob | MediaSource) => {
+      blobs.push(b as Blob);
+      return 'blob:x';
+    });
+    URL.revokeObjectURL = vi.fn();
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const store = setup(false);
+    await settle(store);
+    addTrial('Netflx', '2026-10-20', '5');
+    fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
+    expect(blobs).toHaveLength(1);
+    const open = () => {
+      const li = screen.getByRole('listitem', { name: /Netflx|Netflix/ });
+      li.focus();
+      fireEvent.keyDown(li, { key: 'Enter' });
+    };
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^Add to calendar/ }));
+    expect(blobs).toHaveLength(2);
+    fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
+    expect(screen.getByLabelText('Name')).toHaveValue('Netflx');
+    type('Name', 'Netflix');
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(screen.getByRole('listitem', { name: /Netflix/ })).toBeInTheDocument();
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
+    expect(store.getState().graves).toHaveLength(0);
+  });
+
+  it('shows the scene by default and swaps to the list in Daylight mode', async () => {
+    const store = setup(false);
+    await settle(store);
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    expect(screen.getByRole('region', { name: 'Haunted graveyard' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Daylight mode' }));
+    expect(screen.queryByRole('region', { name: 'Haunted graveyard' })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(8);
+  });
+
+  it('cancels from the scene and updates the Mausoleum', async () => {
+    const store = setup(false);
+    await settle(store);
+    addTrial('Netflix', '2026-10-02', '15.49');
+    const zombie = screen.getByRole('listitem', { name: /Netflix/ });
+    fireEvent.click(within(zombie).getByRole('button', { name: /I cancelled/ }));
+    await waitFor(() => expect(screen.getByText('Here lies Netflix. Saved you $15.49/mo.')).toBeInTheDocument());
+    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
+  });
+});
+
 describe('Daylight toggle and demo', () => {
   it('summons the demo graveyard covering every stage, a tombstone and a ghost', () => {
     setup();
@@ -151,7 +207,7 @@ describe('Daylight toggle and demo', () => {
   });
 
   it('toggles Daylight mode with the keyboard-reachable button and persists it', async () => {
-    const store = setup();
+    const store = setup(false);
     const toggle = screen.getByRole('button', { name: 'Daylight mode' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBe('night');
@@ -184,10 +240,9 @@ describe('accessibility', () => {
     ['daylight off', false],
     ['daylight on', true],
   ])('has no axe violations with the demo loaded (%s)', async (_n, daylight) => {
-    const store = setup();
+    const store = setup(daylight);
     await settle(store);
     fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
-    if (daylight) fireEvent.click(screen.getByRole('button', { name: 'Daylight mode' }));
     expect(store.getState().settings.daylight).toBe(daylight);
     const results = await axe(document.body);
     expect(results.violations).toEqual([]);
