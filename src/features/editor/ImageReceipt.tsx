@@ -75,6 +75,13 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
   const confidenceRef = useRef(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [zoomed, setZoomed] = useState(false);
+  const thumbRef = useRef<HTMLButtonElement>(null);
+  const zoomRef = useRef<HTMLDivElement>(null);
+  const closeZoom = (): void => {
+    setZoomed(false);
+    thumbRef.current?.focus();
+  };
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState('');
   const [readout, setReadout] = useState<ImageReadout | null>(null);
@@ -197,6 +204,10 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
     }
   };
 
+  useEffect(() => {
+    if (zoomed) zoomRef.current?.focus();
+  }, [zoomed]);
+
   const reading = phase === 'reading';
   const showManual = phase === 'error' || (phase === 'done' && readout?.problem !== undefined);
 
@@ -240,10 +251,47 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
 
       {previewUrl && (
         <div className={styles.preview}>
-          <img src={previewUrl} alt="Preview of the receipt image you chose" className={styles.thumb} />
+          <button
+            type="button"
+            ref={thumbRef}
+            className={styles.thumbButton}
+            aria-haspopup="dialog"
+            onClick={() => setZoomed(true)}
+          >
+            <img src={previewUrl} alt="Preview of the receipt image you chose" className={styles.thumb} />
+            <span className={styles.srOnly}>Open larger preview</span>
+          </button>
           <button type="button" className={styles.linkButton} onClick={remove}>
             Remove image
           </button>
+        </div>
+      )}
+
+      {zoomed && previewUrl && (
+        <div className={styles.lightbox} onClick={closeZoom}>
+          <div
+            ref={zoomRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Larger receipt preview"
+            tabIndex={-1}
+            className={styles.lightboxCard}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                closeZoom();
+              } else if (e.key === 'Tab') {
+                e.preventDefault();
+                zoomRef.current?.querySelector<HTMLElement>('button')?.focus();
+              }
+            }}
+          >
+            <img src={previewUrl} alt="Larger view of the receipt image" className={styles.lightboxImg} />
+            <button type="button" className={styles.secondary} onClick={closeZoom}>
+              Close preview
+            </button>
+          </div>
         </div>
       )}
 
