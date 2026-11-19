@@ -4,6 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware'
 import { createGrave, trialFields, validateTrial, type Grave, type TrialInput } from '../domain/trial'
 import { createStorage, defaultSettings, readState, type PersistedState, type Settings } from './storage'
 import { demoGraves } from './demo'
+import { mergeGraveyards, schemaVersion } from './backup'
 
 export const STORAGE_KEY = 'trial-graveyard'
 interface Undo { previous: Grave; index: number; until: number; action: 'cancelled' | 'kept' | 'deleted' }
@@ -11,6 +12,10 @@ interface GraveyardState extends PersistedState {
   ready: boolean
   notice: string
   undoEntry?: Undo
+  snapshot(): PersistedState
+  restore(saved: PersistedState, mode: 'merge' | 'replace'): void
+  clearData(): void
+  exorcise(id: string, now: Date): void
   addGrave(input: TrialInput, now: Date): Grave | undefined
   updateGrave(id: string, input: TrialInput): void
   deleteGrave(id: string, now: Date): void
@@ -37,6 +42,10 @@ export function createGraveyardStore(storageKey = STORAGE_KEY) {
     }
     return {
       graves: [], settings: defaultSettings, ready: false, notice: '',
+      snapshot() { const { graves, settings } = get(); return { graves, settings } },
+      restore(saved, mode) { set({ ...(mode === 'merge' ? mergeGraveyards(get(), saved) : saved), undoEntry: undefined }) },
+      clearData() { set({ graves: [], settings: defaultSettings, undoEntry: undefined }) },
+      exorcise: (id, now) => change(id, now, 'cancelled'),
       addGrave(input, now) {
         if (Object.keys(validateTrial(input)).length) return
         const grave = createGrave(input, now)
@@ -67,7 +76,7 @@ export function createGraveyardStore(storageKey = STORAGE_KEY) {
       })),
     }
   }, {
-    name: storageKey, version: 1,
+    name: storageKey, version: schemaVersion,
     storage: createJSONStorage(() => createStorage(() => {
       storageNotice = 'Browser storage is unavailable. Changes will be lost on reload.'
       if (store.getState().ready && !store.getState().notice) store.setState({ notice: storageNotice })

@@ -1,4 +1,10 @@
 import { useEffect, useState } from 'react'
+import { buildHauntingIcs } from '../domain/haunting'
+import { summarize } from '../domain/selectors'
+import { CountdownHero } from '../features/hero/CountdownHero'
+import { ExorcismPanel } from '../features/exorcism/ExorcismPanel'
+import { StatsPanel, displayTotals } from '../features/exorcism/StatsPanel'
+import { DataControls } from '../features/settings/DataControls'
 import { buildIcs } from '../domain/ics'
 import type { Grave, TrialInput } from '../domain/trial'
 import { useGraveyard } from '../state/store'
@@ -24,7 +30,7 @@ import styles from './app.module.css'
 type Screen = 'graveyard' | 'add' | 'savings' | 'settings'
 const screens: Record<Screen, string> = { graveyard: 'Graveyard', add: 'Add trial', savings: 'Savings', settings: 'Settings' }
 const getScreen = () => Object.keys(screens).find(key => key === location.hash.slice(1)) as Screen | undefined ?? 'graveyard'
-type Modal = { kind: 'details' | 'edit' | 'delete'; id: string }
+type Modal = { kind: 'details' | 'edit' | 'delete' | 'exorcise'; id: string }
 
 export function App() {
   const state = useGraveyard()
@@ -39,6 +45,7 @@ export function App() {
   const [dateSource, setDateSource] = useState<string>()
   const [message, announce] = useState('')
   const selected = graves.find(grave => grave.id === modal?.id)
+  const summary = summarize(graves, now)
   const active = graves.filter(grave => grave.status === 'active')
 
   useEffect(() => {
@@ -83,10 +90,15 @@ export function App() {
     edit: grave => setModal({ id: grave.id, kind: 'edit' }),
     remove: grave => setModal({ id: grave.id, kind: 'delete' }),
     cancel: grave => { state.cancelGrave(grave.id, new Date()); playSound('thunder'); close() },
+    exorcise: grave => setModal({ id: grave.id, kind: 'exorcise' }),
     keep: grave => { state.keepGrave(grave.id, new Date()); close() },
     announce,
   }
   const exportCalendar = () => { downloadIcs(buildIcs(active, now), 'graveyard-reminders'); announce('Calendar file downloaded.') }
+  const exportHauntings = () => {
+    downloadIcs(buildHauntingIcs(active, now), 'graveyard-hauntings')
+    announce('Haunting calendar file downloaded.')
+  }
   return <div className={styles.app} data-daylight={settings.daylight} data-motion={!settings.daylight && !settings.calm && !reduced}>
     <div className={styles.shell}>
       <header className={styles.header}>
@@ -101,8 +113,10 @@ export function App() {
         {!state.ready ? <p role="status">Opening the graveyard…</p> : <>
           {screen === 'graveyard' && (graves.length ? <>
             <h1>Your graveyard</h1>
+            <CountdownHero grave={summary.next} now={now} onExorcise={actions.exorcise} />
+            <p className="muted">At risk this week <strong>{displayTotals(summary.atRisk)}</strong> · {summary.overdue.length} overdue</p>
             {settings.daylight ? <DaylightList graves={graves} now={now} actions={actions} /> : <Scene graves={graves} now={now} onOpen={open} />}
-            <div className="actions"><button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button></div>
+            <div className="actions"><button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button><button disabled={!active.length} onClick={exportHauntings}>Export all hauntings</button></div>
             <Mausoleum graves={graves} />
           </> : <Landing daylight={settings.daylight} reduced={reduced || settings.calm}
               onSummon={() => state.loadDemo(new Date())} onAdd={() => navigate('add')} />)}
@@ -110,12 +124,14 @@ export function App() {
             <GraveForm id="trial-editor" values={values} change={setValues} onSave={bury} dateSource={dateSource} />
             <PasteBox now={now} onParsed={prefill}
               onManual={() => document.querySelector<HTMLInputElement>('#trial-editor input')?.focus()} extra={<SeanceButton onOpen={() => setSeance(true)} />} /></section>}
-          {screen === 'savings' && <><h1>Savings</h1><Mausoleum graves={graves} /></>}
+          {screen === 'savings' && <><h1>Savings</h1><Mausoleum graves={graves} />
+            <CountdownHero grave={summary.next} now={now} onExorcise={actions.exorcise} />
+            <p className="panel">At risk this week <strong>{displayTotals(summary.atRisk)}</strong></p><StatsPanel graves={graves} now={now} /></>}
           {screen === 'settings' && <section className="panel stack"><h1>Settings</h1>
             <p className="muted">Your graves stay in this browser.</p>
             <button aria-pressed={settings.calm} onClick={() => state.toggle('calm')}>Calm mode: {settings.calm ? 'ON' : 'OFF'}</button>
             <div className="actions"><button onClick={() => { state.loadDemo(new Date()); navigate('graveyard') }}>Summon demo graveyard</button>
-              <button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button></div></section>}
+              <button disabled={!active.length} onClick={exportCalendar}>Export all active to calendar</button><button disabled={!active.length} onClick={exportHauntings}>Export all hauntings</button></div><DataControls announce={announce} /></section>}
         </>}
         <p role="status" className="status">{message}</p>
         {undoEntry && <div className={styles.toast}>
@@ -141,8 +157,13 @@ export function App() {
           else if (!duplicate.editId) bury(duplicate.trial, true)
         }}>Bury anyway</button></div></div>
     </Dialog>}
-    {modal && selected && <Dialog key={modal.kind} title={modal.kind === 'details' ? selected.name : modal.kind === 'edit' ? 'Edit trial' : 'Delete trial?'} onClose={close}>
+    {modal && selected && <Dialog key={modal.kind} title={modal.kind === 'details' ? selected.name : modal.kind === 'edit' ? 'Edit trial' : modal.kind === 'exorcise' ? `Exorcise ${selected.name}` : 'Delete trial?'} onClose={close}>
       {modal.kind === 'details' && <DetailsPanel grave={selected} now={now} actions={actions} />}
+      {modal.kind === 'exorcise' && <ExorcismPanel grave={selected} confirm={() => {
+        state.exorcise(selected.id, new Date())
+        playSound('thunder')
+        close()
+      }} />}
       {modal.kind === 'edit' && <GraveForm grave={selected} onSave={input => saveEdit(selected, input)} />}
       {modal.kind === 'delete' && <div className="stack"><p>Remove {selected.name} from your graveyard?</p>
         <div className="actions"><button onClick={close}>Keep grave</button><button className="danger" onClick={() => { state.deleteGrave(selected.id, new Date()); close() }}>Delete grave</button></div></div>}

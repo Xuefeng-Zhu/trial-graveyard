@@ -90,3 +90,16 @@ it('asks before saving a duplicate and can open the existing grave', async () =>
   expect(screen.getByRole('dialog', { name: 'Phantomflix' })).toBeVisible()
   expect(useGraveyard.getState().graves).toHaveLength(1)
 })
+
+it('exorcises a trial only after confirmation and restores it on undo', () => {
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Exorcise next trial' }))
+  const dialog = screen.getByRole('dialog', { name: 'Exorcise Wraithwave Premium' })
+  expect(within(dialog).getByText('Cancel with the provider')).toBeVisible()
+  expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('active')
+  fireEvent.click(within(dialog).getByRole('button', { name: 'It’s exorcised' }))
+  expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('cancelled')
+  fireEvent.click(screen.getByRole('button', { name: 'Undo' }))
+  expect(useGraveyard.getState().graves.find(grave => grave.id === 'demo-wraithwave')?.status).toBe('active')
+})

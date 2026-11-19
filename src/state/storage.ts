@@ -1,6 +1,6 @@
 import { del, get, set, type UseStore } from 'idb-keyval'
 import type { StateStorage } from 'zustand/middleware'
-import { cadences, validIso, validateTrial, type Grave } from '../domain/trial'
+import { cadences, trialFields, validIso, validateTrial, type Grave } from '../domain/trial'
 
 export interface Settings { daylight: boolean; soundOn: boolean; llmFallback: boolean; calm: boolean }
 export interface PersistedState { graves: Grave[]; settings: Settings }
@@ -31,8 +31,10 @@ export function readState(value: unknown): PersistedState | undefined {
     if (typeof saved !== 'boolean') return
     settings[key] = saved
   }
-  const graves = value.graves.map(({ id, name, chargeAt, priceCents, currency, cadence, cancelUrl, status, createdAt, cancelledAt, keptAt }) => ({
-    id, name, chargeAt, priceCents, currency, cadence, cancelUrl, status, createdAt, cancelledAt, keptAt,
+  const graves = value.graves.map((grave): Grave => ({
+    ...trialFields(grave), name: grave.name, id: grave.id, status: grave.status, createdAt: grave.createdAt,
+    ...(grave.cancelledAt === undefined ? {} : { cancelledAt: grave.cancelledAt }),
+    ...(grave.keptAt === undefined ? {} : { keptAt: grave.keptAt }),
   }))
   return { graves, settings }
 }

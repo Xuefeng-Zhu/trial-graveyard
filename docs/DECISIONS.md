@@ -7,3 +7,5 @@
 - Numeric dates in pasted receipts use US month/day order. An explicit year overrides year inference. The editor exposes the source date and keeps it editable.
 - The feature-flagged fallback reserves a local parser extension. Receipt text stays in the browser with either setting.
 - OCR downloads versioned npm assets from the app origin. Workbox caches the worker, core and language assets after first use. The app has no runtime dependency on a public OCR CDN.
+- The HUD and Savings use the same next-charge, overdue and seven-day risk selectors. The Mausoleum and stats use the same lifetime savings definition. Trials survived and first charges dodged this year use the narrower pre-charge definition.
+- Backup merge identifies graves by stable ID and keeps local settings. Replace and clear require an explicit confirmation. Cancellation guides for unknown services link to a search homepage without placing service names in the URL.

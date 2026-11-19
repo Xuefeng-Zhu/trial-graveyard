@@ -40,6 +40,12 @@ Choose a screenshot, use the rear camera, or paste/drop an image in the receipt 
 
 The app serves the worker, core and language data from its own origin and caches them on first use for offline reading. Receipt images and OCR text stay in memory.
 
+## Before the Bite
+
+The shared countdown highlights the soonest upcoming active charge. Overdue trials and the next seven days of risk are shown separately. Exorcise opens a local cancellation guide and records a cancellation only when you confirm. The calendar can export reminders 48 hours before and on the morning of the charge.
+
+Settings can export a local JSON backup, validate one for merge or replacement, and clear browser data after typed confirmation.
+
 ## Architecture
 
 - Pure trial, clock, currency and calendar logic in `src/domain/`.
@@ -49,14 +55,14 @@ The app serves the worker, core and language data from its own origin and caches
 
 ## Built with Kiro
 
-The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 710 Vitest tests with 100% domain coverage, and the production build.
+The product rules, spec milestones and hooks are tracked in `.kiro/`. GitHub Actions runs the typecheck, 727 Vitest tests with 100% domain coverage, and the production build.
 
 ## Kiro features used
 
 | Feature | Usage |
 | --- | --- |
 | Steering | Product, stack, structure and MCP conventions |
-| Specs | 4 · Trial Graveyard MVP, Haunted Polish, Inbox Séance, Image Receipts |
+| Specs | 5 · Trial Graveyard MVP, Haunted Polish, Inbox Séance, Image Receipts, Before the Bite |
 | Hooks | 5 · Test on save, spec sync, domain properties, accessibility, copy |
 | MCP | GitHub issue context and deployment tools |
 | Property-based tests | Boundary, parser, money and archive invariants |
