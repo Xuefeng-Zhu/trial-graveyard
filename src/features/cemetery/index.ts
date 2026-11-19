@@ -6,3 +6,5 @@ export { DetailsPanel, NO_CANCEL_URL_TEXT } from './DetailsPanel';
 export { Gravestone } from './Gravestone';
 export { CollectionView, QuestsView, SavingsView, SettingsView } from './Views';
 export { nextToRise, byUrgency } from './format';
+export { DataTools, CLEAR_PHRASE } from './DataTools';
+export { downloadBackup } from './downloadBackup';

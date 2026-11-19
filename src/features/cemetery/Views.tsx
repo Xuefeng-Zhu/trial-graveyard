@@ -17,7 +17,7 @@ import {
   Skull,
   Spark,
 } from '../../design/pixel';
-import { CountdownHero, StatsPanel } from '../haunting';
+import { AtRisk, CountdownHero, StatsPanel } from '../haunting';
 import { Mausoleum } from '../graveyard';
 import { nextToRise, statusText } from './format';
 import styles from './cemetery.module.css';
@@ -165,6 +165,7 @@ export function SavingsView({ graves, now, motion, onExport, onHaunt, share }: S
         </div>
       </PixelPanel>
       <PixelPanel>
+        <AtRisk graves={graves} now={now} />
         <CountdownHero graves={graves} now={now} reducedMotion={!motion} />
       </PixelPanel>
       <PixelPanel>
@@ -202,6 +203,8 @@ export interface SettingsViewProps {
   onToggleSound: () => void;
   onToggleCalm: () => void;
   onSummon: () => void;
+  /** Export, import and reset controls. */
+  dataTools?: ReactNode;
 }
 
 export function SettingsView(p: SettingsViewProps) {
@@ -223,7 +226,8 @@ export function SettingsView(p: SettingsViewProps) {
         Daylight swaps the pixel scene for a plain list. Calm stops all decorative motion. Sound is off until you turn
         it on.
       </p>
-        <div className={styles.viewArt} aria-hidden="true">
+      {p.dataTools}
+      <div className={styles.viewArt} aria-hidden="true">
           <CrystalBall scale={8} />
           <Spark scale={8} />
           <CrystalBall scale={8} />

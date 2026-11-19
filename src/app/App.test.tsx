@@ -134,7 +134,84 @@ describe('App end to end in the list view', () => {
     expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
   });
 
-  it('exports one grave and all active graves as .ics', async () => {
+  it('offers Undo after deleting a grave and restores it', () => {
+    setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
+    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Phantomflix was deleted.');
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Phantomflix' })).toBeInTheDocument();
+  });
+
+  it('warns about a duplicate and lets the user bury anyway', () => {
+    const store = setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    addTrial('phantomflix', '2026-10-20', '5');
+    expect(screen.getByRole('alertdialog')).toHaveTextContent('already has a grave');
+    expect(store.getState().graves).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Bury anyway' }));
+    expect(store.getState().graves).toHaveLength(2);
+  });
+
+  it('opens the existing grave from the duplicate warning', () => {
+    const store = setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    addTrial('Phantomflix', '2026-10-20', '5');
+    fireEvent.click(screen.getByRole('button', { name: 'Open existing' }));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(store.getState().graves).toHaveLength(1);
+  });
+
+  it('summoning the demo twice does not duplicate graves', () => {
+    const store = setup();
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    goTo('Settings');
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    expect(store.getState().graves).toHaveLength(8);
+  });
+
+  it('clears all data only after typing the confirmation', () => {
+    const store = setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    goTo('Settings');
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all data' }));
+    const confirm = screen.getByRole('button', { name: 'Clear everything' });
+    expect(confirm).toBeDisabled();
+    fireEvent.change(screen.getByLabelText('Confirmation'), { target: { value: 'DELETE' } });
+    fireEvent.click(confirm);
+    expect(store.getState().graves).toHaveLength(0);
+  });
+
+  it('imports a backup file with merge', async () => {
+    const store = setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    goTo('Settings');
+    const backup = JSON.stringify({
+      version: 1,
+      graves: [{ id: 'x1', name: 'Wraithwave', chargeAt: '2026-10-25T09:00:00-07:00', priceCents: 500, currency: 'USD', cadence: 'monthly', status: 'active', createdAt: '2026-10-01T09:00:00-07:00' }],
+      settings: store.getState().settings,
+    });
+    const file = new File([backup], 'b.json', { type: 'application/json' });
+    Object.defineProperty(file, 'text', { value: () => Promise.resolve(backup) });
+    fireEvent.change(screen.getByLabelText('Graveyard backup file'), { target: { files: [file] } });
+    fireEvent.click(await screen.findByRole('button', { name: 'Merge' }));
+    expect(store.getState().graves.map((g) => g.name)).toEqual(['Phantomflix', 'Wraithwave']);
+  });
+
+  it('rejects an invalid backup file without changing data', async () => {
+    const store = setup();
+    addTrial('Phantomflix', '2026-10-20', '5');
+    goTo('Settings');
+    const file = new File(['{"nope":1}'], 'b.json');
+    Object.defineProperty(file, 'text', { value: () => Promise.resolve('{"nope":1}') });
+    fireEvent.change(screen.getByLabelText('Graveyard backup file'), { target: { files: [file] } });
+    expect(await screen.findByText(/not a valid graveyard backup/)).toBeInTheDocument();
+    expect(store.getState().graves).toHaveLength(1);
+  });
+
+  it('exports all active graves as .ics', async () => {
     const blobs: Blob[] = [];
     URL.createObjectURL = vi.fn((b: Blob | MediaSource) => {
       blobs.push(b as Blob);

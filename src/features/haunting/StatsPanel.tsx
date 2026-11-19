@@ -1,5 +1,5 @@
 import { formatMoney } from '../../domain/savings';
-import { deriveStats } from '../../domain/stats';
+import { deriveStats, formatAvgDays } from '../../domain/stats';
 import type { Grave } from '../../domain/trial';
 import styles from './haunting.module.css';
 
@@ -15,12 +15,12 @@ export function StatsPanel({ graves, now }: StatsPanelProps) {
     stats.dodged.length === 0
       ? formatMoney(0, 'USD')
       : stats.dodged.map((t) => formatMoney(t.cents, t.currency)).join(', ');
-  const avg = stats.avgDaysUsed === null ? 'None yet' : `${stats.avgDaysUsed.toFixed(1)} days`;
+  const avg = formatAvgDays(stats.avgDaysUsed);
   const items: Array<[string, string]> = [
-    ['Trials survived', String(stats.survived)],
-    ['Dollars dodged this year', dodged],
+    ['Trials survived (cancelled)', String(stats.survived)],
+    ['Dollars dodged', dodged],
     ['Average days used before cancelling', avg],
-    ['Trials that escaped', String(stats.escaped)],
+    ['Overdue trials', String(stats.overdue)],
   ];
   return (
     <section className={styles.stats} aria-labelledby="stats-heading">

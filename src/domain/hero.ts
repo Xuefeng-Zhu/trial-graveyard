@@ -1,4 +1,5 @@
-import { MS_PER_DAY, MS_PER_HOUR, remainingMs } from './stage';
+import { MS_PER_DAY, MS_PER_HOUR } from './stage';
+import { nextCharge } from './selectors';
 import type { Grave } from './trial';
 
 export type Urgency = 'calm' | 'uneasy' | 'restless' | 'rising';
@@ -10,19 +11,7 @@ export interface HeroCountdown {
 }
 
 /** The active grave with the nearest charge time that is still in the future, if any. */
-export function pickHero(graves: readonly Grave[], now: Date): Grave | undefined {
-  let best: Grave | undefined;
-  let bestRemaining = Infinity;
-  for (const grave of graves) {
-    if (grave.status !== 'active') continue;
-    const remaining = remainingMs(grave, now);
-    if (remaining > 0 && remaining < bestRemaining) {
-      best = grave;
-      bestRemaining = remaining;
-    }
-  }
-  return best;
-}
+export const pickHero = (graves: readonly Grave[], now: Date): Grave | undefined => nextCharge(graves, now);
 
 /** Whole days and hours left, clamped at zero. Text reads "turns in 2d 5h". */
 export function heroCountdown(remaining: number): HeroCountdown {

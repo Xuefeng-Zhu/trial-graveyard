@@ -39,5 +39,10 @@ export function nextToRise(graves: readonly Grave[]): Grave | undefined {
   return graves.filter((g) => g.status === 'active').sort(byUrgency)[0];
 }
 
+const STATUS_LABEL = { normal: 'Calm', warning: 'Warning', critical: 'Critical', cancelled: 'Cancelled', kept: 'Kept' } as const;
+
+/** The state of a grave as one word: Calm, Warning, Critical, Kept or Cancelled. */
+export const stateLabel = (grave: Grave, now: Date): string => STATUS_LABEL[pixelStateFor(grave, now).kind];
+
 export const toneOf = (kind: ReturnType<typeof pixelStateFor>['kind']): 'neutral' | 'warning' | 'critical' | 'success' | 'info' =>
   ({ normal: 'neutral', warning: 'warning', critical: 'critical', cancelled: 'success', kept: 'info' } as const)[kind];
