@@ -5,6 +5,9 @@ export const CARD_WIDTH = 1080;
 export const CARD_HEIGHT = 1350;
 export const SHARE_HASHTAG = '#KiroweenHackathon26';
 
+/** Most currency lines the card shows; extras collapse into "+K more". */
+const MAX_TOTALS = 5;
+
 const DISPLAY = "'Pirata One', Georgia, serif";
 const BODY = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif";
 
@@ -36,15 +39,19 @@ export async function drawShareCard(summary: ShareSummary): Promise<Blob> {
   ctx.font = `120px ${DISPLAY}`;
   ctx.fillText('My Graveyard', CARD_WIDTH / 2, 520);
 
+  const all = summary.totals.length > 0 ? summary.totals : [{ currency: 'USD', cents: 0 }];
+  const shown = all.length > MAX_TOTALS ? all.slice(0, MAX_TOTALS - 1) : all;
+  const lines = shown.map((t) => formatMoney(t.cents, t.currency));
+  if (shown.length < all.length) lines.push(`+${all.length - shown.length} more`);
+  const step = lines.length > 3 ? 80 : 100;
   ctx.fillStyle = '#9be28c';
-  ctx.font = `bold 84px ${BODY}`;
-  const totals = summary.totals.length > 0 ? summary.totals : [{ currency: 'USD', cents: 0 }];
-  totals.forEach((t, i) => ctx.fillText(formatMoney(t.cents, t.currency), CARD_WIDTH / 2, 680 + i * 100));
+  ctx.font = `bold ${lines.length > 3 ? 68 : 84}px ${BODY}`;
+  lines.forEach((line, i) => ctx.fillText(line, CARD_WIDTH / 2, 680 + i * step));
 
   ctx.fillStyle = '#ece8f5';
   ctx.font = `44px ${BODY}`;
   const souls = `${summary.slain} ${summary.slain === 1 ? 'soul' : 'souls'} saved from charges`;
-  ctx.fillText(souls, CARD_WIDTH / 2, 680 + totals.length * 100 + 40);
+  ctx.fillText(souls, CARD_WIDTH / 2, 680 + (lines.length - 1) * step + 70);
 
   ctx.fillStyle = '#ffd866';
   ctx.font = `bold 48px ${BODY}`;

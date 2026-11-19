@@ -43,6 +43,22 @@ describe('drawShareCard', () => {
     expect(calls).toContain('0 souls saved from charges');
   });
 
+  it('keeps seven currencies on the canvas and clear of the hashtag', async () => {
+    const ys: Record<string, number> = {};
+    const { ctx } = fakeContext();
+    ctx.fillText = vi.fn((text: string, _x: number, y: number) => {
+      ys[text] = y;
+    });
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctx as never);
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb) => cb(new Blob()));
+    const codes = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'];
+    await drawShareCard({ totals: codes.map((currency, i) => ({ currency, cents: 100 * (i + 1) })), slain: 7 });
+    expect(ys['+3 more']).toBeDefined();
+    const souls = ys['7 souls saved from charges'];
+    expect(souls ?? 0).toBeLessThan((ys[SHARE_HASHTAG] ?? 0) - 48);
+    for (const y of Object.values(ys)) expect(y).toBeLessThan(CARD_HEIGHT);
+  });
+
   it('rejects when the context is missing', async () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     await expect(drawShareCard({ totals: [], slain: 0 })).rejects.toBeInstanceOf(CanvasUnavailableError);

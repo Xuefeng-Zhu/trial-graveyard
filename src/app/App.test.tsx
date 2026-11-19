@@ -207,6 +207,14 @@ describe('Daylight toggle and demo', () => {
     }
   });
 
+  it('shows the landing above the editor without stealing focus when empty', () => {
+    setup();
+    const landing = screen.getByRole('button', { name: /summon/i });
+    const form = screen.getByRole('form', { name: 'Grave details' });
+    expect(landing.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(document.activeElement).not.toBe(screen.getByLabelText('Name'));
+  });
+
   it('toggles Daylight mode with the keyboard-reachable button and persists it', async () => {
     const store = setup(false);
     const toggle = screen.getByRole('button', { name: 'Daylight mode' });

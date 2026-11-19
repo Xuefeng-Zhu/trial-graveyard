@@ -114,6 +114,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       )}
 
       <main>
+        {empty && !editing && <Landing daylight={daylight} onSummon={summon} />}
         <section aria-labelledby="editor-heading" className={styles.editor}>
           <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
           {editing ? (
@@ -141,13 +142,13 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
                 initial={EMPTY_VALUES}
                 prefill={prefill}
                 prefillVersion={prefillVersion}
+                autoFocus={!empty}
                 onSubmit={bury}
               />
             </>
           )}
         </section>
 
-        {empty && <Landing daylight={daylight} onSummon={summon} />}
         <ShareButton graves={s.graves} className={styles.button} />
 
         {daylight ? (
