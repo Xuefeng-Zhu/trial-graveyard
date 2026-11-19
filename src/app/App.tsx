@@ -7,6 +7,8 @@ import {
   BottomHud,
   Cemetery,
   CollectionView,
+  DataTools,
+  downloadBackup,
   QuestsView,
   SavingsView,
   SettingsView,
@@ -24,6 +26,8 @@ import { Landing } from '../features/landing';
 import { ShareButton } from '../features/share';
 import { ExorcismPanel } from '../features/haunting';
 import type { Grave, ValidTrial } from '../domain/trial';
+import { findDuplicate } from '../domain/dedupe';
+import { BACKUP_FILENAME, exportBackup } from '../state/backup';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
 import { graveStore } from '../state/store';
@@ -54,6 +58,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [view, setView] = useState<View>('graveyard');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [celebration, setCelebration] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState<{ trial: ValidTrial; existing: Grave } | null>(null);
 
   const { daylight, soundOn, calm } = s.settings;
   const osReduced = useReducedMotion();
@@ -64,7 +69,8 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   useEffect(() => setSoundEnabled(soundOn), [soundOn]);
 
   const lastChange = s.lastChange;
-  useEffect(() => setToastOpen(lastChange !== null), [lastChange]);
+  const lastDelete = s.lastDelete;
+  useEffect(() => setToastOpen(lastChange !== null || lastDelete !== null), [lastChange, lastDelete]);
   const clearCelebration = useCallback(() => setCelebration(null), []);
   const expireToast = useCallback(() => setToastOpen(false), []);
 
@@ -106,7 +112,15 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     }
   };
 
+  /** Form submit: warns first when a grave with the same name and charge date exists. */
+  const submitTrial = (trial: ValidTrial): void => {
+    const existing = findDuplicate(s.graves, trial);
+    if (existing) setDuplicate({ trial, existing });
+    else bury(trial);
+  };
+
   const bury = (trial: ValidTrial): void => {
+    setDuplicate(null);
     s.addGrave(trial, clock());
     playSound('creak');
     // The pasted receipt has been consumed; do not replay it when the form remounts.
@@ -118,7 +132,14 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const deleteGrave = (id: string): void => {
     if (editingId === id) setEditingId(null);
     if (selectedId === id) setSelectedId(null);
-    s.deleteGrave(id);
+    s.deleteGrave(id, clock());
+  };
+  const openExisting = (id: string): void => {
+    setDuplicate(null);
+    setPrefill(undefined);
+    setPrefillVersion(0);
+    setSelectedId(id);
+    setView('graveyard');
   };
   const edit = (id: string): void => {
     setEditingId(id);
@@ -141,7 +162,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     celebrate(id);
   };
 
-  const toastMessage = changed
+  const toastMessage = lastDelete
+    ? `${lastDelete.grave.name} was deleted.`
+    : changed
     ? changed.status === 'cancelled'
       ? `${changed.name} is now a tombstone.`
       : `${changed.name} is now a ghost.`
@@ -179,7 +202,19 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             }
           />
           <Seance existing={s.graves} clock={clock} onBury={bury} />
-          <GraveForm initial={EMPTY_VALUES} prefill={prefill} prefillVersion={prefillVersion} onSubmit={bury} />
+          {duplicate && (
+            <div role="alertdialog" aria-labelledby="dup-heading" aria-describedby="dup-text" className={styles.notice}>
+              <div>
+                <strong id="dup-heading">Already buried?</strong>
+                <p id="dup-text">
+                  {duplicate.existing.name} already has a grave with this charge date. Bury a second one anyway?
+                </p>
+              </div>
+              <PixelButton onClick={() => bury(duplicate.trial)}>Bury anyway</PixelButton>
+              <PixelButton onClick={() => openExisting(duplicate.existing.id)}>Open existing</PixelButton>
+            </div>
+          )}
+          <GraveForm initial={EMPTY_VALUES} prefill={prefill} prefillVersion={prefillVersion} onSubmit={submitTrial} />
         </>
       )}
     </PixelPanel>
@@ -258,6 +293,22 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             onToggleSound={s.toggleSound}
             onToggleCalm={s.toggleCalm}
             onSummon={summon}
+            dataTools={
+              <DataTools
+                onExport={() =>
+                  downloadBackup(
+                    exportBackup({ graves: s.graves, settings: s.settings, progress: s.progress }, clock()),
+                    BACKUP_FILENAME,
+                  )
+                }
+                onImport={s.importData}
+                onClear={() => {
+                  s.clearAll();
+                  setSelectedId(null);
+                  setEditingId(null);
+                }}
+              />
+            }
           />
         )}
       </main>
@@ -268,12 +319,13 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
 
       {celebration && <Celebration amount={celebration} motion={motionAllowed} onDone={clearCelebration} />}
 
-      {toastOpen && lastChange && changed && (
+      {toastOpen && (lastDelete || (lastChange && changed)) && (
         <UndoToast
-          changeKey={lastChange.atMs}
+          changeKey={lastDelete ? lastDelete.atMs : (lastChange?.atMs ?? 0)}
           message={toastMessage}
           onUndo={() => {
-            s.undo(clock());
+            if (lastDelete) s.undoDelete(clock());
+            else s.undo(clock());
             playSound('undo');
           }}
           onExpire={expireToast}
