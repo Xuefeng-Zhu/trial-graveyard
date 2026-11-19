@@ -154,10 +154,10 @@ describe('formatMoney and epitaph', () => {
   });
 
   it('writes epitaphs for every cadence', () => {
-    const base = { name: 'Audible', priceCents: 1495, currency: 'USD' } as const;
-    expect(epitaph({ ...base, cadence: 'monthly' })).toBe('Here lies Audible. Saved you $14.95/mo.');
-    expect(epitaph({ ...base, cadence: 'weekly' })).toBe('Here lies Audible. Saved you $14.95/wk.');
-    expect(epitaph({ ...base, cadence: 'yearly' })).toBe('Here lies Audible. Saved you $14.95/yr.');
-    expect(epitaph({ ...base, cadence: 'one-time' })).toBe('Here lies Audible. Saved you $14.95.');
+    const base = { name: 'Necro Audiobooks', priceCents: 1495, currency: 'USD' } as const;
+    expect(epitaph({ ...base, cadence: 'monthly' })).toBe('Here lies Necro Audiobooks. Saved you $14.95/mo.');
+    expect(epitaph({ ...base, cadence: 'weekly' })).toBe('Here lies Necro Audiobooks. Saved you $14.95/wk.');
+    expect(epitaph({ ...base, cadence: 'yearly' })).toBe('Here lies Necro Audiobooks. Saved you $14.95/yr.');
+    expect(epitaph({ ...base, cadence: 'one-time' })).toBe('Here lies Necro Audiobooks. Saved you $14.95.');
   });
 });

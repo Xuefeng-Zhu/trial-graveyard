@@ -19,19 +19,19 @@ describe('GraveForm', () => {
   it('saves a valid grave and resets the form', () => {
     const onSubmit = vi.fn();
     render(<GraveForm onSubmit={onSubmit} />);
-    type('Name', '  Netflix ');
+    type('Name', '  Phantomflix ');
     type('Charge date', '2026-10-31');
     type('Price', '15.49');
     type('Cadence', 'yearly');
-    type('Cancel URL (optional)', 'https://netflix.com/cancel');
+    type('Cancel URL (optional)', 'https://phantomflix.example/cancel');
     fireEvent.submit(screen.getByRole('form', { name: 'Grave details' }));
     expect(onSubmit).toHaveBeenCalledOnce();
     expect(onSubmit.mock.calls[0]![0]).toMatchObject({
-      name: 'Netflix',
+      name: 'Phantomflix',
       priceCents: 1549,
       currency: 'USD',
       cadence: 'yearly',
-      cancelUrl: 'https://netflix.com/cancel',
+      cancelUrl: 'https://phantomflix.example/cancel',
     });
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(screen.getByLabelText('Name')).toHaveFocus();
@@ -118,22 +118,22 @@ describe('PasteBox', () => {
     fireEvent.change(screen.getByLabelText(/paste a receipt/i), {
       target: {
         value:
-          'Welcome to Netflix! Your free trial ends on October 31, 2026. After that you will be charged $15.49/month. https://www.netflix.com/cancelplan',
+          'Welcome to Phantomflix! Your free trial ends on October 31, 2026. After that you will be charged $15.49/month. https://www.phantomflix.example/cancelplan',
       },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Read the receipt' }));
-    expect(screen.getByLabelText('Name')).toHaveValue('Netflix');
+    expect(screen.getByLabelText('Name')).toHaveValue('Phantomflix');
     expect(screen.getByLabelText('Charge date')).toHaveValue('2026-10-31');
     expect(screen.getByLabelText('Price')).toHaveValue('15.49');
     expect(screen.getByLabelText('Cadence')).toHaveValue('monthly');
-    expect(screen.getByLabelText('Cancel URL (optional)')).toHaveValue('https://www.netflix.com/cancelplan');
+    expect(screen.getByLabelText('Cancel URL (optional)')).toHaveValue('https://www.phantomflix.example/cancelplan');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('keeps edits the user can still make after prefill', () => {
     render(<Harness />);
     fireEvent.change(screen.getByLabelText(/paste a receipt/i), {
-      target: { value: 'Netflix trial ends October 31, 2026, $15.49/month' },
+      target: { value: 'Phantomflix trial ends October 31, 2026, $15.49/month' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Read the receipt' }));
     type('Price', '9.99');

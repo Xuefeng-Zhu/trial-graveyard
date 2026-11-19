@@ -4,7 +4,7 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
 
 - [x] 1. Domain: personalised epitaph formatter
   - [x] 1.1 `src/domain/epitaph.ts` with `formatEpitaph(grave)` using UTC month and year and the money formatter in `savings.ts`. [H2.1 to H2.3]
-  - [x] 1.2 Example tests including "Here lies Disney+ · $13.99/mo · slain Nov 2026", one-time and non-USD cases. Keep 100% coverage.
+  - [x] 1.2 Example tests including "Here lies Phantomflix · $13.99/mo · slain Nov 2026", one-time and non-USD cases. Keep 100% coverage.
 
 - [x] 2. Property tests for epitaph and savings totals
   - [x] 2.1 Extend `src/domain/arbitraries.ts` with a cancelled-grave arbitrary (random name, currency, cadence, `cancelledAt`). [H7]

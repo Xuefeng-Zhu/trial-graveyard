@@ -11,11 +11,11 @@ import {
 } from './trial';
 
 const valid: TrialInput = {
-  name: ' Audible ',
+  name: ' Necro Audiobooks ',
   chargeAt: '2026-10-31',
   price: '14.95',
   cadence: 'monthly',
-  cancelUrl: 'https://audible.com/cancel',
+  cancelUrl: 'https://necroaudiobooks.example/cancel',
 };
 
 describe('validateTrial', () => {
@@ -23,10 +23,10 @@ describe('validateTrial', () => {
     const result = validateTrial(valid);
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.value.name).toBe('Audible');
+    expect(result.value.name).toBe('Necro Audiobooks');
     expect(result.value.priceCents).toBe(1495);
     expect(result.value.currency).toBe('USD');
-    expect(result.value.cancelUrl).toBe('https://audible.com/cancel');
+    expect(result.value.cancelUrl).toBe('https://necroaudiobooks.example/cancel');
     expect(result.value.chargeAt).toMatch(/^2026-10-31T09:00:00[+-]\d{2}:\d{2}$/);
   });
 
@@ -125,7 +125,7 @@ describe('createGrave', () => {
     if (!result.ok) throw new Error('expected valid');
     const now = new Date(2026, 9, 1, 12, 0, 0);
     const grave = createGrave(result.value, 'abc', now);
-    expect(grave).toMatchObject({ id: 'abc', status: 'active', name: 'Audible', priceCents: 1495 });
+    expect(grave).toMatchObject({ id: 'abc', status: 'active', name: 'Necro Audiobooks', priceCents: 1495 });
     expect(Date.parse(grave.createdAt)).toBe(now.getTime());
   });
 });

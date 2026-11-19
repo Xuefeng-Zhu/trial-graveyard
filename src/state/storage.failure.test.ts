@@ -5,7 +5,7 @@ import { createGraveStore } from './store';
 
 const NOW = new Date('2026-10-01T12:00:00.000Z');
 const TRIAL = {
-  name: 'Netflix',
+  name: 'Phantomflix',
   chargeAt: '2026-10-31T09:00:00-07:00',
   priceCents: 1549,
   currency: 'USD',

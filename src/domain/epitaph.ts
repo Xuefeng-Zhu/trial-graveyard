@@ -5,7 +5,7 @@ const SHORT: Record<Cadence, string> = { weekly: 'wk', monthly: 'mo', yearly: 'y
 
 const MONTH_YEAR = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 
-/** "Here lies Disney+ · $13.99/mo · slain Nov 2026". Month and year are read in UTC so output never depends on the machine's zone. */
+/** "Here lies Phantomflix · $13.99/mo · slain Nov 2026". Month and year are read in UTC so output never depends on the machine's zone. */
 export function formatEpitaph(
   grave: Pick<Grave, 'name' | 'priceCents' | 'currency' | 'cadence' | 'cancelledAt' | 'createdAt'>,
 ): string {

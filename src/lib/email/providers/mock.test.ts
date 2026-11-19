@@ -45,7 +45,7 @@ describe('mock provider', () => {
     const msgs = await collect(p.searchReceipts({ since: SINCE }));
     expect(msgs).toHaveLength(13);
     const text = msgs.map((m) => `${m.subject} ${m.text}`).join('\n');
-    for (const s of ['Disney+', 'Spotify Premium', 'Adobe Creative Cloud', 'Duolingo Max', 'New York Times', 'Peloton', 'ChatGPT Plus', 'Audible']) {
+    for (const s of ['Phantomflix', 'Wraithwave Premium', 'Cryptic Cloud', 'Hexlingo Max', 'Grimoire+', 'Spectral Fitness', 'Ghoul GPT Pro', 'Necro Audiobooks']) {
       expect(text).toContain(s);
     }
     expect(msgs.filter((m) => /renews on/i.test(m.subject))).toHaveLength(2);

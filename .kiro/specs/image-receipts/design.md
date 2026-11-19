@@ -57,7 +57,7 @@ Worker, core and language data come from the tesseract.js defaults (jsDelivr for
 State machine: `idle`, `reading` (progress, AbortController), `done` (text, hint, problem), `error`. The drop zone is a labelled region with the two file inputs and a paste handler. The thumbnail uses `URL.createObjectURL` and is revoked on change and unmount. The progress bar uses `role="progressbar"`, and the label sits in a polite live region. A CSS shimmer runs only when `useReducedMotion()` is false. Results show the hint, the privacy note, a `<details>` "What the spirits read" with an editable textarea and "Read again", and, for problems, the friendly message plus "Enter it by hand", which calls `onManual`. PasteBox forwards `onParsed`, and App focuses the form's name field for `onManual`.
 
 ## 8. Samples
-`scripts/make-samples.py` (Pillow) draws three confirmation cards with invented data and writes `public/samples/{disney-plus,spotify,adobe}.png`. "Try a sample screenshot" fetches `${import.meta.env.BASE_URL}samples/disney-plus.png` and feeds the blob to the same flow.
+`scripts/make-samples.py` (Pillow) draws three confirmation cards with invented data and writes `public/samples/{phantomflix,wraithwave,cryptic-cloud}.png`. "Try a sample screenshot" fetches `${import.meta.env.BASE_URL}samples/phantomflix.png` and feeds the blob to the same flow.
 
 ## 9. Offline
 `globPatterns` stays as is, so samples and PNGs under 2 MiB are precached and no large model file is. `workbox.runtimeCaching` adds a `CacheFirst` rule named `tesseract-assets` for requests to `cdn.jsdelivr.net` and `tessdata.projectnaptha.com`, with a 30 day expiry and 20 entries, and `cacheableResponse` statuses 0 and 200 so opaque responses work.

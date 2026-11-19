@@ -24,7 +24,7 @@ export const UNREADABLE_IMAGE =
   'This browser cannot open that kind of picture (HEIC, for example). Try a PNG or JPEG screenshot, or enter the trial by hand.';
 export const PRIVACY_NOTE =
   'Your image never leaves this device. Only the trial you confirm is saved, never the image or the words read from it. The first read downloads the reading tools from public CDNs (cdn.jsdelivr.net and tessdata.projectnaptha.com), which can see that you used this feature but never receive your image.';
-export const SAMPLE_PATH = 'samples/disney-plus.png';
+export const SAMPLE_PATH = 'samples/phantomflix.png';
 
 const HINTS: Record<ConfidenceHint, string> = {
   clear: 'The spirits read this clearly.',

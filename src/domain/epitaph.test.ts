@@ -7,12 +7,12 @@ import { formatMoney } from './savings';
 describe('formatEpitaph', () => {
   it('formats the documented example', () => {
     const g = graveWith({
-      name: 'Disney+',
+      name: 'Phantomflix',
       priceCents: 1399,
       status: 'cancelled',
       cancelledAt: '2026-11-15T10:00:00.000Z',
     });
-    expect(formatEpitaph(g)).toBe('Here lies Disney+ · $13.99/mo · slain Nov 2026');
+    expect(formatEpitaph(g)).toBe('Here lies Phantomflix · $13.99/mo · slain Nov 2026');
   });
 
   it('omits the cadence suffix for one-time prices', () => {
@@ -23,7 +23,7 @@ describe('formatEpitaph', () => {
   it('supports weekly, yearly and non-USD currencies', () => {
     expect(formatEpitaph(graveWith({ cadence: 'weekly', cancelledAt: '2026-01-05T00:00:00Z' }))).toContain('$15.49/wk');
     const yearly = graveWith({ cadence: 'yearly', currency: 'EUR', priceCents: 9900, cancelledAt: '2026-02-05T00:00:00Z' });
-    expect(formatEpitaph(yearly)).toBe('Here lies Netflix · €99.00/yr · slain Feb 2026');
+    expect(formatEpitaph(yearly)).toBe('Here lies Phantomflix · €99.00/yr · slain Feb 2026');
   });
 
   it('uses UTC at month boundaries', () => {

@@ -188,10 +188,10 @@ describe('getViewState', () => {
   });
 
   it('returns a tombstone with epitaph for cancelled graves', () => {
-    const grave = graveWith({ name: 'Audible', priceCents: 1495, status: 'cancelled' });
+    const grave = graveWith({ name: 'Necro Audiobooks', priceCents: 1495, status: 'cancelled' });
     expect(getViewState(grave, now)).toEqual({
       kind: 'tombstone',
-      epitaph: 'Here lies Audible. Saved you $14.95/mo.',
+      epitaph: 'Here lies Necro Audiobooks. Saved you $14.95/mo.',
       savedCents: 1495,
     });
   });

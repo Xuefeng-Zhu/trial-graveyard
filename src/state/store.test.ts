@@ -21,12 +21,12 @@ const NOW = new Date('2026-10-01T12:00:00.000Z');
 const at = (ms: number) => new Date(NOW.getTime() + ms);
 
 const TRIAL: ValidTrial = {
-  name: 'Netflix',
+  name: 'Phantomflix',
   chargeAt: '2026-10-31T09:00:00-07:00',
   priceCents: 1549,
   currency: 'USD',
   cadence: 'monthly',
-  cancelUrl: 'https://netflix.com/cancel',
+  cancelUrl: 'https://phantomflix.example/cancel',
 };
 
 function newStore() {
@@ -42,11 +42,11 @@ describe('actions', () => {
   it('adds, updates and deletes graves', () => {
     const store = newStore();
     const g = store.getState().addGrave(TRIAL, NOW);
-    expect(g).toMatchObject({ id: 'id-1', status: 'active', name: 'Netflix' });
+    expect(g).toMatchObject({ id: 'id-1', status: 'active', name: 'Phantomflix' });
     expect(store.getState().graves).toHaveLength(1);
 
-    store.getState().updateGrave('id-1', { ...TRIAL, name: 'Hulu', cancelUrl: undefined });
-    expect(store.getState().graves[0]).toMatchObject({ name: 'Hulu', priceCents: 1549 });
+    store.getState().updateGrave('id-1', { ...TRIAL, name: 'Hollowtv', cancelUrl: undefined });
+    expect(store.getState().graves[0]).toMatchObject({ name: 'Hollowtv', priceCents: 1549 });
     expect(store.getState().graves[0]?.cancelUrl).toBeUndefined();
     store.getState().updateGrave('missing', TRIAL);
     expect(store.getState().graves).toHaveLength(1);
@@ -56,10 +56,10 @@ describe('actions', () => {
   });
 
   it('accepts validated form output', () => {
-    const result = validateTrial({ name: ' Audible ', chargeAt: '2026-11-14', price: '14.95', cadence: 'monthly' });
+    const result = validateTrial({ name: ' Necro Audiobooks ', chargeAt: '2026-11-14', price: '14.95', cadence: 'monthly' });
     if (!result.ok) throw new Error('expected valid trial');
     const store = newStore();
-    expect(store.getState().addGrave(result.value, NOW).name).toBe('Audible');
+    expect(store.getState().addGrave(result.value, NOW).name).toBe('Necro Audiobooks');
   });
 
   it('cancels and keeps with timestamps', () => {

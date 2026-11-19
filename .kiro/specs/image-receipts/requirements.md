@@ -72,7 +72,7 @@ User story: As a user with a screenshot of a confirmation email, I want to add i
 4. THE tests SHALL NOT import `tesseract.js` and SHALL NOT download models.
 
 ### G9. Samples
-1. THE repository SHALL contain 3 small sample receipt PNGs in `public/samples/` (Disney+, Spotify, Adobe trial confirmations) with invented data and no personal information.
+1. THE repository SHALL contain 3 small sample receipt PNGs in `public/samples/` (Phantomflix, Wraithwave, Cryptic Cloud trial confirmations) with invented data and no personal information.
 2. THE repository SHALL contain the script that generates them.
 3. THE UI SHALL offer a "Try a sample screenshot" link that loads a sample through `import.meta.env.BASE_URL` and runs the normal flow.
 

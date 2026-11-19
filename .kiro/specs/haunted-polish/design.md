@@ -72,7 +72,7 @@ export function formatEpitaph(g: Grave): string {
 ## 8. Testing
 | Area | Tests |
 |---|---|
-| `formatEpitaph` | Example: "Here lies Disney+ · $13.99/mo · slain Nov 2026". Properties P-E1 to P-E5 (H7.1). |
+| `formatEpitaph` | Example: "Here lies Phantomflix · $13.99/mo · slain Nov 2026". Properties P-E1 to P-E5 (H7.1). |
 | Savings totals | Properties P-T1 to P-T5 (H7.2) with `fc.array(graveArb)` and `fc.shuffledSubarray`. |
 | `buildShareSummary` | Example and property: no grave name appears in the output (H4.5). |
 | `Landing` | Renders pitch and button, button loads the demo, reduced-motion variant has no animated nodes, axe passes. |

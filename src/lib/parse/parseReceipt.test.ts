@@ -74,7 +74,7 @@ describe('units', () => {
   });
 
   it('returns an empty result for digit-free input', () => {
-    expect(parseReceipt('Welcome to Netflix! Your trial ends soon.', REF_DATE)).toEqual({});
+    expect(parseReceipt('Welcome to Phantomflix! Your trial ends soon.', REF_DATE)).toEqual({});
     expect(parseReceipt('', REF_DATE)).toEqual({});
   });
 });

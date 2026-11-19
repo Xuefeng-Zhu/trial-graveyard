@@ -14,28 +14,28 @@ FONT_PATHS = [
 OUT = os.path.join(os.path.dirname(__file__), "..", "public", "samples")
 
 SAMPLES = {
-    "disney-plus": ("Disney+", (17, 60, 140), [
-        "Welcome to Disney+",
+    "phantomflix": ("Phantomflix", (60, 30, 110), [
+        "Welcome to Phantomflix",
         "Your free trial has started.",
         "Your trial ends on November 15.",
         "After that you will be charged $13.99/month.",
         "Cancel any time before then at",
-        "https://www.disneyplus.com/account",
+        "https://www.phantomflix.example/account",
     ]),
-    "spotify": ("Spotify Premium", (30, 120, 60), [
-        "Thanks for trying Spotify Premium",
+    "wraithwave": ("Wraithwave Premium", (30, 120, 90), [
+        "Thanks for trying Wraithwave Premium",
         "Your free trial is active.",
         "Your first payment of $11.99/month",
         "will be charged on December 3.",
         "Manage your plan at",
-        "https://www.spotify.com/account",
+        "https://www.wraithwave.example/account",
     ]),
-    "adobe": ("Adobe Creative Cloud", (170, 30, 30), [
-        "Your Adobe Creative Cloud trial",
+    "cryptic-cloud": ("Cryptic Cloud", (150, 40, 60), [
+        "Your Cryptic Cloud trial",
         "Free for 7 days. Your trial ends on October 28.",
         "Then you will be charged $59.99/month.",
         "Cancel your plan at",
-        "https://account.adobe.com/plans",
+        "https://account.crypticcloud.example/plans",
     ]),
 }
 

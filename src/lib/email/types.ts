@@ -43,7 +43,7 @@ export interface Candidate {
   confidence: number;
   /** Up to 160 characters around the charge sentence. */
   snippet: string;
-  /** For example `subject:trial` or `sender:disneyplus.com`. */
+  /** For example `subject:trial` or `sender:phantomflix.example`. */
   signals: string[];
 }
 

@@ -15,7 +15,7 @@ import {
 } from './ImageReceipt';
 
 const NOW = new Date('2026-10-20T12:00:00Z');
-const TEXT = 'Your trial ends on November 15. You will be charged $13.99/month. https://www.disneyplus.com/account';
+const TEXT = 'Your trial ends on November 15. You will be charged $13.99/month. https://www.phantomflix.example/account';
 const png = () => new File(['x'], 'shot.png', { type: 'image/png' });
 const preprocess = async (f: Blob) => f;
 
