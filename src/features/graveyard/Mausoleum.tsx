@@ -54,7 +54,7 @@ export function Mausoleum({ graves, reduced }: MausoleumProps) {
       <p className={styles.counter} aria-hidden="true" data-testid="mausoleum-animated">
         {formatMoney(shown, currency)}
       </p>
-      <p className={styles.srOnly} data-testid="mausoleum-total">
+      <p className={styles.srOnly} data-testid="mausoleum-total" aria-live="polite">
         Souls saved: {final}
         {rest.map((t) => `, ${formatMoney(t.cents, t.currency)}`).join('')}
       </p>

@@ -11,6 +11,8 @@ export interface GraveFormProps {
   /** Merged into the form whenever `prefillVersion` changes (used by the paste box). */
   prefill?: Partial<FormValues>;
   prefillVersion?: number;
+  /** Focus the name field on mount. Defaults to true. */
+  autoFocus?: boolean;
   submitLabel?: string;
   onSubmit: (trial: ValidTrial) => void;
   onCancel?: () => void;
@@ -22,6 +24,7 @@ export function GraveForm({
   initial = EMPTY_VALUES,
   prefill,
   prefillVersion = 0,
+  autoFocus = true,
   submitLabel = 'Bury it in the graveyard',
   onSubmit,
   onCancel,
@@ -33,7 +36,9 @@ export function GraveForm({
 
   // R1.4: the name field has focus when the editor opens.
   useEffect(() => {
-    nameRef.current?.focus();
+    if (autoFocus) nameRef.current?.focus();
+    // Only on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

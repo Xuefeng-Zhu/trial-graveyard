@@ -5,7 +5,9 @@ import { Scene } from '../features/graveyard';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
 import { Seance } from '../features/seance';
-import type { Grave } from '../domain/trial';
+import { Landing } from '../features/landing';
+import { ShareButton } from '../features/share';
+import type { Grave, ValidTrial } from '../domain/trial';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
 import { graveStore } from '../state/store';
@@ -55,7 +57,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const status = (id: string, kind: 'cancel' | 'keep'): void => {
     if (kind === 'cancel') s.cancelGrave(id, clock());
     else s.keepGrave(id, clock());
-    playSound(kind);
+    playSound(kind === 'cancel' ? 'thunder' : 'keep');
+  };
+
+  const bury = (trial: ValidTrial): void => {
+    s.addGrave(trial, clock());
+    playSound('creak');
   };
 
   const deleteGrave = (id: string): void => {
@@ -63,6 +70,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     s.deleteGrave(id);
   };
   const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
+
+  const empty = s.graves.length === 0;
+  const summon = (): void => s.loadDemo(clock());
 
   const toastMessage = changed
     ? changed.status === 'cancelled'
@@ -83,9 +93,14 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           >
             Daylight mode
           </button>
-          <button type="button" className={styles.button} onClick={() => s.loadDemo(clock())}>
-            Summon demo graveyard
+          <button type="button" className={styles.button} aria-pressed={soundOn} onClick={s.toggleSound}>
+            {soundOn ? 'Sound: on' : 'Sound: off'}
           </button>
+          {!empty && (
+            <button type="button" className={styles.button} onClick={summon}>
+              Summon demo graveyard
+            </button>
+          )}
         </div>
       </header>
 
@@ -99,6 +114,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       )}
 
       <main>
+        {empty && !editing && <Landing daylight={daylight} onSummon={summon} />}
         <section aria-labelledby="editor-heading" className={styles.editor}>
           <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
           {editing ? (
@@ -121,16 +137,19 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
                   document.querySelector<HTMLElement>('form[aria-label="Grave details"] [name="name"]')?.focus()
                 }
               />
-              <Seance existing={s.graves} clock={clock} onBury={(trial) => s.addGrave(trial, clock())} />
+              <Seance existing={s.graves} clock={clock} onBury={bury} />
               <GraveForm
                 initial={EMPTY_VALUES}
                 prefill={prefill}
                 prefillVersion={prefillVersion}
-                onSubmit={(trial) => s.addGrave(trial, clock())}
+                autoFocus={!empty}
+                onSubmit={bury}
               />
             </>
           )}
         </section>
+
+        <ShareButton graves={s.graves} className={styles.button} />
 
         {daylight ? (
           <DaylightList
@@ -142,7 +161,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             onDelete={deleteGrave}
             onExport={exportGraves}
           />
-        ) : (
+        ) : empty ? null : (
           <Scene
             graves={s.graves}
             now={now}
