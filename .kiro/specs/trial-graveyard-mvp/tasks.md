@@ -32,13 +32,13 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 6.3 `useNow` clock hook (60 s tick, refresh on visibility). [R2.7]
   - [x] 6.4 Tests with fake-indexeddb including P-X1.
 
-- [ ] 7. Design system
+- [x] 7. Design system
   - `src/design/`: tokens.css (colors checked for AA contrast, focus ring, spacing), gothic display font plus readable body font (self-hosted), muted-by-default sound helper, global reduced-motion CSS block. [R8.4, R8.7, R8.9, R10]
 
-- [ ] 8. Editor
-  - [ ] 8.1 `GraveForm`: fields, inline errors, autofocus, keyboard only flow. [R1]
-  - [ ] 8.2 `PasteBox`: calls parser, prefills form, shows the empty-result message. [R5.5, R5.6]
-  - [ ] 8.3 Component tests for validation and prefill. Manually time a new trial entry (target under 10 s). [R1]
+- [x] 8. Editor
+  - [x] 8.1 `GraveForm`: fields, inline errors, autofocus, keyboard only flow. [R1]
+  - [x] 8.2 `PasteBox`: calls parser, prefills form, shows the empty-result message. [R5.5, R5.6]
+  - [x] 8.3 Component tests for validation and prefill. Manually time a new trial entry (target under 10 s). [R1] (Manual timing not possible in the sandbox; the form is a single screen with 6 fields, native tab order and Enter to submit.)
 
 - [ ] 9. Daylight mode list (built first so the app is usable before the scene)
   - `src/features/daylight/DaylightList`: sorted list, stage badge text, countdown, "Cancel now", "I cancelled", "Keep it", undo toast, ICS buttons, Mausoleum total. [R2.8, R3, R6, R7, R8.2]
