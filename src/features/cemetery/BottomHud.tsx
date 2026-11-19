@@ -3,7 +3,9 @@ import type { XpEntry } from '../../domain/xp';
 import { toLocalIso } from '../../domain/trial';
 import type { Grave } from '../../domain/trial';
 import { PixelButton, Scroll } from '../../design/pixel';
-import { nextToRise, statusText } from './format';
+import { nextCharge, overdueTrials } from '../../domain/selectors';
+import { AtRisk } from '../haunting';
+import { statusText } from './format';
 import styles from './cemetery.module.css';
 
 export interface BottomHudProps {
@@ -18,7 +20,9 @@ export interface BottomHudProps {
 export function BottomHud({ graves, now, ledger, onOpenQuests, onExorcise }: BottomHudProps) {
   const quest = dailyQuest(ledger, toLocalIso(now));
   const active = graves.filter((g) => g.status === 'active');
-  const next = nextToRise(graves);
+  const next = nextCharge(graves, now);
+  const overdue = overdueTrials(graves, now);
+  const target = next ?? overdue[0];
   return (
     <div className={styles.bottomHud} data-testid="bottom-hud">
       <button type="button" className={styles.quest} onClick={onOpenQuests}>
@@ -37,19 +41,21 @@ export function BottomHud({ graves, now, ledger, onOpenQuests, onExorcise }: Bot
             </span>
           </>
         ) : (
-          <span>Nothing is stirring.</span>
+          <span>{overdue.length > 0 ? 'No upcoming charges.' : 'Nothing is stirring.'}</span>
         )}
+        {overdue.length > 0 && <span data-testid="hud-overdue">{overdue.length} overdue</span>}
+        <AtRisk graves={graves} now={now} />
       </div>
       <PixelButton
         variant="primary"
         className={styles.exorcise}
-        disabled={!next}
-        aria-describedby={next ? undefined : 'exorcise-none'}
-        onClick={() => next && onExorcise(next.id)}
+        disabled={!target}
+        aria-describedby={target ? undefined : 'exorcise-none'}
+        onClick={() => target && onExorcise(target.id)}
       >
         Exorcise Trials ({active.length})
       </PixelButton>
-      {!next && (
+      {!target && (
         <span id="exorcise-none" className={styles.srOnly}>
           No active trials to exorcise.
         </span>

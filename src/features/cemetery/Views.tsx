@@ -4,7 +4,7 @@ import type { Progress, XpEntry } from '../../domain/xp';
 import { toLocalIso } from '../../domain/trial';
 import type { Grave } from '../../domain/trial';
 import { Decoration, PixelBadge, PixelButton, PixelPanel, GravestoneArt, Scroll } from '../../design/pixel';
-import { CountdownHero, StatsPanel } from '../haunting';
+import { AtRisk, CountdownHero, StatsPanel } from '../haunting';
 import { Mausoleum } from '../graveyard';
 import { nextToRise, statusText } from './format';
 import styles from './cemetery.module.css';
@@ -128,6 +128,7 @@ export function SavingsView({ graves, now, motion, onExport, onHaunt, share }: S
         <Mausoleum graves={graves} reduced={!motion} />
       </PixelPanel>
       <PixelPanel>
+        <AtRisk graves={graves} now={now} />
         <CountdownHero graves={graves} now={now} reducedMotion={!motion} />
       </PixelPanel>
       <PixelPanel>
