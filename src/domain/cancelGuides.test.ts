@@ -11,6 +11,9 @@ const FICTIONAL = [
   'Spectral Fitness',
   'Necro Audiobooks',
   'Ghoul GPT Pro',
+  'Wraithwave Premium',
+  'Moonnotes Plus',
+  'Hollowtv',
 ];
 
 describe('normalizeService', () => {

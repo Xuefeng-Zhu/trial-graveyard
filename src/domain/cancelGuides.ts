@@ -53,6 +53,18 @@ export const cancelGuides: Readonly<Record<string, CancelGuide>> = {
     cancelUrl: 'https://ghoulgpt.example/settings/billing',
     steps: ['Sign in to Ghoul GPT.', 'Open Settings, then Billing.', 'Choose "Cancel Pro" and confirm.'],
   },
+  wraithwavepremium: {
+    cancelUrl: 'https://www.wraithwave.example/account/subscription/',
+    steps: ['Sign in to Wraithwave.', 'Open Account, then Subscription.', 'Select "Fade away" and confirm.'],
+  },
+  moonnotesplus: {
+    cancelUrl: 'https://www.moonnotes.example/billing',
+    steps: ['Sign in to Moonnotes.', 'Open Billing.', 'Choose "Cancel Plus" and confirm.'],
+  },
+  hollowtv: {
+    cancelUrl: 'https://hollowtv.example/account',
+    steps: ['Sign in to Hollowtv.', 'Open Account.', 'Choose "End subscription" and confirm.'],
+  },
   netflix: {
     cancelUrl: 'https://www.netflix.com/cancelplan',
     steps: ['Sign in to Netflix.', 'Open Account.', 'Choose Cancel Membership and confirm.'],
