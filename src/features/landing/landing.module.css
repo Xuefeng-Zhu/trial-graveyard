@@ -1,0 +1,112 @@
+.landing {
+  position: relative;
+  overflow: hidden;
+  min-height: 22rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #12101a 0%, #2a2140 100%);
+  color: #ece8f5;
+}
+
+.plain {
+  min-height: 0;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.moon {
+  position: absolute;
+  top: 1.5rem;
+  right: 12%;
+  width: 5rem;
+  height: 5rem;
+}
+
+.glow {
+  animation: moonGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes moonGlow {
+  from {
+    filter: drop-shadow(0 0 10px rgb(255 248 205 / 0.3));
+  }
+  to {
+    filter: drop-shadow(0 0 28px rgb(255 248 205 / 0.6));
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 4;
+  padding: var(--space-5) var(--space-4);
+}
+
+.title {
+  margin: 0 0 var(--space-2);
+  font-size: 2.2rem;
+}
+
+.pitch {
+  margin: 0 0 var(--space-4);
+  font-size: 1.1rem;
+}
+
+.summon {
+  font: inherit;
+  font-weight: 600;
+  min-height: 44px;
+  min-width: 44px;
+  padding: var(--space-2) var(--space-5);
+  color: #12101a;
+  background: #9be28c;
+  border: 2px solid #9be28c;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.plain .summon {
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.summon:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow {
+    animation: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .landing {
+    min-height: 18rem;
+  }
+
+  .title {
+    font-size: 1.8rem;
+  }
+
+  .moon {
+    width: 3.5rem;
+    height: 3.5rem;
+    right: 8%;
+  }
+
+  .summon {
+    width: 100%;
+  }
+}

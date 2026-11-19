@@ -548,3 +548,31 @@
     animation: none !important;
   }
 }
+
+/* Mobile pass (H5): 360px wide, single column, 44px touch targets */
+@media (max-width: 480px) {
+  .scene {
+    overflow-x: hidden;
+  }
+
+  .field,
+  .row {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .item,
+  .urgentItem {
+    width: 100%;
+    max-width: 14rem;
+  }
+
+  .mausoleum {
+    max-width: 100%;
+  }
+
+  .button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

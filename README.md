@@ -19,6 +19,16 @@ npm run build   # typecheck, then build to dist/ (base path /trial-graveyard/)
 npm run preview # serve the production build
 ```
 
+## Screenshots
+
+These are placeholders named `placeholder-*.png` because no headless browser was available when the polish pass was written. Replace each file with a real capture of the same name (or update the paths below) after running `npm run dev`.
+
+![Landing screen with moon, fog and the Summon demo graveyard button](docs/screenshots/placeholder-landing.png)
+![Graveyard with a zombie shambling to the front row](docs/screenshots/placeholder-zombie-graveyard.png)
+![Tombstone with a personalised epitaph](docs/screenshots/placeholder-tombstone-epitaph.png)
+![My Graveyard share card with totals and the hashtag](docs/screenshots/placeholder-share-card.png)
+![Mobile layout at 360px wide](docs/screenshots/placeholder-mobile-360.png)
+
 ## Inbox Séance
 
 The crystal-ball button next to "Paste a receipt" opens the Inbox Séance. It connects to an inbox, scans receipt emails for trials, and lists what it found so you can review them and bury the ones you want.

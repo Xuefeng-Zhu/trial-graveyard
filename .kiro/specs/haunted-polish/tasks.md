@@ -14,10 +14,10 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
 - [x] 3. Tombstone epitaph and souls saved
   - Use `formatEpitaph` in `Tombstone.tsx`, show the per-currency souls saved total in `Mausoleum.tsx` with a polite live region, and check that undo restores the total. Update graveyard tests. [H2.4 to H2.7]
 
-- [ ] 4. Cinematic landing screen
-  - [ ] 4.1 `src/features/landing/Landing.tsx` and CSS module: sky, SVG moon, `Fog`, pitch, "Summon demo graveyard" button wired to `loadDemo`. [H1.1, H1.2, H1.4]
-  - [ ] 4.2 Reduced-motion and Daylight variants. Render it from `App.tsx` when there are no graves. [H1.3, H1.5]
-  - [ ] 4.3 Tests with mocked `matchMedia` plus a vitest-axe check. [H8.1]
+- [x] 4. Cinematic landing screen
+  - [x] 4.1 `src/features/landing/Landing.tsx` and CSS module: sky, SVG moon, `Fog`, pitch, "Summon demo graveyard" button wired to `loadDemo`. [H1.1, H1.2, H1.4]
+  - [x] 4.2 Reduced-motion and Daylight variants. Render it from `App.tsx` when there are no graves. [H1.3, H1.5]
+  - [x] 4.3 Tests with mocked `matchMedia` plus a vitest-axe check. [H8.1]
 
 - [x] 5. Sound effects
   - [x] 5.1 Add `creak` and `thunder` to `src/design/sounds.ts`, synthesised with Web Audio and still muted by default. No audio files. [H3.1, H3.6, H3.7]
@@ -28,14 +28,14 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 6.1 `src/domain/shareCard.ts` with `buildShareSummary(graves)` (totals and slain count, no names or URLs) and tests, including a property that names never appear. [H4.2, H4.5]
   - [x] 6.2 `src/features/share/drawShareCard.ts`: 1080x1350 canvas with totals and `#KiroweenHackathon26`, returns a PNG blob. [H4.2]
 
-- [ ] 7. Share button
+- [x] 7. Share button
   - `src/features/share/ShareButton.tsx`: Web Share API with files, download fallback, quiet `AbortError`, no-canvas message. Show it only when a grave is cancelled. Tests with mocked canvas and `navigator.share`, plus an axe check. [H4.1, H4.3, H4.4, H4.6, H8.1]
 
-- [ ] 8. Mobile layout pass
+- [x] 8. Mobile layout pass
   - Add `@media (max-width: 480px)` rules to the landing, scene, editor, daylight and Mausoleum CSS modules. Single column, 44px touch targets, no horizontal scroll at 360px. Check manually in devtools at 360px. [H5]
 
-- [ ] 9. README screenshots and Kiro features table
+- [x] 9. README screenshots and Kiro features table
   - Capture screenshots and a GIF into `docs/screenshots/`, add a "Screenshots" section with alt text, and a "Kiro features used" table (steering, specs 2, hooks 5, MCP, property-based tests, agent PRs). [H6]
 
-- [ ] 10. Checkpoint
+- [x] 10. Checkpoint
   - Run `npm run typecheck`, `npm test` (100% domain coverage gate) and `npm run build`. Manual keyboard, reduced-motion and contrast pass on the new screens. Confirm all tasks above are ticked and the `spec-sync` hook has updated the README counts. [H8]

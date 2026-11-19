@@ -5,6 +5,8 @@ import { Scene } from '../features/graveyard';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
 import { Seance } from '../features/seance';
+import { Landing } from '../features/landing';
+import { ShareButton } from '../features/share';
 import type { Grave, ValidTrial } from '../domain/trial';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
@@ -69,6 +71,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   };
   const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
 
+  const empty = s.graves.length === 0;
+  const summon = (): void => s.loadDemo(clock());
+
   const toastMessage = changed
     ? changed.status === 'cancelled'
       ? `${changed.name} is now a tombstone.`
@@ -91,9 +96,11 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           <button type="button" className={styles.button} aria-pressed={soundOn} onClick={s.toggleSound}>
             {soundOn ? 'Sound: on' : 'Sound: off'}
           </button>
-          <button type="button" className={styles.button} onClick={() => s.loadDemo(clock())}>
-            Summon demo graveyard
-          </button>
+          {!empty && (
+            <button type="button" className={styles.button} onClick={summon}>
+              Summon demo graveyard
+            </button>
+          )}
         </div>
       </header>
 
@@ -140,6 +147,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           )}
         </section>
 
+        {empty && <Landing daylight={daylight} onSummon={summon} />}
+        <ShareButton graves={s.graves} className={styles.button} />
+
         {daylight ? (
           <DaylightList
             graves={s.graves}
@@ -150,7 +160,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             onDelete={deleteGrave}
             onExport={exportGraves}
           />
-        ) : (
+        ) : empty ? null : (
           <Scene
             graves={s.graves}
             now={now}
