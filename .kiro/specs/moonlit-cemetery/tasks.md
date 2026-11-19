@@ -41,5 +41,5 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 9.3 360 px layout, bottom sheet. [M9]
   - [x] 9.4 Update App, graveyard and landing tests; axe on main views.
 
-- [ ] 10. README and closure
-  - [ ] 10.1 Screenshots, Kiro features table, bundle check. [M10]
+- [x] 10. README and closure
+  - [x] 10.1 Screenshots, Kiro features table, bundle check. [M10]

@@ -29,13 +29,25 @@ The public base path is resolved in `vite.base.ts`: `VITE_BASE` if set, else `/`
 
 ## Screenshots
 
-These are placeholders named `placeholder-*.png` because no headless browser was available when the polish pass was written. Replace each file with a real capture of the same name (or update the paths below) after running `npm run dev`.
+The Moonlit Cemetery pass (see `.kiro/specs/moonlit-cemetery/`) was captured in headless Chromium with the demo graveyard loaded. The visual target is `docs/design/concept-moonlit.jpg`.
 
-![Landing screen with moon, fog and the Summon demo graveyard button](docs/screenshots/placeholder-landing.png)
-![Graveyard with a zombie shambling to the front row](docs/screenshots/placeholder-zombie-graveyard.png)
-![Tombstone with a personalised epitaph](docs/screenshots/placeholder-tombstone-epitaph.png)
+![Landing screen over the moonlit parallax scene with the Summon demo graveyard button](docs/screenshots/moonlit-landing.png)
+![Graveyard with tombstones, a ghost and the glass HUD panels](docs/screenshots/moonlit-graveyard.png)
+![Zombie hands rising from the front row of graves with their action buttons](docs/screenshots/moonlit-zombie-hand.png)
+![Tombstone with a personalised epitaph](docs/screenshots/moonlit-tombstone.png)
+![Mobile layout at 360px wide](docs/screenshots/moonlit-mobile-360.png)
+![Mobile front row of zombies as a swipeable strip at 360px](docs/screenshots/moonlit-mobile-360-zombies.png)
+
+The share card image is still a placeholder (`placeholder-share-card.png`).
+
 ![My Graveyard share card with totals and the hashtag](docs/screenshots/placeholder-share-card.png)
-![Mobile layout at 360px wide](docs/screenshots/placeholder-mobile-360.png)
+
+### Moonlit Cemetery
+
+- **Scene:** a layered parallax backdrop (sky, hills, graves, fog, foreground) that reacts to pointer, scroll and device tilt, with a lazily loaded canvas atmosphere (fog, fireflies, wisps, shooting star) in its own chunk.
+- **Interactions:** a once-per-session intro (press Escape or skip to dismiss it), stones that tremble and glow as a charge date nears, a zombie hand and soil burst, a bury animation with a "saved" pop, and sound cues that follow the sound toggle.
+- **HUD:** glass panels on the right (a bottom sheet below 900px) hold "Next to rise", the editor and settings.
+- **Calm mode:** a persisted HUD setting that turns off decorative motion, in addition to honouring the OS reduced motion preference. The Daylight list stays available as the accessible view.
 
 ## Inbox Séance
 
@@ -61,7 +73,7 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 ## Built with Kiro
 
 - **Steering:** `.kiro/steering/` holds the product metaphor, tech stack and project structure, always included in the agent's context so the costume stays consistent.
-- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts.
+- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts. A fifth, `.kiro/specs/moonlit-cemetery/`, covers the cinematic parallax scene, motion mapping, Calm mode and the glass HUD.
 - **Agent hooks:** `.kiro/hooks/` has five hooks: test-on-save, domain-property-guard, spec-sync, a11y-check and spooky-copy.
 - **MCP:** `.kiro/settings/mcp.json` configures a `fetch` server and a GitHub server, explained in `.kiro/steering/mcp.md`. The token comes from `GITHUB_TOKEN`.
 - **Property-based tests:** fast-check covers stage boundaries, savings math, ICS export and the receipt parser, alongside example tests.
@@ -72,7 +84,7 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 | Feature | Where | What it does here |
 |---|---|---|
 | Steering | `.kiro/steering/` (product, structure, tech, mcp) | Keeps the haunted metaphor, stack and MCP usage consistent. |
-| Specs (4) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance and image receipts. |
+| Specs (5) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/`, `.kiro/specs/moonlit-cemetery/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance, image receipts and the Moonlit Cemetery redesign. |
 | Hooks (5) | `.kiro/hooks/` | Test on save, domain property guard, spec sync, a11y check, spooky copy. |
 | MCP | `.kiro/settings/mcp.json` | `fetch` for real cancellation and pricing pages, GitHub for follow-up issues. |
 | Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS and the receipt parser. |

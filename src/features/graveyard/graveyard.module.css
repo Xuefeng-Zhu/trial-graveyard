@@ -12,6 +12,13 @@
   color: var(--color-text);
 }
 
+.scene > .button {
+  align-self: flex-start;
+  position: relative;
+  z-index: 3;
+  margin-bottom: var(--space-3);
+}
+
 .srOnly {
   position: absolute;
   width: 1px;
@@ -103,6 +110,8 @@
 
 .item {
   --stone-w: 8.5rem;
+  /* Contains the absolutely positioned srOnly text so it cannot widen the page inside a scroll strip. */
+  position: relative;
   width: calc(var(--stone-w) * var(--depth));
   list-style: none;
   border-radius: var(--radius);
@@ -216,6 +225,9 @@
   font-size: 0.8rem;
   color: var(--color-text);
   text-shadow: 0 1px 6px rgb(3 6 24 / 0.9);
+  /* Captions paint above the zombie hand that rises beside them. */
+  position: relative;
+  z-index: 1;
 }
 
 .epitaph {
