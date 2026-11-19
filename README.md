@@ -19,6 +19,15 @@ npm run build   # typecheck, then build to dist/ (base path /trial-graveyard/ by
 npm run preview # serve the production build
 ```
 
+## Before the bite
+
+Trial Graveyard catches free trials before the first charge. The graveyard view leads with the trial closest to charging, then gives you four ways to kill it in time.
+
+- **Countdown hero:** the next trial to charge is featured with a live "turns in 2d 5h" countdown and the amount. It is calm beyond 7 days, uneasy within 7, restless within 3 days and rising within 24 hours. Rising shakes and glows, and stays still when you prefer reduced motion.
+- **Haunting reminders:** "Add haunting to calendar" on any trial downloads an `.ics` with two reminders, 48 hours before the charge and at 09:00 local on the charge day (never after the charge itself). "Export all hauntings" bundles every active trial. Each reminder has a stable UID, so importing again updates it instead of duplicating. Everything is built in the browser.
+- **Exorcism:** "Exorcise" opens a panel with the service's cancel link and 2 to 4 steps from a local guide. Demo brands use `.example` links, and unknown services get generic steps plus a web search link. "It's exorcised" buries the trial, adds it to souls saved, and can be undone.
+- **Trial hacker stats:** trials survived, dollars dodged this year, average days used before cancelling and trials that escaped, all derived from your graves.
+
 ## Deploy
 
 The public base path is resolved in `vite.base.ts`: `VITE_BASE` if set, else `/` when `VERCEL` is set, else `/trial-graveyard/`. The PWA manifest `scope` and `start_url`, the workbox `navigateFallback` and Vite's `base` all use it, and runtime assets use `import.meta.env.BASE_URL`.
@@ -73,7 +82,7 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 ## Built with Kiro
 
 - **Steering:** `.kiro/steering/` holds the product metaphor, tech stack and project structure, always included in the agent's context so the costume stays consistent.
-- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts. A fifth, `.kiro/specs/moonlit-cemetery/`, covers the cinematic parallax scene, motion mapping, Calm mode and the glass HUD.
+- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance. A fourth, `.kiro/specs/image-receipts/`, covers image receipts. A fifth, `.kiro/specs/moonlit-cemetery/`, covers the cinematic parallax scene, motion mapping, Calm mode and the glass HUD. A sixth, `.kiro/specs/before-the-bite/`, covers the countdown hero, haunting reminders, exorcism flow and stats.
 - **Agent hooks:** `.kiro/hooks/` has five hooks: test-on-save, domain-property-guard, spec-sync, a11y-check and spooky-copy.
 - **MCP:** `.kiro/settings/mcp.json` configures a `fetch` server and a GitHub server, explained in `.kiro/steering/mcp.md`. The token comes from `GITHUB_TOKEN`.
 - **Property-based tests:** fast-check covers stage boundaries, savings math, ICS export and the receipt parser, alongside example tests.
@@ -84,10 +93,10 @@ Under "Paste a receipt" you can also show the spirits a screenshot or photo of a
 | Feature | Where | What it does here |
 |---|---|---|
 | Steering | `.kiro/steering/` (product, structure, tech, mcp) | Keeps the haunted metaphor, stack and MCP usage consistent. |
-| Specs (5) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/`, `.kiro/specs/moonlit-cemetery/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance, image receipts and the Moonlit Cemetery redesign. |
+| Specs (6) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/`, `.kiro/specs/image-receipts/`, `.kiro/specs/moonlit-cemetery/`, `.kiro/specs/before-the-bite/` | Requirements, design and tasks for the MVP, the polish pass, the Inbox Séance, image receipts, the Moonlit Cemetery redesign and before the bite. |
 | Hooks (5) | `.kiro/hooks/` | Test on save, domain property guard, spec sync, a11y check, spooky copy. |
 | MCP | `.kiro/settings/mcp.json` | `fetch` for real cancellation and pricing pages, GitHub for follow-up issues. |
-| Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS and the receipt parser. |
+| Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS, the receipt parser and date math (reminder times, countdown, month ends, leap days and DST). |
 | Agent PRs from issues | GitHub issues | Each phase is an issue that an agent closes with a pull request. |
 
 ## License

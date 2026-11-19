@@ -22,6 +22,8 @@ export interface HudProps {
   /** A grave is being edited: reveal the panels and focus the form. */
   editing?: boolean;
   /** Add trial form, paste box and Inbox Seance. */
+  /** Countdown hero and stats, shown under "Next to rise". */
+  extras?: ReactNode;
   addPanel: ReactNode;
   /** Share button. Renders nothing until a grave is cancelled. */
   share: ReactNode;
@@ -48,6 +50,7 @@ export function Hud({
   onToggleCalm,
   onSummon,
   editing = false,
+  extras,
   addPanel,
   share,
 }: HudProps) {
@@ -92,6 +95,8 @@ export function Hud({
             <p className={styles.muted}>Nothing is stirring. Every grave is quiet.</p>
           )}
         </section>
+
+        {extras && <div className={`${styles.panel} glass`}>{extras}</div>}
 
         <div className={`${styles.panel} glass`}>{addPanel}</div>
 

@@ -158,6 +158,16 @@ describe('actions', () => {
     expect(store.getState().notice).toBeNull();
   });
 
+  it('exorcises like a cancellation, with undo', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().exorcise('id-1', NOW);
+    expect(store.getState().graves[0]).toMatchObject({ status: 'cancelled' });
+    expect(store.getState().graves[0]?.cancelledAt).toBeDefined();
+    expect(store.getState().undo(at(1000))).toBe(true);
+    expect(store.getState().graves[0]?.status).toBe('active');
+  });
+
   it('loads a demo covering every stage, one cancelled and one kept', () => {
     const store = newStore();
     store.getState().loadDemo(NOW);

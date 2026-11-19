@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
-import { DaylightList, downloadIcs } from '../features/daylight';
+import { DaylightList, downloadHauntingIcs, downloadIcs } from '../features/daylight';
 import { Scene, useReducedMotion } from '../features/graveyard';
 import { Hud } from '../features/hud';
 import { Intro, MoonlitBackdrop, introSeen, markIntroSeen } from '../features/moonlit';
@@ -10,6 +10,7 @@ import type { FormValues } from '../features/editor';
 import { Seance } from '../features/seance';
 import { Landing } from '../features/landing';
 import { ShareButton } from '../features/share';
+import { CountdownHero, ExorcismPanel, StatsPanel } from '../features/haunting';
 import type { Grave, ValidTrial } from '../domain/trial';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
@@ -38,6 +39,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [prefill, setPrefill] = useState<Partial<FormValues>>();
   const [prefillVersion, setPrefillVersion] = useState(0);
   const [toastOpen, setToastOpen] = useState(false);
+  const [exorcisingId, setExorcisingId] = useState<string | null>(null);
 
   const { daylight, soundOn, calm } = s.settings;
   const osReduced = useReducedMotion();
@@ -72,6 +74,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   useEffect(() => setToastOpen(lastChange !== null), [lastChange]);
   const expireToast = useCallback(() => setToastOpen(false), []);
 
+  const exorcising = exorcisingId ? s.graves.find((g) => g.id === exorcisingId) : undefined;
   const editing = editingId ? s.graves.find((g) => g.id === editingId) : undefined;
   const changed = lastChange ? s.graves.find((g) => g.id === lastChange.id) : undefined;
 
@@ -101,6 +104,12 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const summon = (): void => {
     s.loadDemo(clock());
     playSound('creak');
+  };
+  const hauntGraves = (graves: Grave[], filename: string): void => downloadHauntingIcs(graves, clock(), filename);
+  const confirmExorcism = (id: string): void => {
+    s.exorcise(id, clock());
+    setExorcisingId(null);
+    playSound('cancel');
   };
 
   const toastMessage = changed
@@ -174,6 +183,8 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
               onEdit={setEditingId}
               onDelete={deleteGrave}
               onExport={exportGraves}
+              onHaunt={hauntGraves}
+              onExorcise={setExorcisingId}
             />
           ) : (
             <Scene
@@ -187,6 +198,8 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
               onEdit={setEditingId}
               onDelete={deleteGrave}
               onExport={exportGraves}
+              onHaunt={hauntGraves}
+              onExorcise={setExorcisingId}
             />
           )}
         </main>
@@ -203,10 +216,20 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           onToggleCalm={s.toggleCalm}
           onSummon={empty ? undefined : summon}
           editing={editingId !== null}
+          extras={
+            <>
+              <CountdownHero graves={s.graves} now={now} reducedMotion={!motionAllowed} />
+              <StatsPanel graves={s.graves} now={now} />
+            </>
+          }
           addPanel={addPanel}
           share={<ShareButton graves={s.graves} className={styles.button} />}
         />
       </div>
+
+      {exorcising && (
+        <ExorcismPanel grave={exorcising} onExorcised={confirmExorcism} onClose={() => setExorcisingId(null)} />
+      )}
 
       {toastOpen && lastChange && changed && (
         <UndoToast
