@@ -1,0 +1,127 @@
+.root {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.mausoleum {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.mausoleum h2,
+.listHead h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 1.6rem;
+}
+
+.total {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.listHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.item {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.name {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.badge {
+  font-weight: 600;
+  color: var(--stage-sealed);
+}
+
+.sealed {
+  color: var(--stage-sealed);
+}
+.cracked {
+  color: var(--stage-cracked);
+}
+.churning {
+  color: var(--stage-churning);
+}
+.zombie {
+  color: var(--stage-zombie);
+}
+.overdue {
+  color: var(--stage-overdue);
+}
+
+.meta,
+.epitaph {
+  margin: var(--space-2) 0;
+}
+
+.epitaph {
+  font-style: italic;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.button {
+  font: inherit;
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  color: var(--color-accent);
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.button:disabled {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+.hint {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
