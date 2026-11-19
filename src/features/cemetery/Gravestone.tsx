@@ -1,0 +1,66 @@
+import { forwardRef } from 'react';
+import type { CSSProperties } from 'react';
+import { pixelStateFor } from '../../domain/pixelState';
+import type { Grave } from '../../domain/trial';
+import { GravestoneArt, Monogram, PixelBadge, STONE_STYLES, Spark, ZombieHand } from '../../design/pixel';
+import { longStatus, priceText, statusText, toneOf } from './format';
+import styles from './cemetery.module.css';
+
+export interface GravestoneProps {
+  grave: Grave;
+  now: Date;
+  selected: boolean;
+  styleId: string;
+  /** Decorative motion is allowed. */
+  motion: boolean;
+  onSelect: (id: string) => void;
+}
+
+/** One trial as a pixel gravestone. A button, so keyboard and touch work the same way. */
+export const Gravestone = forwardRef<HTMLButtonElement, GravestoneProps>(function Gravestone(
+  { grave, now, selected, styleId, motion, onSelect },
+  ref,
+) {
+  const state = pixelStateFor(grave, now);
+  const look = STONE_STYLES[styleId] ?? STONE_STYLES.classic!;
+  return (
+    <li className={styles.cell}>
+      <button
+        ref={ref}
+        type="button"
+        className={styles.tile}
+        data-grave-id={grave.id}
+        data-kind={state.kind}
+        data-selected={selected}
+        data-motion={motion ? 'animated' : 'still'}
+        aria-pressed={selected}
+        onClick={() => onSelect(grave.id)}
+        style={{ '--ink': look.ink } as CSSProperties}
+      >
+        <span className={styles.art}>
+          <GravestoneArt kind={state.kind} styleId={styleId} cracks={state.cracks} />
+          {state.sparks && (
+            <span className={styles.sparks} aria-hidden="true" data-testid="sparks">
+              <Spark scale={2} />
+              <Spark scale={2} />
+            </span>
+          )}
+          {state.zombieHand && (
+            <span className={styles.hand} aria-hidden="true" data-testid="zombie-hand">
+              <ZombieHand scale={4} />
+            </span>
+          )}
+          <span className={styles.face}>
+            <Monogram name={grave.name} />
+            <span className={styles.name}>{grave.name}</span>
+            <span className={styles.price}>{priceText(grave)}</span>
+          </span>
+        </span>
+        <span className={styles.status}>
+          <PixelBadge tone={toneOf(state.kind)}>{statusText(grave, now)}</PixelBadge>
+        </span>
+        <span className={styles.srOnly}>{longStatus(grave, now)}</span>
+      </button>
+    </li>
+  );
+});

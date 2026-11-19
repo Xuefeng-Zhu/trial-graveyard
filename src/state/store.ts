@@ -102,7 +102,7 @@ const demoTrials = (now: Date): Array<[ValidTrial, 'active' | 'cancelled' | 'kep
     [t('Wraithwave Premium', 3 * HOUR, 1199, 'monthly', 'https://www.wraithwave.example/account/subscription/'), 'active'],
     [t('Hollowtv', -2 * HOUR, 799, 'monthly'), 'active'],
     [t('Banshee Box', -3 * DAY, 1199, 'monthly'), 'cancelled'],
-    [t('Calm', 10 * DAY, 6999, 'yearly'), 'kept'],
+    [t('Grimoire+', 10 * DAY, 6999, 'yearly'), 'kept'],
   ];
 };
 

@@ -1,4 +1,5 @@
 import { useReducedMotion } from '../graveyard';
+import { BACKDROP_URL, CrystalBall } from '../../design/pixel';
 import styles from './landing.module.css';
 
 export const LANDING_PITCH = 'Every free trial is a grave. Cancel before it rises.';
@@ -10,23 +11,20 @@ export interface LandingProps {
   reducedMotion?: boolean;
 }
 
-/** First screen when there are no graves. A glass card over the moonlit backdrop. Daylight mode drops the moon artwork. */
+/** First screen when there are no graves. A framed card over the pixel graveyard. Daylight mode drops the moon artwork. */
 export function Landing({ daylight, onSummon, reducedMotion }: LandingProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedMotion ?? osReduced;
   return (
     <section
-      className={`${styles.landing} glass ${daylight ? styles.plain : ''}`}
+      className={`${styles.landing} ${daylight ? styles.plain : ''}`}
+      style={daylight ? undefined : { backgroundImage: `url(${BACKDROP_URL})` }}
       aria-labelledby="landing-heading"
       data-motion={reduced ? 'still' : 'animated'}
     >
       {!daylight && (
         <div className={styles.art} aria-hidden="true" data-testid="landing-art">
-          <svg className={`${styles.moon} ${reduced ? '' : styles.glow}`} viewBox="0 0 100 100" focusable="false">
-            <circle cx="50" cy="50" r="40" fill="#e9e2b8" />
-            <circle cx="38" cy="40" r="7" fill="#bdb68c" />
-            <circle cx="60" cy="58" r="10" fill="#bdb68c" opacity="0.7" />
-          </svg>
+          <CrystalBall scale={6} className={`${styles.moon} ${reduced ? '' : styles.glow}`} />
         </div>
       )}
       <div className={styles.content}>

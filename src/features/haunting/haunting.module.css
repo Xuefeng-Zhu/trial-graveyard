@@ -45,13 +45,13 @@
 
 .heroName {
   margin: var(--space-1) 0 0;
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
 .heroCountdown {
   margin: var(--space-1) 0;
-  font-size: 2rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--pulse-text);
 }
@@ -99,7 +99,7 @@
 
 .stats h2 {
   margin: 0 0 var(--space-3);
-  font-size: 1.6rem;
+  font-size: 0.9rem;
 }
 
 .statList {
@@ -120,7 +120,7 @@
 
 .stat dd {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 

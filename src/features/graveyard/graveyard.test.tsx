@@ -197,54 +197,54 @@ describe('live region and transitions', () => {
   });
 
   it('turns a kept grave into a ghost and moves focus to it', async () => {
-    const g = grave('Calm', 20 * DAY);
+    const g = grave('Grimoire+', 20 * DAY);
     const onKeep = vi.fn();
     const { rerender } = renderScene([g], { onKeep });
-    const li = screen.getByRole('listitem', { name: /Calm/ });
+    const li = screen.getByRole('listitem', { name: /Grimoire+/ });
     li.focus();
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /Keep it/ }));
-    expect(onKeep).toHaveBeenCalledWith('calm');
+    expect(onKeep).toHaveBeenCalledWith('grimoire+');
     rerender(<Scene graves={[{ ...g, status: 'kept' }]} now={NOW} onCancelled={noop} onKeep={onKeep} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
-    expect(screen.getByTestId('scene-live')).toHaveTextContent('Calm is now a ghost.');
+    expect(screen.getByTestId('scene-live')).toHaveTextContent('Grimoire+ is now a ghost.');
     await waitFor(() => expect(document.activeElement).toHaveAttribute('data-kind', 'ghost'));
   });
 });
 
 describe('edit, delete and export', () => {
   it('exposes edit, delete with confirmation and export on an active grave', () => {
-    const g = grave('Calm', 20 * DAY);
+    const g = grave('Grimoire+', 20 * DAY);
     const onEdit = vi.fn();
     const onDelete = vi.fn();
     const onExport = vi.fn();
     renderScene([g], { onEdit, onDelete, onExport });
-    const li = screen.getByRole('listitem', { name: /Calm/ });
+    const li = screen.getByRole('listitem', { name: /Grimoire+/ });
     li.focus();
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /Add to calendar/ }));
-    expect(onExport).toHaveBeenCalledWith([g], 'Calm.ics');
+    expect(onExport).toHaveBeenCalledWith([g], 'Grimoire+.ics');
     fireEvent.click(within(li).getByRole('button', { name: /Edit/ }));
-    expect(onEdit).toHaveBeenCalledWith('calm');
+    expect(onEdit).toHaveBeenCalledWith('grimoire+');
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /^Delete/ }));
     expect(onDelete).not.toHaveBeenCalled();
     fireEvent.click(within(li).getByRole('button', { name: /Confirm delete/ }));
-    expect(onDelete).toHaveBeenCalledWith('calm');
+    expect(onDelete).toHaveBeenCalledWith('grimoire+');
   });
 
   it('exposes Add haunting to calendar and Exorcise on an active grave, and exports all hauntings', () => {
-    const g = grave('Calm', 20 * DAY);
+    const g = grave('Grimoire+', 20 * DAY);
     const onHaunt = vi.fn();
     const onExorcise = vi.fn();
     renderScene([g], { onHaunt, onExorcise });
-    const li = screen.getByRole('listitem', { name: /Calm/ });
+    const li = screen.getByRole('listitem', { name: /Grimoire+/ });
     li.focus();
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /Add haunting to calendar/ }));
-    expect(onHaunt).toHaveBeenCalledWith([g], 'Calm-haunting.ics');
+    expect(onHaunt).toHaveBeenCalledWith([g], 'Grimoire+-haunting.ics');
     fireEvent.click(within(li).getByRole('button', { name: /Exorcise/ }));
-    expect(onExorcise).toHaveBeenCalledWith('calm');
+    expect(onExorcise).toHaveBeenCalledWith('grimoire+');
     fireEvent.click(screen.getByRole('button', { name: 'Export all hauntings' }));
     expect(onHaunt).toHaveBeenLastCalledWith([g], 'trial-graveyard-hauntings.ics');
   });

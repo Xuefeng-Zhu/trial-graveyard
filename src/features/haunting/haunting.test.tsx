@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../app/App';
 import type { Grave } from '../../domain/trial';
 import { createGraveStore } from '../../state/store';
+import { addTrial, goTo } from '../../test-utils/appActions';
 import { CountdownHero } from './CountdownHero';
 import { ExorcismPanel } from './ExorcismPanel';
 import { StatsPanel } from './StatsPanel';
@@ -187,9 +188,8 @@ describe.each([
   }
 
   const open = () => {
-    // In the scene the actions open on Enter; in the list they are always visible.
-    const item = screen.queryAllByRole('listitem').find((li) => li.getAttribute('aria-label')?.startsWith('Phantomflix'));
-    if (!daylight && item) fireEvent.keyDown(item, { key: 'Enter' });
+    // In the scene the actions open in the details panel; in the list they are always visible.
+    if (!daylight) fireEvent.click(screen.getByRole('button', { name: /Phantomflix/ }));
   };
 
   it('shows hero and stats, downloads hauntings and exorcises with souls saved', async () => {
@@ -202,63 +202,58 @@ describe.each([
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
 
     const store = setup();
-    // The moonlit scene holds saved graves back until the store has hydrated.
     await act(async () => {
       await store.persist.rehydrate();
     });
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Phantomflix' } });
-    fireEvent.change(screen.getByLabelText('Charge date'), { target: { value: '2026-10-20' } });
-    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '15.49' } });
-    fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
 
+    goTo('Savings');
     expect(screen.getByRole('region', { name: 'Next to bite' })).toHaveTextContent('Phantomflix');
     expect(screen.getByRole('region', { name: 'Trial hacker stats' })).toBeInTheDocument();
+    goTo('Graveyard');
 
     open();
     fireEvent.click(screen.getByRole('button', { name: /Add haunting to calendar/ }));
+    goTo('Savings');
     fireEvent.click(screen.getByRole('button', { name: 'Export all hauntings' }));
     expect(blobs).toHaveLength(2);
     const text = await blobs[0]!.text();
     expect(text.match(/BEGIN:VEVENT/g)).toHaveLength(2);
     expect(text.match(/BEGIN:VALARM/g)).toHaveLength(2);
 
-    fireEvent.click(screen.getByRole('button', { name: /^Exorcise/ }));
+    goTo('Graveyard');
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^Exorcise\s*(Trial\s*)?Phantomflix/ }));
     const dialog = screen.getByRole('dialog', { name: 'Exorcise Phantomflix' });
     fireEvent.click(within(dialog).getByRole('button', { name: "It's exorcised" }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'Exorcise Phantomflix' })).not.toBeInTheDocument();
     await waitFor(() => expect(store.getState().graves[0]?.status).toBe('cancelled'));
-    // The night scene counts the Mausoleum up with an animation, so check the list's total only.
-    if (daylight) {
-      expect(within(screen.getByRole('region', { name: 'Mausoleum' })).getByText('$15.49')).toBeInTheDocument();
-    }
+    goTo('Savings');
+    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
     expect(within(screen.getByRole('region', { name: 'Trial hacker stats' })).getByText('Trials survived').nextSibling).toHaveTextContent('1');
   });
 });
 
 describe('night scene focus after exorcism', () => {
-  it('moves focus to the replacement tombstone', async () => {
+  it('moves focus to the details panel, now showing the cancelled trial', async () => {
     const store = createGraveStore({ newId: () => 'id-1' });
     store.setState((s) => ({ settings: { ...s.settings, daylight: false } }));
     render(<App store={store} clock={() => NOW} />);
     await act(async () => {
       await store.persist.rehydrate();
     });
-    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Phantomflix' } });
-    fireEvent.change(screen.getByLabelText('Charge date'), { target: { value: '2026-10-20' } });
-    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '15.49' } });
-    fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
-    const item = screen.getAllByRole('listitem').find((li) => li.getAttribute('aria-label')?.startsWith('Phantomflix'))!;
-    fireEvent.keyDown(item, { key: 'Enter' });
-    fireEvent.click(screen.getByRole('button', { name: /^Exorcise/ }));
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: "It's exorcised" }));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    fireEvent.click(screen.getByRole('button', { name: /Phantomflix/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Exorcise\s*Trial\s*Phantomflix/ }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: /^Exorcise/ })).getByRole('button', { name: "It's exorcised" }));
     await waitFor(() => {
       const el = document.activeElement as HTMLElement;
-      expect(el.dataset.itemId).toBe('id-1');
-      expect(el.dataset.kind).toBe('tombstone');
+      expect(el).toHaveAttribute('role', 'dialog');
+      expect(el.dataset.kind).toBe('cancelled');
     });
   });
 
-  it('moves focus after exorcising an urgent grave reached directly, with another grave active', async () => {
+  it('exorcises the selected trial while another stays active', async () => {
     const store = createGraveStore();
     store.setState((s) => ({
       settings: { ...s.settings, daylight: false },
@@ -268,16 +263,13 @@ describe('night scene focus after exorcism', () => {
     await act(async () => {
       await store.persist.rehydrate();
     });
-    const other = screen.getAllByRole('listitem').find((li) => li.getAttribute('aria-label')?.startsWith('Wraithwave'))!;
-    fireEvent.click(other);
-    const exorcise = screen.getByRole('button', { name: /^Exorcise\s*Phantomflix/ });
-    exorcise.focus();
-    fireEvent.click(exorcise);
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: "It's exorcised" }));
-    await waitFor(() => {
-      const el = document.activeElement as HTMLElement;
-      expect(el.dataset.itemId).toBe('phantomflix');
-      expect(el.dataset.kind).toBe('tombstone');
-    });
+    fireEvent.click(screen.getByRole('button', { name: /Phantomflix/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Exorcise\s*Trial\s*Phantomflix/ }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: /^Exorcise/ })).getByRole('button', { name: "It's exorcised" }));
+    await waitFor(() => expect(document.activeElement).toHaveAttribute('role', 'dialog'));
+    expect(store.getState().graves.map((g) => [g.name, g.status])).toEqual([
+      ['Phantomflix', 'cancelled'],
+      ['Wraithwave', 'active'],
+    ]);
   });
 });

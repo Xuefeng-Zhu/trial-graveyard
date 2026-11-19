@@ -5,9 +5,10 @@ import { axe } from 'vitest-axe';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createGraveStore } from '../state/store';
 import { NO_CANCEL_URL_TEXT, EMPTY_MAUSOLEUM_TEXT } from '../features/daylight/DaylightList';
+import { NAV_ITEMS } from '../features/cemetery';
 import { App } from './App';
 import { isSoundEnabled, setSoundEnabled } from '../design/sounds';
-import { INTRO_KEY } from '../features/moonlit';
+import { addTrial, goTo } from '../test-utils/appActions';
 
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
 const clock = () => NOW;
@@ -31,13 +32,19 @@ async function settle(store: ReturnType<typeof setup>) {
 const type = (label: string, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
-function addTrial(name: string, date: string, price: string, url = '', cadence = '') {
-  type('Name', name);
-  type('Charge date', date);
-  type('Price', price);
-  if (url) type('Cancel URL (optional)', url);
-  if (cadence) type('Cadence', cadence);
-  fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
+const stone = (name: RegExp | string) => {
+  const grid = screen.getByRole('list', { name: 'Gravestones' });
+  return within(grid).getByRole('button', { name });
+};
+
+const originalMatchMedia = window.matchMedia;
+function mockMedia(narrow: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((q: string) => ({
+    matches: narrow && q.includes('max-width'),
+    media: q,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
 }
 
 beforeEach(async () => {
@@ -47,6 +54,7 @@ beforeEach(async () => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  window.matchMedia = originalMatchMedia;
   delete document.documentElement.dataset.theme;
 });
 
@@ -64,7 +72,7 @@ describe('App end to end in the list view', () => {
 
   it('disables Cancel now with an explanation when there is no URL', () => {
     setup();
-    addTrial('Hollowtv', '2026-10-20', '7.99');
+    addTrial('Hexlingo', '2026-10-20', '7.99');
     const button = screen.getByRole('button', { name: 'Cancel now' });
     expect(button).toBeDisabled();
     expect(button).toHaveAccessibleDescription(NO_CANCEL_URL_TEXT);
@@ -80,10 +88,10 @@ describe('App end to end in the list view', () => {
 
   it('cancels with epitaph, updates the Mausoleum, and undoes', () => {
     setup();
+    addTrial('Banshee Box', '2026-10-20', '14.95');
     expect(screen.getByText(EMPTY_MAUSOLEUM_TEXT)).toBeInTheDocument();
-    addTrial('Necro Audiobooks', '2026-10-20', '14.95');
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
-    expect(screen.getByText('Here lies Necro Audiobooks. Saved you $14.95/mo.')).toBeInTheDocument();
+    expect(screen.getByText('Here lies Banshee Box. Saved you $14.95/mo.')).toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Mausoleum' })).getByText('$14.95')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(screen.queryByText(/Here lies/)).not.toBeInTheDocument();
@@ -92,7 +100,7 @@ describe('App end to end in the list view', () => {
 
   it('keeps a grave as a ghost with its monthly cost', () => {
     setup();
-    addTrial('Calm', '2026-10-20', '60', '', 'yearly');
+    addTrial('Grimoire+', '2026-10-20', '60', '', 'yearly');
     fireEvent.click(screen.getByRole('button', { name: /Keep it/ }));
     expect(screen.getByText(/Ghost, haunting you for \$5\.00\/mo/)).toBeInTheDocument();
   });
@@ -101,7 +109,7 @@ describe('App end to end in the list view', () => {
     vi.useFakeTimers();
     try {
       setup();
-      addTrial('Necro Audiobooks', '2026-10-20', '14.95');
+      addTrial('Banshee Box', '2026-10-20', '14.95');
       fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
       expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
       act(() => {
@@ -145,7 +153,7 @@ describe('App end to end in the list view', () => {
   });
 });
 
-describe('haunted scene', () => {
+describe('pixel graveyard scene', () => {
   it('edits, deletes and exports from the night-mode scene', async () => {
     const blobs: Blob[] = [];
     URL.createObjectURL = vi.fn((b: Blob | MediaSource) => {
@@ -157,22 +165,18 @@ describe('haunted scene', () => {
     const store = setup(false);
     await settle(store);
     addTrial('Netflx', '2026-10-20', '5');
+    goTo('Savings');
     fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
     expect(blobs).toHaveLength(1);
-    const open = () => {
-      const li = screen.getByRole('listitem', { name: /Netflx|Phantomflix/ });
-      li.focus();
-      fireEvent.keyDown(li, { key: 'Enter' });
-    };
-    open();
+    goTo('Graveyard');
+    fireEvent.click(stone(/Netflx/));
     fireEvent.click(screen.getByRole('button', { name: /^Add to calendar/ }));
     expect(blobs).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
     expect(screen.getByLabelText('Name')).toHaveValue('Netflx');
     type('Name', 'Phantomflix');
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-    expect(screen.getByRole('listitem', { name: /Phantomflix/ })).toBeInTheDocument();
-    open();
+    fireEvent.click(stone(/Phantomflix/));
     fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
     expect(store.getState().graves).toHaveLength(0);
@@ -182,117 +186,325 @@ describe('haunted scene', () => {
     const store = setup(false);
     await settle(store);
     fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
-    expect(screen.getByRole('region', { name: 'Haunted graveyard' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Graveyard scene' })).toBeInTheDocument();
+    goTo('Settings');
     fireEvent.click(screen.getByRole('button', { name: 'Daylight mode' }));
-    expect(screen.queryByRole('region', { name: 'Haunted graveyard' })).not.toBeInTheDocument();
+    goTo('Graveyard');
+    expect(screen.queryByRole('region', { name: 'Graveyard scene' })).not.toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(8);
   });
 
-  it('cancels from the scene and updates the Mausoleum', async () => {
+  it('cancels from the details panel and updates the savings', async () => {
     const store = setup(false);
     await settle(store);
     addTrial('Phantomflix', '2026-10-02', '15.49');
-    const zombie = screen.getByRole('listitem', { name: /Phantomflix/ });
-    fireEvent.click(within(zombie).getByRole('button', { name: /I cancelled/ }));
-    await waitFor(() => expect(screen.getByText('Here lies Phantomflix · $15.49/mo · slain Oct 2026')).toBeInTheDocument());
-    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
-  });
-});
-
-describe('glass HUD', () => {
-  it('buries the most urgent grave from Next to rise and rolls up souls saved', async () => {
-    const store = setup(false);
-    await settle(store);
-    expect(screen.getByText(/Nothing is stirring/)).toBeInTheDocument();
-    addTrial('Later One', '2026-10-20', '5');
-    addTrial('Phantomflix', '2026-10-02', '15.49');
-    const panel = screen.getByRole('region', { name: 'Next to rise' });
-    expect(within(panel).getByText('Phantomflix', { selector: 'strong' })).toBeInTheDocument();
-    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $0.00');
-    fireEvent.click(within(panel).getByRole('button', { name: /Bury now/ }));
-    expect(store.getState().graves.find((g) => g.name === 'Phantomflix')?.status).toBe('cancelled');
-    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
-    expect(within(screen.getByRole('region', { name: 'Next to rise' })).getByText('Later One', { selector: 'strong' })).toBeInTheDocument();
-    await waitFor(() => expect(screen.getByText('Here lies Phantomflix · $15.49/mo · slain Oct 2026')).toBeInTheDocument());
-  });
-
-  it('keeps add, paste, Seance, settings and share reachable in the panels', async () => {
-    const store = setup(false);
-    await settle(store);
-    addTrial('Phantomflix', '2026-10-02', '15.49');
+    fireEvent.click(stone(/Phantomflix/));
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
-    const hud = screen.getByTestId('hud');
-    for (const name of [/Paste a receipt/, /Name/]) expect(within(hud).getAllByLabelText(name).length).toBeGreaterThan(0);
-    for (const name of ['Daylight mode', 'Calm mode', /^Sound:/, 'Summon demo graveyard', 'Share my graveyard']) {
-      expect(within(hud).getByRole('button', { name })).toBeInTheDocument();
-    }
-    expect(within(hud).getByRole('heading', { name: 'Add a trial' })).toBeInTheDocument();
+    expect(screen.getByText('Here lies Phantomflix · $15.49/mo · slain Oct 2026')).toBeInTheDocument();
+    expect(screen.getByTestId('saved-counter')).toHaveTextContent('$15.49 saved');
+    goTo('Savings');
+    expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
   });
 
-  it('opens and closes the bottom sheet handle', async () => {
-    await settle(setup(false));
-    const handle = screen.getByRole('button', { name: 'Open panels' });
-    expect(handle).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(handle);
-    expect(screen.getByRole('button', { name: 'Close panels' })).toHaveAttribute('aria-expanded', 'true');
+  it('renders every visual state with text labels', async () => {
+    const store = setup(false);
+    await settle(store);
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    const kinds = new Set(
+      within(screen.getByRole('list', { name: 'Gravestones' }))
+        .getAllByRole('button')
+        .map((b) => b.getAttribute('data-kind')),
+    );
+    expect([...kinds].sort()).toEqual(['cancelled', 'critical', 'kept', 'normal', 'warning']);
+    const grid = screen.getByRole('list', { name: 'Gravestones' });
+    expect(within(grid).getByText('Cancelled')).toBeInTheDocument();
+    expect(within(grid).getByText('Kept')).toBeInTheDocument();
+    expect(within(grid).getByText('Overdue')).toBeInTheDocument();
+    expect(within(grid).getByText('60h left')).toBeInTheDocument();
+    expect(within(grid).getByText('20 days')).toBeInTheDocument();
+    expect(within(grid).getAllByTestId('sparks').length).toBeGreaterThan(0);
+    expect(within(grid).getAllByTestId('zombie-hand').length).toBeGreaterThan(0);
+  });
+
+  it('uses only fictional brands in the demo graveyard', async () => {
+    const store = setup(false);
+    await settle(store);
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    const names = store.getState().graves.map((g) => g.name);
+    expect(names).toEqual(expect.arrayContaining(['Phantomflix', 'Cryptic Cloud', 'Banshee Box']));
+    for (const real of ['Netflix', 'Spotify', 'Adobe', 'Notion', 'Disney', 'Dropbox', 'Calm', 'Hulu']) {
+      expect(names.join(' ')).not.toContain(real);
+    }
   });
 });
 
-describe('intro', () => {
-  async function savedGraveyard(calm = false) {
-    const first = createGraveStore({ newId: () => `saved-${Math.random()}` });
-    await settle(first);
-    first.getState().loadDemo(NOW);
-    if (calm) first.getState().toggleCalm();
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 60));
-    });
+describe('selection and the details panel', () => {
+  async function withGrave(narrow = false) {
+    mockMedia(narrow);
+    const store = setup(false);
+    await settle(store);
+    addTrial('Phantomflix', '2026-10-20', '15.49', 'https://phantomflix.example/cancel');
+    addTrial('Wraithwave', '2026-11-20', '9.99');
+    return store;
   }
 
-  it('plays once per session for a saved graveyard and can be skipped', async () => {
-    await savedGraveyard();
-    sessionStorage.removeItem(INTRO_KEY);
-    render(<App store={createGraveStore()} clock={clock} />);
-    expect(await screen.findByTestId('intro')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Skip intro' }));
-    expect(screen.queryByTestId('intro')).toBeNull();
-    expect(sessionStorage.getItem(INTRO_KEY)).toBe('1');
-    expect(await screen.findByRole('region', { name: 'Haunted graveyard' })).toBeInTheDocument();
-    expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0);
-
-    cleanup();
-    render(<App store={createGraveStore()} clock={clock} />);
-    await screen.findAllByRole('listitem');
-    expect(screen.queryByTestId('intro')).toBeNull();
+  it('selects with a click, shows the details and awards review XP once', async () => {
+    const store = await withGrave();
+    const tile = stone(/Phantomflix/);
+    expect(tile).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(tile);
+    expect(tile).toHaveAttribute('aria-pressed', 'true');
+    const panel = screen.getByRole('dialog', { name: 'Phantomflix' });
+    expect(panel).toHaveAttribute('aria-modal', 'false');
+    expect(panel).toHaveFocus();
+    for (const text of ['Price', 'Cadence', 'Next charge', 'Remaining', 'Status', 'Reminders', /48 hours before/, /Morning of/]) {
+      expect(within(panel).getByText(text)).toBeInTheDocument();
+    }
+    expect(within(panel).getByRole('link', { name: /Cancel now/ })).toHaveAttribute('rel', 'noopener noreferrer');
+    fireEvent.click(tile);
+    expect(store.getState().progress.ledger.filter((e) => e.kind === 'review')).toHaveLength(1);
   });
 
-  it('is skipped entirely in Calm mode', async () => {
-    await savedGraveyard(true);
-    sessionStorage.removeItem(INTRO_KEY);
-    render(<App store={createGraveStore()} clock={clock} />);
-    await screen.findAllByRole('listitem');
-    expect(screen.queryByTestId('intro')).toBeNull();
+  it('moves between gravestones with the arrow keys', async () => {
+    await withGrave();
+    const first = stone(/Phantomflix/);
+    first.focus();
+    fireEvent.keyDown(first, { key: 'ArrowRight' });
+    expect(stone(/Wraithwave/)).toHaveFocus();
+    fireEvent.keyDown(stone(/Wraithwave/), { key: 'ArrowLeft' });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: 'ArrowLeft' });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: 'a' });
+  });
+
+  it('closes with Escape and returns focus to the gravestone', async () => {
+    await withGrave();
+    const tile = stone(/Wraithwave/);
+    tile.focus();
+    fireEvent.click(tile);
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(tile).toHaveFocus());
+    fireEvent.click(tile);
+    fireEvent.click(screen.getByRole('button', { name: /^Close/ }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('is a modal bottom sheet on narrow screens and traps focus', async () => {
+    await withGrave(true);
+    fireEvent.click(stone(/Phantomflix/));
+    const panel = screen.getByRole('dialog', { name: 'Phantomflix' });
+    expect(panel).toHaveAttribute('aria-modal', 'true');
+    const buttons = within(panel).getAllByRole('button');
+    const links = within(panel).queryAllByRole('link');
+    const items = [...links, ...buttons];
+    const first = items.sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1))[0]!;
+    const last = buttons[buttons.length - 1]!;
+    last.focus();
+    fireEvent.keyDown(last, { key: 'Tab' });
+    expect(first).toHaveFocus();
+    fireEvent.keyDown(first, { key: 'Tab', shiftKey: true });
+    expect(last).toHaveFocus();
+    panel.focus();
+    fireEvent.keyDown(panel, { key: 'Tab', shiftKey: true });
+    expect(last).toHaveFocus();
+    fireEvent.keyDown(panel, { key: 'Tab' });
+    fireEvent.click(document.querySelector('[aria-hidden="true"][class*="scrim"]')!);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('drops the selection when the selected trial is deleted', async () => {
+    await withGrave();
+    fireEvent.click(stone(/Phantomflix/));
+    fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Keep grave/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('has no axe violations with the panel open', async () => {
+    await withGrave();
+    fireEvent.click(stone(/Phantomflix/));
+    expect((await axe(document.body)).violations).toEqual([]);
+  });
+});
+
+describe('Exorcise flow', () => {
+  it('opens the ritual from the HUD and only cancels after the user confirms', async () => {
+    const store = setup(false);
+    await settle(store);
+    addTrial('Phantomflix', '2026-10-20', '15.49', 'https://phantomflix.example/cancel');
+    expect(screen.getByRole('button', { name: 'Exorcise Trials (1)' })).toBeEnabled();
+    fireEvent.click(screen.getByRole('button', { name: 'Exorcise Trials (1)' }));
+    const dialog = screen.getByRole('dialog', { name: 'Exorcise Phantomflix' });
+    expect(store.getState().graves[0]?.status).toBe('active');
+    expect(screen.queryByText('Cancelled')).not.toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    expect(store.getState().graves[0]?.status).toBe('active');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    fireEvent.click(stone(/Phantomflix/));
+    fireEvent.click(screen.getByRole('button', { name: /^Exorcise\s*Trial\s*Phantomflix/ }));
+    fireEvent.click(within(screen.getByRole('dialog', { name: 'Exorcise Phantomflix' })).getByRole('button', { name: "It's exorcised" }));
+    expect(store.getState().graves[0]?.status).toBe('cancelled');
+    expect(store.getState().progress.ledger.some((e) => e.kind === 'cancel')).toBe(true);
+    expect(screen.getByRole('button', { name: /Exorcise Trials \(0\)/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Exorcise Trials \(0\)/ })).toHaveAccessibleDescription(
+      'No active trials to exorcise.',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+    expect(store.getState().graves[0]?.status).toBe('active');
+  });
+
+  it('opens the most urgent trial first', async () => {
+    const store = setup(false);
+    await settle(store);
+    addTrial('Later One', '2026-10-20', '5');
+    addTrial('Phantomflix', '2026-10-02', '15.49');
+    fireEvent.click(screen.getByRole('button', { name: 'Exorcise Trials (2)' }));
+    expect(screen.getByRole('dialog', { name: 'Exorcise Phantomflix' })).toBeInTheDocument();
+  });
+
+  it('opens the ritual from the Quests view as well', async () => {
+    await settle(setup(false));
+    addTrial('Phantomflix', '2026-10-02', '15.49');
+    goTo('Quests');
+    fireEvent.click(screen.getByRole('button', { name: 'Exorcise Phantomflix' }));
+    expect(screen.getByRole('dialog', { name: 'Exorcise Phantomflix' })).toBeInTheDocument();
+  });
+});
+
+describe('navigation and views', () => {
+  it('every nav item opens a different view', async () => {
+    const store = setup(false);
+    await settle(store);
+    act(() => store.getState().loadDemo(NOW));
+    const headings: Record<string, RegExp> = {
+      Graveyard: /./,
+      Quests: /Daily quest/,
+      Collection: /Gravestone styles/,
+      'Add trial': /Add a trial/,
+      Savings: /Mausoleum/,
+      Settings: /^Settings$/,
+    };
+    expect(NAV_ITEMS.map((i) => i.label)).toEqual(Object.keys(headings));
+    for (const item of NAV_ITEMS) {
+      goTo(item.label);
+      expect(screen.getByRole('button', { name: item.label })).toHaveAttribute('aria-current', 'page');
+      expect(screen.getAllByRole('button', { current: 'page' })).toHaveLength(1);
+      if (item.label !== 'Graveyard') {
+        expect(screen.getByRole('heading', { name: headings[item.label]! })).toBeInTheDocument();
+      } else {
+        expect(screen.getByRole('region', { name: 'Graveyard scene' })).toBeInTheDocument();
+      }
+    }
+  });
+
+  it('the level badge opens the collection and the quest card opens quests', async () => {
+    await settle(setup(false));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    fireEvent.click(screen.getByRole('button', { name: /Daily Quest\s*Cancel 1 trial \(0\/1\)/ }));
+    expect(screen.getByRole('heading', { name: 'Daily quest' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Level 1/ }));
+    expect(screen.getByRole('heading', { name: 'Gravestone styles' })).toBeInTheDocument();
+  });
+
+  it('shows level, XP and the daily quest in Quests', async () => {
+    await settle(setup(false));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    goTo('Quests');
+    expect(screen.getByText('Cancel 1 trial (0/1)')).toBeInTheDocument();
+    expect(screen.getByText(/Level 1/)).toBeInTheDocument();
+    expect(screen.getByText(/, 10 XP/)).toBeInTheDocument();
+    expect(screen.getByText('Phantomflix', { selector: 'strong' })).toBeInTheDocument();
+  });
+
+  it('shows an empty quest view with nothing to exorcise', async () => {
+    await settle(setup(false));
+    goTo('Quests');
+    expect(screen.getByText(/Nothing is stirring/)).toBeInTheDocument();
+  });
+
+  it('unlocks and selects collectible styles by level', async () => {
+    const store = setup(false);
+    await settle(store);
+    goTo('Collection');
+    expect(screen.getByRole('button', { name: 'Classic' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Mossy' })).toBeDisabled();
+    expect(screen.getAllByText('Unlocks at level 3').length).toBeGreaterThan(0);
+    act(() => {
+      store.setState((s) => ({
+        progress: {
+          ...s.progress,
+          ledger: Array.from({ length: 12 }, (_, i) => ({ kind: 'cancel' as const, graveId: `g${i}`, at: '2026-10-01T12:00:00-07:00' })),
+        },
+      }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Mossy' }));
+    expect(store.getState().progress.styleId).toBe('mossy');
+    expect(screen.getByRole('button', { name: 'Mossy' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getAllByText('Unlocked').length).toBeGreaterThan(0);
+  });
+
+  it('applies the selected style to gravestones', async () => {
+    const store = setup(false);
+    await settle(store);
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    act(() => {
+      store.setState((s) => ({ progress: { ...s.progress, styleId: 'obsidian' } }));
+    });
+    const rect = stone(/Phantomflix/).querySelector('rect[fill="#4A4066"]');
+    expect(rect).not.toBeNull();
+  });
+
+  it('keeps add, paste, Seance and the form reachable in the Add view', async () => {
+    await settle(setup(false));
+    goTo('Add trial');
+    expect(screen.getAllByLabelText(/Paste a receipt/).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Name')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Add a trial' })).toBeInTheDocument();
+  });
+
+  it('cancels editing back to the graveyard', async () => {
+    await settle(setup(true));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Never mind' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Phantomflix' })).toBeInTheDocument();
+  });
+
+  it('shows the share button once a trial is cancelled, with the savings and stats', async () => {
+    await settle(setup(false));
+    addTrial('Phantomflix', '2026-10-02', '15.49');
+    goTo('Savings');
+    expect(screen.queryByRole('button', { name: 'Share my graveyard' })).not.toBeInTheDocument();
+    goTo('Graveyard');
+    fireEvent.click(stone(/Phantomflix/));
+    fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
+    goTo('Savings');
+    expect(screen.getByRole('button', { name: 'Share my graveyard' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Trial hacker stats' })).toBeInTheDocument();
   });
 });
 
 describe('Calm mode', () => {
-  it('turns the parallax, atmosphere and animations off and persists the choice', async () => {
+  it('turns decorative animation off and persists the choice', async () => {
     const store = setup(false);
     await settle(store);
     fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
-    expect(screen.getByTestId('parallax-scene')).toHaveAttribute('data-motion', 'on');
-    expect(document.querySelectorAll('[data-motion="animated"]').length).toBeGreaterThan(0);
+    expect(screen.getByRole('region', { name: 'Graveyard scene' })).toHaveAttribute('data-motion', 'animated');
+    goTo('Settings');
     const toggle = screen.getByRole('button', { name: 'Calm mode' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-pressed', 'true');
     expect(store.getState().settings.calm).toBe(true);
-    expect(screen.getByTestId('parallax-scene')).toHaveAttribute('data-motion', 'off');
-    expect(screen.getByRole('region', { name: 'Haunted graveyard' })).toHaveAttribute('data-motion', 'still');
+    goTo('Graveyard');
+    expect(screen.getByRole('region', { name: 'Graveyard scene' })).toHaveAttribute('data-motion', 'still');
     expect(document.querySelectorAll('[data-motion="animated"]')).toHaveLength(0);
     expect(document.querySelector('canvas')).toBeNull();
-    expect(screen.queryByTestId('wandering-ghost')).toBeNull();
-    expect(screen.queryByTestId('intro')).toBeNull();
   });
 });
 
@@ -306,16 +518,24 @@ describe('Daylight toggle and demo', () => {
     }
   });
 
-  it('shows the landing above the editor without stealing focus when empty', () => {
+  it('summons the demo from Settings and returns to the graveyard', async () => {
+    await settle(setup(false));
+    addTrial('Phantomflix', '2026-10-20', '15.49');
+    goTo('Settings');
+    fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
+    expect(screen.getByRole('region', { name: 'Graveyard scene' })).toBeInTheDocument();
+  });
+
+  it('shows the landing without the form when the graveyard is empty', () => {
     setup();
-    const landing = screen.getByRole('button', { name: /summon/i });
-    const form = screen.getByRole('form', { name: 'Grave details' });
-    expect(landing.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(document.activeElement).not.toBe(screen.getByLabelText('Name'));
+    expect(screen.getByRole('button', { name: /summon/i })).toBeInTheDocument();
+    expect(screen.queryByRole('form', { name: 'Grave details' })).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(document.body);
   });
 
   it('toggles Daylight mode with the keyboard-reachable button and persists it', async () => {
     const store = setup(false);
+    goTo('Settings');
     const toggle = screen.getByRole('button', { name: 'Daylight mode' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(document.documentElement.dataset.theme).toBe('night');
@@ -327,6 +547,7 @@ describe('Daylight toggle and demo', () => {
     cleanup();
     const reloaded = createGraveStore();
     render(<App store={reloaded} clock={clock} />);
+    goTo('Settings');
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Daylight mode' })).toHaveAttribute('aria-pressed', 'true'),
     );
@@ -356,8 +577,17 @@ describe('accessibility', () => {
     expect(results.violations).toEqual([]);
   });
 
+  it.each(NAV_ITEMS.map((i) => i.label))('has no axe violations in the %s view', async (label) => {
+    const store = setup(false);
+    await settle(store);
+    act(() => store.getState().loadDemo(NOW));
+    goTo(label);
+    expect((await axe(document.body)).violations).toEqual([]);
+  });
+
   it('has no axe violations when the form shows errors', async () => {
     await settle(setup());
+    goTo('Add trial');
     fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
     const results = await axe(document.body);
     expect(results.violations).toEqual([]);
@@ -369,6 +599,7 @@ describe('sound toggle', () => {
 
   it('is off by default, exposes aria-pressed and persists the choice', () => {
     const store = setup();
+    goTo('Settings');
     const toggle = screen.getByRole('button', { name: 'Sound: off' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
     expect(isSoundEnabled()).toBe(false);
@@ -382,6 +613,7 @@ describe('sound toggle', () => {
     const store = createGraveStore({ newId: () => 'x' });
     store.setState((s) => ({ settings: { ...s.settings, soundOn: true, daylight: true } }));
     render(<App store={store} clock={clock} />);
+    goTo('Settings');
     expect(screen.getByRole('button', { name: 'Sound: on' })).toHaveAttribute('aria-pressed', 'true');
     expect(isSoundEnabled()).toBe(true);
   });
@@ -410,8 +642,9 @@ describe('sound toggle', () => {
       }),
     );
     setup();
+    goTo('Settings');
     fireEvent.click(screen.getByRole('button', { name: 'Sound: off' }));
-    addTrial('Necro Audiobooks', '2026-10-20', '14.95');
+    addTrial('Banshee Box', '2026-10-20', '14.95');
     expect(created).toEqual(['osc']);
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
     expect(created).toEqual(['osc', 'noise']);
