@@ -1,4 +1,5 @@
 /* Integer pixel scale for the 384x216 backdrop and the 49x56 reaper. */
+/* Integer scale: smallest whole number that covers the viewport width. */
 .stage {
   --px: 2;
   display: grid;
@@ -11,15 +12,21 @@
   grid-template-columns: minmax(0, 1fr) 22rem;
 }
 
-@media (min-width: 800px) {
+@media (min-width: 769px) {
   .stage {
     --px: 3;
   }
 }
 
-@media (min-width: 1500px) {
+@media (min-width: 1153px) {
   .stage {
     --px: 4;
+  }
+}
+
+@media (min-width: 1537px) {
+  .stage {
+    --px: 5;
   }
 }
 
@@ -74,6 +81,10 @@
   cursor: pointer;
 }
 
+.short {
+  display: none;
+}
+
 .navItem:hover {
   border-color: var(--color-border);
 }
@@ -116,7 +127,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-4);
-  min-height: calc(216px * var(--px));
+  min-height: max(34rem, calc(100dvh - 8.5rem));
   padding: var(--space-4);
   overflow: hidden;
   background-color: var(--palette-midnight, #120f23);
@@ -138,9 +149,10 @@
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+  align-items: end;
   gap: var(--space-4) var(--space-3);
-  margin: 0;
+  margin: auto 0 0;
   padding: 0;
   list-style: none;
 }
@@ -173,8 +185,8 @@
 .art {
   position: relative;
   display: block;
-  width: 128px;
-  height: 160px;
+  width: 160px;
+  height: 200px;
 }
 
 .art > svg {
@@ -183,7 +195,7 @@
 
 .face {
   position: absolute;
-  inset: 40px 16px 24px;
+  inset: 50px 20px 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -298,7 +310,7 @@
 /* ---------- Bottom HUD ---------- */
 .bottomHud {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: end;
   gap: var(--space-3);
 }
@@ -341,7 +353,15 @@
 .reaper {
   width: calc(49px * var(--px));
   height: calc(56px * var(--px));
+  max-width: none;
   image-rendering: pixelated;
+}
+
+.reaperCell {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 3rem;
 }
 
 .reaper[data-motion='animated'] {
@@ -561,14 +581,55 @@
   }
 
   .navItem {
-    flex: 1;
-    min-width: 44px;
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 48px;
     padding: var(--space-2) 2px;
-    font-size: 0.5rem;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    overflow: hidden;
+    text-overflow: clip;
+    white-space: nowrap;
+  }
+
+  .full {
+    display: none;
+  }
+
+  .short {
+    display: inline;
   }
 
   .nav-collection {
     display: none;
+  }
+}
+
+/* Phones: one swipeable row of graves in front of the backdrop. */
+@media (max-width: 600px) {
+  .scene {
+    min-height: max(30rem, calc(100dvh - 11rem));
+    background-position: 50% 100%;
+  }
+
+  .grid {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    padding-bottom: var(--space-2);
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .grid > li {
+    flex: 0 0 auto;
+    scroll-snap-align: center;
+  }
+
+  .reaperCell {
+    padding-bottom: 3rem;
   }
 }
 

@@ -40,7 +40,16 @@ export function TopNav({ view, onView, level, saved }: TopNavProps) {
             aria-current={view === item.view ? 'page' : undefined}
             onClick={() => onView(item.view)}
           >
-            {item.label}
+            {item.view === 'add' ? (
+              <>
+                <span className={styles.full}>{item.label}</span>
+                <span className={styles.short} aria-hidden="true">
+                  Add
+                </span>
+              </>
+            ) : (
+              item.label
+            )}
           </button>
         ))}
       </nav>

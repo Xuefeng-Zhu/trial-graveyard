@@ -10,6 +10,8 @@ export interface GravestoneProps {
   grave: Grave;
   now: Date;
   selected: boolean;
+  /** Drawn with the green outline: the selected grave, or the most urgent one by default. */
+  highlighted?: boolean;
   styleId: string;
   /** Decorative motion is allowed. */
   motion: boolean;
@@ -18,7 +20,7 @@ export interface GravestoneProps {
 
 /** One trial as a pixel gravestone. A button, so keyboard and touch work the same way. */
 export const Gravestone = forwardRef<HTMLButtonElement, GravestoneProps>(function Gravestone(
-  { grave, now, selected, styleId, motion, onSelect },
+  { grave, now, selected, highlighted = selected, styleId, motion, onSelect },
   ref,
 ) {
   const state = pixelStateFor(grave, now);
@@ -31,14 +33,14 @@ export const Gravestone = forwardRef<HTMLButtonElement, GravestoneProps>(functio
         className={styles.tile}
         data-grave-id={grave.id}
         data-kind={state.kind}
-        data-selected={selected}
+        data-selected={highlighted}
         data-motion={motion ? 'animated' : 'still'}
         aria-pressed={selected}
         onClick={() => onSelect(grave.id)}
         style={{ '--ink': look.ink } as CSSProperties}
       >
         <span className={styles.art}>
-          <GravestoneArt kind={state.kind} styleId={styleId} cracks={state.cracks} />
+          <GravestoneArt kind={state.kind} styleId={styleId} cracks={state.cracks} scale={10} />
           {state.sparks && (
             <span className={styles.sparks} aria-hidden="true" data-testid="sparks">
               <Spark scale={2} />
@@ -47,11 +49,11 @@ export const Gravestone = forwardRef<HTMLButtonElement, GravestoneProps>(functio
           )}
           {state.zombieHand && (
             <span className={styles.hand} aria-hidden="true" data-testid="zombie-hand">
-              <ZombieHand scale={4} />
+              <ZombieHand scale={5} />
             </span>
           )}
           <span className={styles.face}>
-            <Monogram name={grave.name} />
+            <Monogram name={grave.name} size={32} />
             <span className={styles.name}>{grave.name}</span>
             <span className={styles.price}>{priceText(grave)}</span>
           </span>

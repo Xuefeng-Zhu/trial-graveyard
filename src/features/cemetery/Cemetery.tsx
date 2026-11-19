@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import type { Grave } from '../../domain/trial';
-import { BACKDROP_URL } from '../../design/pixel';
+import { BACKDROP_URL, REAPER_URL, REAPER_SIZE } from '../../design/pixel';
 import { Atmosphere } from '../atmosphere';
 import { DetailsPanel } from './DetailsPanel';
 import type { GraveActions } from './DetailsPanel';
@@ -29,6 +29,8 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
   const returnTo = useRef<string | null>(null);
   const sorted = [...graves].sort(byUrgency);
   const selected = sorted.find((g) => g.id === selectedId);
+  // The most urgent grave is outlined by default; the details panel only opens on activation.
+  const highlightId = selected?.id ?? sorted[0]?.id ?? null;
 
   // Give focus back to the gravestone that opened the panel once the panel is gone.
   useEffect(() => {
@@ -68,6 +70,16 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
           <p className={styles.empty}>No gravestones yet. Add a trial and it will rise here.</p>
         ) : (
           <ul className={styles.grid} aria-label="Gravestones" onKeyDown={onKeyDown}>
+            <li className={styles.reaperCell} aria-hidden="true">
+              <img
+                className={styles.reaper}
+                src={REAPER_URL}
+                width={REAPER_SIZE.width}
+                height={REAPER_SIZE.height}
+                alt=""
+                data-motion={motion ? 'animated' : 'still'}
+              />
+            </li>
             {sorted.map((g) => (
               <Gravestone
                 key={g.id}
@@ -78,6 +90,7 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
                 grave={g}
                 now={now}
                 selected={g.id === selectedId}
+                highlighted={g.id === highlightId}
                 styleId={styleId}
                 motion={motion}
                 onSelect={select}

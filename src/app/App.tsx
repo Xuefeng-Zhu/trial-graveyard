@@ -210,7 +210,6 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
         graves={s.graves}
         now={now}
         ledger={s.progress.ledger}
-        motion={motionAllowed}
         onOpenQuests={() => go('quests')}
         onExorcise={setExorcisingId}
       />
