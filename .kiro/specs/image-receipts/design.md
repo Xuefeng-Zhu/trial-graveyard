@@ -14,7 +14,7 @@ src/
       read.ts             readImageReceipt: engine + normaliser + parseReceipt (G5, G7)
       fake.ts             createFakeEngine for tests (G8.3)
       tesseractEngine.ts  lazy engine, the only file that mentions tesseract.js (G2)
-      index.ts            barrel (does not re-export tesseractEngine's heavy import)
+      index.ts            barrel (tesseractEngine only holds a dynamic import, so this stays light)
       *.test.ts           unit and property tests (G10)
   features/editor/
     ImageReceipt.tsx      input, drop zone, preview, progress, results (G1, G4 to G7)
