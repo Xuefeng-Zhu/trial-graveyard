@@ -41,6 +41,7 @@ export interface GraveState extends PersistedSlice {
   /** Reverts the last status change if it happened within 10 s of `now`. Returns whether it did. */
   undo: (now: Date) => boolean;
   toggleDaylight: () => void;
+  toggleSound: () => void;
   dismissNotice: () => void;
   /** Appends about 8 sample graves covering every stage, one cancelled and one kept. */
   loadDemo: (now: Date) => void;
@@ -155,6 +156,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
           return withinWindow && target !== undefined;
         },
         toggleDaylight: () => set((s) => ({ settings: { ...s.settings, daylight: !s.settings.daylight } })),
+        toggleSound: () => set((s) => ({ settings: { ...s.settings, soundOn: !s.settings.soundOn } })),
         dismissNotice: () => set({ notice: null }),
         loadDemo: (now) => {
           const added = demoTrials(now).map(([trial, status]) => {

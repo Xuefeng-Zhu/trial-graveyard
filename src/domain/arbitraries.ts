@@ -29,6 +29,11 @@ export const arbGrave: fc.Arbitrary<Grave> = fc.record({
   createdAt: fc.constant('2026-01-01T00:00:00.000Z'),
 });
 
+/** A cancelled grave with a random `cancelledAt` instant. */
+export const arbCancelledGrave: fc.Arbitrary<Grave> = fc
+  .tuple(arbGrave, arbNowMs)
+  .map(([g, ms]) => ({ ...g, status: 'cancelled' as const, cancelledAt: new Date(ms).toISOString() }));
+
 export const arbGraves = fc.array(arbGrave, { maxLength: 15 });
 
 export function graveWith(overrides: Partial<Grave> = {}): Grave {
