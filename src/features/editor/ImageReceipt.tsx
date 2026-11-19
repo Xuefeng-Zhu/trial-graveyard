@@ -9,7 +9,7 @@ import {
 } from '../../lib/ocr';
 import type { ConfidenceHint, ImageReadout, OcrEngine, OcrImage } from '../../lib/ocr';
 import type { ParseResult } from '../../lib/parse';
-import { useReducedMotion } from '../graveyard/useReducedMotion';
+import { useMotionAllowed } from '../atmosphere';
 import styles from './editor.module.css';
 
 export const DECIPHERING = 'The spirits are deciphering…';
@@ -61,7 +61,7 @@ function lazyDefaultEngine(): OcrEngine {
 
 export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, incoming }: ImageReceiptProps) {
   const id = useId();
-  const reduced = useReducedMotion();
+  const reduced = !useMotionAllowed();
   const pickRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const abortRef = useRef<AbortController | null>(null);

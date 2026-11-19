@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { DaylightList, downloadHauntingIcs, downloadIcs } from '../features/daylight';
+import { Celebration } from '../features/atmosphere';
 import { useReducedMotion } from '../features/graveyard';
 import {
   BottomHud,
@@ -52,6 +53,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [exorcisingId, setExorcisingId] = useState<string | null>(null);
   const [view, setView] = useState<View>('graveyard');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [celebration, setCelebration] = useState<string | null>(null);
 
   const { daylight, soundOn, calm } = s.settings;
   const osReduced = useReducedMotion();
@@ -63,6 +65,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
 
   const lastChange = s.lastChange;
   useEffect(() => setToastOpen(lastChange !== null), [lastChange]);
+  const clearCelebration = useCallback(() => setCelebration(null), []);
   const expireToast = useCallback(() => setToastOpen(false), []);
 
   const exorcising = exorcisingId ? s.graves.find((g) => g.id === exorcisingId) : undefined;
@@ -74,9 +77,17 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     setPrefillVersion((v) => v + 1);
   };
 
+  const celebrate = (id: string): void => {
+    const grave = s.graves.find((g) => g.id === id);
+    if (grave) setCelebration(formatMoney(grave.priceCents, grave.currency));
+    playSound('celebrate');
+  };
+
   const status = (id: string, kind: 'cancel' | 'keep'): void => {
-    if (kind === 'cancel') s.cancelGrave(id, clock());
-    else s.keepGrave(id, clock());
+    if (kind === 'cancel') {
+      s.cancelGrave(id, clock());
+      celebrate(id);
+    } else s.keepGrave(id, clock());
     playSound(kind === 'cancel' ? 'thunder' : 'keep');
   };
 
@@ -89,7 +100,10 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   /** Opening a trial counts as reviewing it (cosmetic XP, once per trial). */
   const select = (id: string | null): void => {
     setSelectedId(id);
-    if (id) s.reviewGrave(id, clock());
+    if (id) {
+      s.reviewGrave(id, clock());
+      playSound('select');
+    }
   };
 
   const bury = (trial: ValidTrial): void => {
@@ -121,6 +135,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
     s.exorcise(id, clock());
     setExorcisingId(null);
     playSound('cancel');
+    celebrate(id);
   };
 
   const toastMessage = changed
@@ -248,6 +263,8 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       {exorcising && (
         <ExorcismPanel grave={exorcising} onExorcised={confirmExorcism} onClose={() => setExorcisingId(null)} />
       )}
+
+      {celebration && <Celebration amount={celebration} motion={motionAllowed} onDone={clearCelebration} />}
 
       {toastOpen && lastChange && changed && (
         <UndoToast

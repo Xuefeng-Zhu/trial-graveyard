@@ -175,7 +175,7 @@ describe('sounds', () => {
     return node;
   }
 
-  it.each(['creak', 'thunder'] as const)('synthesises %s with a capped gain', (name) => {
+  it.each(['creak', 'thunder', 'select', 'celebrate'] as const)('synthesises %s with a capped gain', (name) => {
     const node = audioNode();
     const close = vi.fn();
     const ctor = vi.fn(function () {
@@ -209,6 +209,8 @@ describe('sounds', () => {
     vi.stubGlobal('AudioContext', ctor);
     playSound('creak');
     playSound('thunder');
+    playSound('select');
+    playSound('celebrate');
     expect(ctor).not.toHaveBeenCalled();
   });
 });

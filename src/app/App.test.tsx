@@ -495,6 +495,7 @@ describe('Calm mode', () => {
     await settle(store);
     fireEvent.click(screen.getByRole('button', { name: 'Summon demo graveyard' }));
     expect(screen.getByRole('region', { name: 'Graveyard scene' })).toHaveAttribute('data-motion', 'animated');
+    expect(screen.getByTestId('atmosphere')).toBeInTheDocument();
     goTo('Settings');
     const toggle = screen.getByRole('button', { name: 'Calm mode' });
     expect(toggle).toHaveAttribute('aria-pressed', 'false');
@@ -505,6 +506,31 @@ describe('Calm mode', () => {
     expect(screen.getByRole('region', { name: 'Graveyard scene' })).toHaveAttribute('data-motion', 'still');
     expect(document.querySelectorAll('[data-motion="animated"]')).toHaveLength(0);
     expect(document.querySelector('canvas')).toBeNull();
+    expect(screen.queryByTestId('atmosphere')).toBeNull();
+  });
+
+  it('shows the saved amount without coins or particles in Calm mode', () => {
+    const store = setup();
+    store.setState((st) => ({ settings: { ...st.settings, calm: true } }));
+    addTrial('Banshee Box', '2026-10-20', '14.95');
+    fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
+    expect(screen.getByTestId('celebration')).toHaveTextContent('$14.95 saved');
+    expect(screen.queryByTestId('celebration-fx')).toBeNull();
+  });
+});
+
+describe('Cancellation celebration', () => {
+  it('floats coins and particles with the saved amount, then clears', () => {
+    vi.useFakeTimers();
+    setup();
+    addTrial('Banshee Box', '2026-10-20', '14.95');
+    fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
+    expect(screen.getByTestId('celebration-fx')).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(2500);
+    });
+    expect(screen.queryByTestId('celebration')).toBeNull();
+    vi.useRealTimers();
   });
 });
 
@@ -647,7 +673,7 @@ describe('sound toggle', () => {
     addTrial('Banshee Box', '2026-10-20', '14.95');
     expect(created).toEqual(['osc']);
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
-    expect(created).toEqual(['osc', 'noise']);
+    expect(created).toEqual(['osc', 'osc', 'noise']);
     vi.unstubAllGlobals();
   });
 });

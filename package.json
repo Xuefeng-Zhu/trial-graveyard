@@ -12,7 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/inter": "^5.3.0",
     "@fontsource/pirata-one": "^5.3.0",
     "@fontsource/press-start-2p": "^5.3.0",

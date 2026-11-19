@@ -11,7 +11,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icon-192.png', 'icon-512.png', 'scene/*.webp'],
+      includeAssets: ['icon-192.png', 'icon-512.png', 'pixel/*.png'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,webmanifest}'],
         navigateFallback: `${base}index.html`,
@@ -34,8 +34,8 @@ export default defineConfig({
         name: 'Trial Graveyard',
         short_name: 'Graveyard',
         description: 'A haunted tracker for free trials. Cancel before they rise.',
-        theme_color: '#12101a',
-        background_color: '#12101a',
+        theme_color: '#120F23',
+        background_color: '#120F23',
         display: 'standalone',
         scope: base,
         start_url: base,

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 import type { Grave } from '../../domain/trial';
 import { BACKDROP_URL } from '../../design/pixel';
+import { Atmosphere } from '../atmosphere';
 import { DetailsPanel } from './DetailsPanel';
 import type { GraveActions } from './DetailsPanel';
 import { Gravestone } from './Gravestone';
@@ -62,6 +63,7 @@ export function Cemetery({ graves, now, styleId, motion, selectedId, onSelect, c
         data-motion={motion ? 'animated' : 'still'}
         style={{ backgroundImage: `url(${BACKDROP_URL})` }}
       >
+        <Atmosphere motion={motion} />
         {sorted.length === 0 ? (
           <p className={styles.empty}>No gravestones yet. Add a trial and it will rise here.</p>
         ) : (
