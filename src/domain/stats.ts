@@ -8,9 +8,9 @@ export interface HackerStats {
   survived: number;
   /** Money dodged by trials buried this calendar year, per currency. */
   dodged: CurrencyTotal[];
-  /** Mean days between adding a trial and cancelling it, or null with no cancellations. */
+  /** Mean days between adding a trial and cancelling it before the charge, or null with none. */
   avgDaysUsed: number | null;
-  /** Trials that charged before they were cancelled or while still active or kept. */
+  /** Trials that charged: cancelled after the charge, or active or kept with the charge time passed. */
   escaped: number;
 }
 
@@ -28,11 +28,13 @@ export function deriveStats(graves: readonly Grave[], now: Date): HackerStats {
     if (g.status === 'cancelled') {
       const at = g.cancelledAt === undefined ? NaN : parseISO(g.cancelledAt).getTime();
       if (Number.isNaN(at)) continue;
-      cancelledCount += 1;
-      daysTotal += Math.max(0, differenceInMilliseconds(at, parseISO(g.createdAt))) / MS_PER_DAY;
       if (at < charge) {
         survived += 1;
+        cancelledCount += 1;
+        daysTotal += Math.max(0, differenceInMilliseconds(at, parseISO(g.createdAt))) / MS_PER_DAY;
         if (getYear(at) === year) dodged.set(g.currency, (dodged.get(g.currency) ?? 0) + g.priceCents);
+      } else {
+        escaped += 1;
       }
     } else if (charge <= now.getTime()) {
       escaped += 1;

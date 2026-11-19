@@ -55,7 +55,7 @@ function eventLines(grave: Grave, kind: '48h' | 'morning', at: Date, stamp: stri
 
 /**
  * Builds an iCalendar document with two haunting reminders per grave (48h before and the
- * morning of the charge), each with a VALARM. Graves with an unparseable charge date are skipped.
+ * morning of the charge), each with a VALARM. Reminders not after `now` are skipped. Graves with an unparseable charge date are skipped.
  */
 export function buildHauntingIcs(graves: readonly Grave[], now: Date): string {
   const stamp = utcStamp(now);
@@ -64,7 +64,10 @@ export function buildHauntingIcs(graves: readonly Grave[], now: Date): string {
     .filter(({ charge }) => !Number.isNaN(charge.getTime()))
     .flatMap(({ g, charge }) => {
       const { early, morning } = reminderTimes(charge);
-      return [...eventLines(g, '48h', early, stamp), ...eventLines(g, 'morning', morning, stamp)];
+      return [
+        ...(early.getTime() > now.getTime() ? eventLines(g, '48h', early, stamp) : []),
+        ...(morning.getTime() > now.getTime() ? eventLines(g, 'morning', morning, stamp) : []),
+      ];
     });
   const lines = [
     'BEGIN:VCALENDAR',

@@ -193,6 +193,17 @@ describe('buildHauntingIcs', () => {
     expect(ics).toContain('No cancel link saved for this one.');
   });
 
+  it('skips reminders that are not after now', () => {
+    const at = (iso: string) => buildHauntingIcs([graveWith({ id: 'p', chargeAt: iso })], NOW);
+    // charge within 48h: the early reminder is past, the morning one is not
+    const soon = at('2026-10-02T23:59:00.000Z');
+    expect(soon).not.toContain('UID:p-48h@');
+    // charge already passed: nothing is emitted
+    const past = at('2026-09-01T00:00:00.000Z');
+    expect(past).not.toContain('BEGIN:VEVENT');
+    expect(past).toContain('END:VCALENDAR');
+  });
+
   it('puts the morning reminder at 09:00 local', () => {
     const charge = new Date(2026, 9, 31, 18, 0);
     const ics = buildHauntingIcs([graveWith({ chargeAt: toLocalIso(charge) })], NOW);

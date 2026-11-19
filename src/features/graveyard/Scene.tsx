@@ -122,7 +122,7 @@ function Actions({ grave, onCancelled, onKeep, onEdit, onDelete, onExport, onHau
           <button type="button" className={styles.button} onClick={() => onHaunt([grave], `${grave.name}-haunting.ics`)}>
             Add haunting to calendar<span className={styles.srOnly}> for {grave.name}</span>
           </button>
-          <button type="button" className={styles.button} onClick={() => { onExorcise(grave.id); onDone(); }}>
+          <button type="button" className={styles.button} onClick={() => onExorcise(grave.id)}>
             Exorcise<span className={styles.srOnly}> {grave.name}</span>
           </button>
         </>

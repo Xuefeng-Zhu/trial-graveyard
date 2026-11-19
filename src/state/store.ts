@@ -142,7 +142,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
             lastChange: s.lastChange?.id === id ? null : s.lastChange,
           })),
         cancelGrave: (id, now) => changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) }),
-        exorcise: (id, now) => changeStatus(id, now, { status: 'cancelled', cancelledAt: toLocalIso(now) }),
+        exorcise: (id, now) => get().cancelGrave(id, now),
         keepGrave: (id, now) => changeStatus(id, now, { status: 'kept', keptAt: toLocalIso(now) }),
         undo: (now) => {
           const change = get().lastChange;

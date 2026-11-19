@@ -58,8 +58,23 @@ describe('deriveStats', () => {
       { currency: 'EUR', cents: 500 },
       { currency: 'USD', cents: 1000 },
     ]);
-    expect(s.avgDaysUsed).toBeCloseTo((4 + 2 + 2 + 19) / 4, 5);
-    expect(s.escaped).toBe(2);
+    expect(s.avgDaysUsed).toBeCloseTo((4 + 2 + 2) / 3, 5);
+    expect(s.escaped).toBe(3); // kept and active past charge, plus the late cancellation
+  });
+
+  it('counts a late cancellation as escaped, not survived or averaged', () => {
+    const s = deriveStats(
+      [
+        graveWith({
+          status: 'cancelled',
+          createdAt: iso(2026, 0, 1),
+          cancelledAt: iso(2026, 0, 20),
+          chargeAt: iso(2026, 0, 10),
+        }),
+      ],
+      NOW,
+    );
+    expect(s).toEqual({ survived: 0, dodged: [], avgDaysUsed: null, escaped: 1 });
   });
 
   it('ignores cancelled graves without a valid cancelledAt', () => {
