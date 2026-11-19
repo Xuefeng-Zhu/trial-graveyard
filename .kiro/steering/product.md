@@ -9,7 +9,7 @@ A Kiroween 2026 Costume Contest entry. It's a free-trial and subscription tracke
 - Each trial or subscription is a **grave** in the graveyard.
 - As the next charge date gets closer, the grave **cracks open** in stages: >7 days (sealed), 7–3 days (cracked), 3–2 days (earth churning, faint green glow).
 - Within **48 hours** of the charge, the grave **rises as a zombie** that shambles toward the front of the screen. This is the call to action.
-- **Cancelled** trials become a tombstone with an epitaph and the money saved: "Here lies Audible. Saved you $14.95/mo." They rest in peace.
+- **Cancelled** trials become a tombstone with an epitaph and the money saved: "Here lies Necro Audiobooks. Saved you $14.95/mo." They rest in peace.
 - **Kept** (paid) subscriptions are **ghosts** that drift above the graveyard, showing their monthly cost.
 - The **Mausoleum** keeps a running total of money saved (the "souls saved" counter).
 

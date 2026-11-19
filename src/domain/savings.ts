@@ -54,7 +54,7 @@ const CADENCE_SUFFIX: Record<Cadence, string> = {
   yearly: '/yr',
 };
 
-/** "Here lies Audible. Saved you $14.95/mo." */
+/** "Here lies Necro Audiobooks. Saved you $14.95/mo." */
 export function epitaph(grave: Pick<Grave, 'name' | 'priceCents' | 'currency' | 'cadence'>): string {
   const price = formatMoney(grave.priceCents, grave.currency) + CADENCE_SUFFIX[grave.cadence];
   return `Here lies ${grave.name}. Saved you ${price}.`;

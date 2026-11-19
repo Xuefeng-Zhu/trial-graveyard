@@ -27,7 +27,7 @@ User story: As a developer, I want a small provider interface so that Gmail or O
 1. THE mock provider SHALL have `id` "mock" and `label` "Haunted Demo Inbox".
 2. WHEN `connect()` is called, THE mock provider SHALL resolve only after the user accepts a fake OAuth-style consent dialog, and SHALL reject if the user declines.
 3. WHEN `searchReceipts` is called, THE mock provider SHALL stream about 12 fixture emails, each after a small delay.
-4. THE fixtures SHALL include trial confirmations for Disney+, Spotify Premium, Adobe Creative Cloud, Duolingo Max, NYT, Peloton, ChatGPT Plus and Audible, at least two renewal notices, and three or four distractors (shipping, newsletter, password reset).
+4. THE fixtures SHALL include trial confirmations for Phantomflix, Wraithwave Premium, Cryptic Cloud, Hexlingo Max, Grimoire+, Spectral Fitness, Ghoul GPT Pro and Necro Audiobooks, at least two renewal notices, and three or four distractors (shipping, newsletter, password reset).
 5. THE fixture dates SHALL be computed relative to the current time, so trial and charge dates stay in the future and the demo does not go stale.
 6. WHEN `since` is given, THE mock provider SHALL omit emails dated before `since`.
 7. WHEN `disconnect()` is called, THE mock provider SHALL report `isConnected()` as false.

@@ -84,7 +84,7 @@ describe('receipt parser properties', () => {
   });
 
   it('P-P5 ignores leading and trailing text without digits or date words', () => {
-    const base = 'Welcome to Netflix. Your trial ends Oct 31, 2026. Then $15.49 per month. https://netflix.com/cancel';
+    const base = 'Welcome to Phantomflix. Your trial ends Oct 31, 2026. Then $15.49 per month. https://phantomflix.example/cancel';
     const expected = parseReceipt(base, REF_DATE);
     fc.assert(
       fc.property(arbNoise, arbNoise, (pre, post) => {

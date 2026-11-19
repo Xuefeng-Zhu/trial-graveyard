@@ -50,18 +50,18 @@ afterEach(() => {
 describe('App end to end in the list view', () => {
   it('adds a grave and lists it with stage text and a safe cancel link', () => {
     setup();
-    addTrial('Netflix', '2026-10-02', '15.49', 'https://netflix.com/cancel');
-    const item = screen.getByRole('listitem', { name: /Netflix/ });
+    addTrial('Phantomflix', '2026-10-02', '15.49', 'https://phantomflix.example/cancel');
+    const item = screen.getByRole('listitem', { name: /Phantomflix/ });
     expect(within(item).getByText(/Zombie, charges in \d+ hours/)).toBeInTheDocument();
     const link = within(item).getByRole('link', { name: /Cancel now/ });
-    expect(link).toHaveAttribute('href', 'https://netflix.com/cancel');
+    expect(link).toHaveAttribute('href', 'https://phantomflix.example/cancel');
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   });
 
   it('disables Cancel now with an explanation when there is no URL', () => {
     setup();
-    addTrial('Hulu', '2026-10-20', '7.99');
+    addTrial('Hollowtv', '2026-10-20', '7.99');
     const button = screen.getByRole('button', { name: 'Cancel now' });
     expect(button).toBeDisabled();
     expect(button).toHaveAccessibleDescription(NO_CANCEL_URL_TEXT);
@@ -78,9 +78,9 @@ describe('App end to end in the list view', () => {
   it('cancels with epitaph, updates the Mausoleum, and undoes', () => {
     setup();
     expect(screen.getByText(EMPTY_MAUSOLEUM_TEXT)).toBeInTheDocument();
-    addTrial('Audible', '2026-10-20', '14.95');
+    addTrial('Necro Audiobooks', '2026-10-20', '14.95');
     fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
-    expect(screen.getByText('Here lies Audible. Saved you $14.95/mo.')).toBeInTheDocument();
+    expect(screen.getByText('Here lies Necro Audiobooks. Saved you $14.95/mo.')).toBeInTheDocument();
     expect(screen.getByText('$14.95')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(screen.queryByText(/Here lies/)).not.toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('App end to end in the list view', () => {
     vi.useFakeTimers();
     try {
       setup();
-      addTrial('Audible', '2026-10-20', '14.95');
+      addTrial('Necro Audiobooks', '2026-10-20', '14.95');
       fireEvent.click(screen.getByRole('button', { name: /I cancelled/ }));
       expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
       act(() => {
@@ -115,9 +115,9 @@ describe('App end to end in the list view', () => {
     addTrial('Netflx', '2026-10-20', '5');
     fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
     expect(screen.getByLabelText('Name')).toHaveValue('Netflx');
-    type('Name', 'Netflix');
+    type('Name', 'Phantomflix');
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-    expect(screen.getByRole('heading', { level: 3, name: 'Netflix' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Phantomflix' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
     expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
@@ -132,13 +132,13 @@ describe('App end to end in the list view', () => {
     URL.revokeObjectURL = vi.fn();
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     setup();
-    addTrial('Netflix', '2026-10-20', '5');
+    addTrial('Phantomflix', '2026-10-20', '5');
     fireEvent.click(screen.getByRole('button', { name: /Add to calendar/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
     expect(blobs).toHaveLength(2);
     const text = await blobs[0]!.text();
     expect(text).toContain('BEGIN:VCALENDAR');
-    expect(text).toContain('SUMMARY:Cancel Netflix before $5.00 charge');
+    expect(text).toContain('SUMMARY:Cancel Phantomflix before $5.00 charge');
   });
 });
 
@@ -157,7 +157,7 @@ describe('haunted scene', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Export all active to calendar' }));
     expect(blobs).toHaveLength(1);
     const open = () => {
-      const li = screen.getByRole('listitem', { name: /Netflx|Netflix/ });
+      const li = screen.getByRole('listitem', { name: /Netflx|Phantomflix/ });
       li.focus();
       fireEvent.keyDown(li, { key: 'Enter' });
     };
@@ -166,9 +166,9 @@ describe('haunted scene', () => {
     expect(blobs).toHaveLength(2);
     fireEvent.click(screen.getByRole('button', { name: /^Edit/ }));
     expect(screen.getByLabelText('Name')).toHaveValue('Netflx');
-    type('Name', 'Netflix');
+    type('Name', 'Phantomflix');
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
-    expect(screen.getByRole('listitem', { name: /Netflix/ })).toBeInTheDocument();
+    expect(screen.getByRole('listitem', { name: /Phantomflix/ })).toBeInTheDocument();
     open();
     fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
@@ -188,10 +188,10 @@ describe('haunted scene', () => {
   it('cancels from the scene and updates the Mausoleum', async () => {
     const store = setup(false);
     await settle(store);
-    addTrial('Netflix', '2026-10-02', '15.49');
-    const zombie = screen.getByRole('listitem', { name: /Netflix/ });
+    addTrial('Phantomflix', '2026-10-02', '15.49');
+    const zombie = screen.getByRole('listitem', { name: /Phantomflix/ });
     fireEvent.click(within(zombie).getByRole('button', { name: /I cancelled/ }));
-    await waitFor(() => expect(screen.getByText('Here lies Netflix. Saved you $15.49/mo.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Here lies Phantomflix. Saved you $15.49/mo.')).toBeInTheDocument());
     expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
   });
 });

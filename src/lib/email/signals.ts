@@ -6,6 +6,18 @@ const SUBJECT_KEYWORDS = ['trial', 'free for', 'will be charged', 'renews on'] a
 const DISTRACTOR_SUBJECT = /\b(?:shipped|shipment|delivery|delivered|newsletter|password|verification code|order\s+#?\d)/i;
 
 const SENDER_SERVICES: ReadonlyArray<readonly [string, string]> = [
+  // Fictional demo brands (mock inbox, seed data).
+  ['phantomflix.example', 'Phantomflix'],
+  ['wraithwave.example', 'Wraithwave Premium'],
+  ['crypticcloud.example', 'Cryptic Cloud'],
+  ['hexlingo.example', 'Hexlingo Max'],
+  ['grimoireplus.example', 'Grimoire+'],
+  ['spectralfitness.example', 'Spectral Fitness'],
+  ['ghoulgpt.example', 'Ghoul GPT Pro'],
+  ['necroaudiobooks.example', 'Necro Audiobooks'],
+  ['bansheebox.example', 'Banshee Box'],
+  ['cryptdrive.example', 'Crypt Drive+'],
+  // Real services, recognised in user-provided mail.
   ['disneyplus.com', 'Disney+'],
   ['spotify.com', 'Spotify Premium'],
   ['adobe.com', 'Adobe Creative Cloud'],

@@ -6,8 +6,8 @@ import { MAX_EDGE, fitWithin, preprocessImage, toGrayscale } from './preprocess'
 import { confidenceHint, interpretText, readImageReceipt } from './read';
 
 const NOW = new Date('2026-10-20T12:00:00Z');
-const DISNEY =
-  'Welcome to Disney+\nYour free trial has started.\nYour trial ends on November 15.\nAfter that you will be charged $13.99/month.\nhttps://www.disneyplus.com/account';
+const SAMPLE_TEXT =
+  'Welcome to Phantomflix\nYour free trial has started.\nYour trial ends on November 15.\nAfter that you will be charged $13.99/month.\nhttps://www.phantomflix.example/account';
 
 describe('fitWithin', () => {
   it('downscales the long edge to 1600 and keeps the aspect ratio', () => {
@@ -85,7 +85,7 @@ describe('normaliseOcrText', () => {
 
 describe('OCR to form mapping with the fake engine', () => {
   it('parses a clear read', async () => {
-    const engine = createFakeEngine({ text: DISNEY, confidence: 91, steps: [10, 90] });
+    const engine = createFakeEngine({ text: SAMPLE_TEXT, confidence: 91, steps: [10, 90] });
     const onProgress = vi.fn();
     const r = await readImageReceipt(engine, new Blob(['x']), NOW, { onProgress });
     expect(onProgress.mock.calls).toEqual([[10], [90]]);
@@ -97,7 +97,7 @@ describe('OCR to form mapping with the fake engine', () => {
   });
   it('flags no text, low confidence and no fields', () => {
     expect(interpretText('  ', 90, NOW).problem).toBe('no-text');
-    expect(interpretText(DISNEY, 20, NOW)).toMatchObject({ problem: 'low-confidence', hint: 'poor' });
+    expect(interpretText(SAMPLE_TEXT, 20, NOW)).toMatchObject({ problem: 'low-confidence', hint: 'poor' });
     expect(interpretText('just some words here', 90, NOW).problem).toBe('no-fields');
   });
   it('maps confidence to hints', () => {

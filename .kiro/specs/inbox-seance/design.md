@@ -48,7 +48,7 @@ export interface EmailProvider {
 
 ## 3. Mock provider (I2)
 - `connect()` calls an injected `confirm()` that the UI implements as a fake consent dialog ("Haunted Demo Inbox wants to read receipts. Allow / Decline"). Decline rejects with `ConsentDeniedError`.
-- Fixtures are built by `buildFixtures(now)`: 8 trial confirmations (Disney+, Spotify Premium, Adobe Creative Cloud, Duolingo Max, NYT, Peloton, ChatGPT Plus, Audible), 2 renewal notices, and 3 distractors (shipping, newsletter, password reset), 13 in total. Email dates are 1 to 20 days before `now`, and trial end or charge dates are written as absolute dates 3 to 25 days after `now`.
+- Fixtures are built by `buildFixtures(now)`: 8 trial confirmations (Phantomflix, Wraithwave Premium, Cryptic Cloud, Hexlingo Max, Grimoire+, Spectral Fitness, Ghoul GPT Pro, Necro Audiobooks), 2 renewal notices, and 3 distractors (shipping, newsletter, password reset), 13 in total. Email dates are 1 to 20 days before `now`, and trial end or charge dates are written as absolute dates 3 to 25 days after `now`.
 - The generator awaits `delay(delayMs)` before each yield (default 250 ms). Tests pass `delayMs: 0`.
 - `searchReceipts` throws if not connected, and filters out emails older than `since`.
 
@@ -60,7 +60,7 @@ export interface Candidate {
   fields: { name; priceCents; currency; cadence; chargeDate; cancelUrl? };
   confidence: number;          // 0..1
   snippet: string;             // up to 160 chars around the charge sentence
-  signals: string[];           // e.g. 'subject:trial', 'sender:disneyplus.com'
+  signals: string[];           // e.g. 'subject:trial', 'sender:phantomflix.example'
 }
 export async function scanEmails(
   messages: AsyncIterable<EmailMessage>,
@@ -71,7 +71,7 @@ export async function scanEmails(
 ```
 Per email:
 1. `parseReceipt(text, emailDate)`. If no charge date, skip (I3.5). This also drops distractors, which carry no charge date.
-2. Name: parsed name if confident, else the sender-domain map (`disneyplus.com` to "Disney+"), else the capitalised domain label.
+2. Name: parsed name if confident, else the sender-domain map (`phantomflix.example` to "Phantomflix"), else the capitalised domain label.
 3. Confidence = `0.6 * mean(field confidence of name, price, date) + 0.25 * subjectSignal + 0.15 * senderKnown`, clamped to 0..1. `subjectSignal` is 1 if the subject matches `trial`, `free for`, `will be charged` or `renews on`, else 0. `senderKnown` is 1 if the domain is in the map.
 4. A distractor-only subject (shipped, newsletter, password reset) with no subject signal is dropped even if the body parses a date.
 

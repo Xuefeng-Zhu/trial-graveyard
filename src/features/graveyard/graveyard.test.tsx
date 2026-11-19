@@ -176,21 +176,21 @@ describe('keyboard navigation', () => {
 
 describe('live region and transitions', () => {
   it('announces a stage change after time advances', () => {
-    const g = [grave('Netflix', 50 * HOUR)];
+    const g = [grave('Phantomflix', 50 * HOUR)];
     const { rerender } = renderScene(g);
     expect(screen.getByTestId('scene-live')).toBeEmptyDOMElement();
     rerender(<Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
-    expect(screen.getByTestId('scene-live')).toHaveTextContent('Netflix is now Zombie, charges in 47 hours.');
+    expect(screen.getByTestId('scene-live')).toHaveTextContent('Phantomflix is now Zombie, charges in 47 hours.');
   });
 
   it('turns a cancelled grave into a tombstone and announces it', async () => {
-    const g = grave('Audible', 5 * DAY, { priceCents: 1495 });
+    const g = grave('Necro Audiobooks', 5 * DAY, { priceCents: 1495 });
     const { rerender } = renderScene([g]);
     const done = { ...g, status: 'cancelled' as const };
     rerender(<Scene graves={[done]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
-    expect(screen.getByText('Here lies Audible. Saved you $14.95/mo.')).toBeInTheDocument();
-    expect(screen.getByTestId('scene-live')).toHaveTextContent('Audible is now a tombstone. Saved $14.95.');
+    expect(screen.getByText('Here lies Necro Audiobooks. Saved you $14.95/mo.')).toBeInTheDocument();
+    expect(screen.getByTestId('scene-live')).toHaveTextContent('Necro Audiobooks is now a tombstone. Saved $14.95.');
   });
 
   it('turns a kept grave into a ghost and moves focus to it', async () => {
@@ -252,14 +252,14 @@ describe('edit, delete and export', () => {
   });
 
   it('announces every simultaneous stage change', () => {
-    const g = [grave('Netflix', 50 * HOUR), grave('Hulu', 50 * HOUR)];
+    const g = [grave('Phantomflix', 50 * HOUR), grave('Hollowtv', 50 * HOUR)];
     const { rerender } = renderScene(g);
     rerender(
       <Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />,
     );
     const live = screen.getByTestId('scene-live');
-    expect(live).toHaveTextContent('Netflix is now Zombie');
-    expect(live).toHaveTextContent('Hulu is now Zombie');
+    expect(live).toHaveTextContent('Phantomflix is now Zombie');
+    expect(live).toHaveTextContent('Hollowtv is now Zombie');
   });
 });
 
@@ -300,10 +300,10 @@ describe('reduced motion', () => {
 
   it('still fades tombstones in with opacity only', async () => {
     mockMatchMedia(true);
-    const g = grave('Hulu', DAY);
+    const g = grave('Hollowtv', DAY);
     const { rerender } = renderScene([g]);
     rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
-    await waitFor(() => expect(screen.getByText(/Here lies Hulu/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Here lies Hollowtv/)).toBeInTheDocument());
   });
 });
 

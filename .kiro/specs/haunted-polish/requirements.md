@@ -19,7 +19,7 @@ User story: As a first-time visitor, I want an atmospheric first screen so that 
 5. WHILE Daylight mode is on, THE landing screen SHALL show the pitch and the button without fog or moon artwork.
 
 ### H2. Personalised epitaphs and souls saved
-1. THE epitaph formatter SHALL produce text in the form "Here lies {name} · {price}/{cadence short} · slain {Mon YYYY}", for example "Here lies Disney+ · $13.99/mo · slain Nov 2026".
+1. THE epitaph formatter SHALL produce text in the form "Here lies {name} · {price}/{cadence short} · slain {Mon YYYY}", for example "Here lies Phantomflix · $13.99/mo · slain Nov 2026".
 2. THE formatter SHALL use `cancelledAt` for the slain month and year, and SHALL format the price with the grave's currency.
 3. IF a grave has a one-time cadence, THEN THE epitaph SHALL show the price without a cadence suffix.
 4. WHEN a grave is cancelled, THE tombstone SHALL show the personalised epitaph.

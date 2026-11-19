@@ -99,7 +99,7 @@ Note: `R <= 0` is checked first, so a charge exactly at `now` is `overdue`, and 
 - **Tech split**: CSS keyframes for cheap loops (glow, ghost bob). Framer Motion for orchestrated entrances, the zombie shamble, layout changes and the undo/cancel transitions.
 - **Reduced motion**: a single `useReducedMotion()` hook (Framer Motion's hook, backed by `matchMedia('(prefers-reduced-motion: reduce)')`, subscribed to changes) feeds a `motion` context value. A global CSS block `@media (prefers-reduced-motion: reduce)` sets `animation: none !important` on scene classes as a safety net. With reduced motion: zombies show a static pose placed in the front row, fog is a static gradient, ghosts are static, the canvas loop does not start, and state changes use a 150 ms opacity fade (R8.4). Urgency is still shown by pose, glow color, border and text label.
 - **Daylight mode**: skips the scene entirely. The route renders `DaylightList`, a semantic `<ul>` sorted by charge date with a stage text badge, price, countdown, and the same three actions. No continuous animation and a light, high contrast theme using the same tokens.
-- **Accessibility**: each grave is a `role="listitem"` (or `button`-like group) with an `aria-label` such as "Netflix, zombie, charges in 5 hours, $15.49 monthly". Arrow keys move a roving tabindex across graves; Enter opens the action panel; Escape closes it. A visible focus ring token is used everywhere. `aria-live="polite"` announces stage changes and the Mausoleum total update. Sounds are off by default and are triggered only by user actions.
+- **Accessibility**: each grave is a `role="listitem"` (or `button`-like group) with an `aria-label` such as "Phantomflix, zombie, charges in 5 hours, $15.49 monthly". Arrow keys move a roving tabindex across graves; Enter opens the action panel; Escape closes it. A visible focus ring token is used everywhere. `aria-live="polite"` announces stage changes and the Mausoleum total update. Sounds are off by default and are triggered only by user actions.
 
 ## 5. Receipt parser
 
@@ -118,7 +118,7 @@ Zustand `persist` with a custom `StateStorage` over `idb-keyval` (`get`, `set`, 
 | Layer | Tool | What |
 |---|---|---|
 | Domain | Vitest + fast-check | All P-S*, P-M*, P-I1, P-X1. Example tests for each boundary. Coverage gate 100% on `src/domain/`. |
-| Parser | Vitest + fast-check + fixtures | P-P1..P-P9, plus a fixture corpus of about 15 realistic receipts (Netflix, Audible, Spotify, Adobe, a yearly plan, non-US formats). |
+| Parser | Vitest + fast-check + fixtures | P-P1..P-P9, plus a fixture corpus of about 15 realistic receipts (Phantomflix, Necro Audiobooks, Wraithwave, Cryptic Cloud, a yearly plan, non-US formats). |
 | Components | Testing Library + jest-dom | Form validation (R1), action buttons and undo (R3), Daylight list, Mausoleum counter, keyboard navigation, aria labels. |
 | Reduced motion | Testing Library with mocked `matchMedia` | With reduce on, no looping animation classes or canvas loop; static pose is rendered. |
 | Persistence | fake-indexeddb | Round trip, migration, corrupt data fallback. |

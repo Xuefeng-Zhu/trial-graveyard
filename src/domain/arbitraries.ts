@@ -34,7 +34,7 @@ export const arbGraves = fc.array(arbGrave, { maxLength: 15 });
 export function graveWith(overrides: Partial<Grave> = {}): Grave {
   return {
     id: 'g1',
-    name: 'Netflix',
+    name: 'Phantomflix',
     chargeAt: '2026-10-31T09:00:00.000Z',
     priceCents: 1549,
     currency: 'USD',

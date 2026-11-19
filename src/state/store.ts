@@ -84,13 +84,13 @@ const demoTrials = (now: Date): Array<[ValidTrial, 'active' | 'cancelled' | 'kep
     ...(cancelUrl ? { cancelUrl } : {}),
   });
   return [
-    [t('Netflix', 20 * DAY, 1549, 'monthly', 'https://www.netflix.com/cancelplan'), 'active'],
-    [t('Audible', 5 * DAY, 1495, 'monthly', 'https://www.audible.com/account/membership'), 'active'],
-    [t('Adobe Creative Cloud', 60 * HOUR, 5999, 'monthly'), 'active'],
-    [t('Notion Plus', 20 * HOUR, 9600, 'yearly', 'https://www.notion.so/billing'), 'active'],
-    [t('Spotify Premium', 3 * HOUR, 1199, 'monthly', 'https://www.spotify.com/account/subscription/'), 'active'],
-    [t('Hulu', -2 * HOUR, 799, 'monthly'), 'active'],
-    [t('Dropbox', -3 * DAY, 1199, 'monthly'), 'cancelled'],
+    [t('Phantomflix', 20 * DAY, 1549, 'monthly', 'https://www.phantomflix.example/cancelplan'), 'active'],
+    [t('Necro Audiobooks', 5 * DAY, 1495, 'monthly', 'https://www.necroaudiobooks.example/account/membership'), 'active'],
+    [t('Cryptic Cloud', 60 * HOUR, 5999, 'monthly'), 'active'],
+    [t('Moonnotes Plus', 20 * HOUR, 9600, 'yearly', 'https://www.moonnotes.example/billing'), 'active'],
+    [t('Wraithwave Premium', 3 * HOUR, 1199, 'monthly', 'https://www.wraithwave.example/account/subscription/'), 'active'],
+    [t('Hollowtv', -2 * HOUR, 799, 'monthly'), 'active'],
+    [t('Banshee Box', -3 * DAY, 1199, 'monthly'), 'cancelled'],
     [t('Calm', 10 * DAY, 6999, 'yearly'), 'kept'],
   ];
 };

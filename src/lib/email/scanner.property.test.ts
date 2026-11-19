@@ -5,7 +5,7 @@ import { arbGraves } from '../../domain/arbitraries';
 import type { EmailMessage } from './types';
 
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
-const SERVICES = ['Disney+', 'Spotify Premium', 'Peloton', 'Audible', 'Acme', 'Zed'];
+const SERVICES = ['Phantomflix', 'Wraithwave Premium', 'Spectral Fitness', 'Necro Audiobooks', 'Acme', 'Zed'];
 const arbDay = fc.record({ m: fc.integer({ min: 1, max: 12 }), d: fc.integer({ min: 1, max: 28 }) });
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -17,7 +17,7 @@ const arbMessage: fc.Arbitrary<EmailMessage> = fc
     year: fc.integer({ min: 2026, max: 2028 }),
     withDate: fc.boolean(),
     subject: fc.constantFrom('Your trial', 'Hello', 'Your order has shipped', 'Plan renews on soon', 'Newsletter'),
-    from: fc.constantFrom('a@mail.disneyplus.com', 'b@acme.example', 'nobody', 'c@spotify.com'),
+    from: fc.constantFrom('a@mail.phantomflix.example', 'b@acme.example', 'nobody', 'c@wraithwave.example'),
     junk: fc.string({ maxLength: 40 }),
     price: fc.integer({ min: 0, max: 99_999 }),
   })

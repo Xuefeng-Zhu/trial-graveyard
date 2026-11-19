@@ -13,10 +13,10 @@ const hasUnescaped = (value: string) => /(^|[^\\])(\\\\)*[,;]/.test(value) || /[
 describe('buildIcs examples', () => {
   const grave = graveWith({
     id: 'abc',
-    name: 'Audible',
+    name: 'Necro Audiobooks',
     chargeAt: '2026-10-31T09:00:00-07:00',
     priceCents: 1495,
-    cancelUrl: 'https://audible.com/cancel',
+    cancelUrl: 'https://necroaudiobooks.example/cancel',
   });
 
   it('builds a calendar with one event, an all-day date and a 24h alarm', () => {
@@ -28,9 +28,9 @@ describe('buildIcs examples', () => {
     const d = new Date('2026-10-31T09:00:00-07:00');
     const local = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
     expect(ics).toContain(`DTSTART;VALUE=DATE:${local}\r\n`);
-    expect(ics).toContain('SUMMARY:Cancel Audible before $14.95 charge\r\n');
+    expect(ics).toContain('SUMMARY:Cancel Necro Audiobooks before $14.95 charge\r\n');
     expect(ics).toContain('TRIGGER:-PT24H\r\n');
-    expect(ics).toContain('https://audible.com/cancel');
+    expect(ics).toContain('https://necroaudiobooks.example/cancel');
   });
 
   it('is stable for the same input', () => {
