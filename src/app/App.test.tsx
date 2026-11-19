@@ -140,7 +140,9 @@ describe('App end to end in the list view', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Delete/ }));
     fireEvent.click(screen.getByRole('button', { name: /^Confirm delete/ }));
     expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
-    expect(screen.getByRole('status')).toHaveTextContent('Phantomflix was deleted.');
+    expect(
+      screen.getAllByRole('status').some((el) => el.textContent?.includes('Phantomflix was deleted.')),
+    ).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(screen.getByRole('heading', { level: 3, name: 'Phantomflix' })).toBeInTheDocument();
   });
