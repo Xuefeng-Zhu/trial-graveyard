@@ -94,13 +94,13 @@ export function DetailsPanel({ grave, now, modal, onClose, ...actions }: Details
           <h2 id="details-heading" className={styles.detailsTitle}>
             {grave.name}
           </h2>
+          <div className={styles.detailsBadge}>
+            <PixelBadge tone={toneOf(state.kind)}>{statusText(grave, now)}</PixelBadge>
+          </div>
           <button type="button" className={styles.closeIcon} onClick={onClose}>
             <span aria-hidden="true">X</span>
             <span className={styles.srOnly}>Close details for {grave.name}</span>
           </button>
-        </div>
-        <div className={styles.detailsBadge}>
-          <PixelBadge tone={toneOf(state.kind)}>{statusText(grave, now)}</PixelBadge>
         </div>
 
         <dl className={styles.facts}>

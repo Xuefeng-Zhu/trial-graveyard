@@ -6,6 +6,12 @@ import type { Grave } from '../../domain/trial';
 import { Gravestone } from './Gravestone';
 
 const css = readFileSync('src/features/cemetery/cemetery.module.css', 'utf8');
+const tokens = readFileSync('src/design/tokens.css', 'utf8');
+/** Resolves `var(--palette-x)` to its hex value in tokens.css. */
+const hexOf = (value: string): string => {
+  const name = /var\((--[\w-]+)\)/.exec(value)?.[1];
+  return name ? new RegExp(`${name}: (#[0-9a-f]{6})`).exec(tokens)![1]! : value;
+};
 
 afterEach(cleanup);
 
@@ -56,8 +62,9 @@ describe('Gravestone plaque', () => {
     const size = /font-size: ([\d.]+)rem/.exec(rule('.name,\n.price'))![1]!;
     expect(Number(size) * 16).toBeGreaterThanOrEqual(12);
     const plate = rule('.plaque');
-    const bg = /background: (#[0-9a-f]{6})/.exec(plate)![1]!;
-    const fg = /color: (#[0-9a-f]{6})/.exec(plate)![1]!;
+    const bg = hexOf(/background: ([^;]+);/.exec(plate)![1]!);
+    const fg = hexOf(/(?<!-)color: ([^;]+);/.exec(plate)![1]!);
+    expect(plate).not.toMatch(/#[0-9a-f]{6}/i);
     expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(4.5);
     expect(plate).toMatch(/z-index: 2/);
   });

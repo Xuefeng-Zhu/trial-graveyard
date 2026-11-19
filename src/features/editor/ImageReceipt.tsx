@@ -205,7 +205,13 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
   };
 
   useEffect(() => {
-    if (zoomed) zoomRef.current?.focus();
+    if (!zoomed) return;
+    zoomRef.current?.focus();
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
   }, [zoomed]);
 
   const reading = phase === 'reading';
@@ -282,8 +288,18 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
                 e.stopPropagation();
                 closeZoom();
               } else if (e.key === 'Tab') {
-                e.preventDefault();
-                zoomRef.current?.querySelector<HTMLElement>('button')?.focus();
+                const items = Array.from(zoomRef.current?.querySelectorAll<HTMLElement>('button:not([disabled])') ?? []);
+                const first = items[0];
+                const last = items[items.length - 1];
+                if (!first || !last) return;
+                const at = document.activeElement;
+                if (e.shiftKey && (at === first || at === zoomRef.current)) {
+                  e.preventDefault();
+                  last.focus();
+                } else if (!e.shiftKey && at === last) {
+                  e.preventDefault();
+                  first.focus();
+                }
               }
             }}
           >

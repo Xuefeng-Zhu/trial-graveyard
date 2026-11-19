@@ -19,7 +19,7 @@
 
 .form > .actions,
 .form > .field:first-child,
-.form > .field:nth-child(6) {
+.form > .fieldWide {
   grid-column: 1 / -1;
 }
 
@@ -54,10 +54,6 @@
 .input:focus-visible {
   border-color: var(--color-accent);
   outline: var(--focus-ring);
-}
-
-.input[type='date'] {
-  color-scheme: dark;
 }
 
 .input[aria-invalid='true'] {
@@ -179,7 +175,6 @@
   height: auto;
   max-height: 14rem;
   object-fit: contain;
-  image-rendering: pixelated;
 }
 
 .lightbox {
