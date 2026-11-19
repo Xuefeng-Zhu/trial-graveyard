@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Spec sync",
+  "description": "Keep the README and task counts accurate when a tasks.md changes.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      ".kiro/specs/**/tasks.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A spec tasks.md was edited. Update the 'Built with Kiro' section and the 'Kiro features used' table in README.md so they stay accurate (spec count, hook count, task counts as done/total for each spec). Count '- [x]' and '- [ ]' lines in each tasks.md. Change nothing else."
+  }
+}

@@ -1,0 +1,13 @@
+Visual QA of the live app (1eed06d) against the target mockup `docs/design/concept-retro-pixel.png` found these gaps.
+
+1. **Blurred glow orb in the sky (upper right).** A smooth radial-gradient glow breaks the 16-bit look, while the pixel moon at left is crisp. Replace it with a stepped, pixel-quantized glow or remove it. A pixel cloud is also clipped by the scene's left border, and another faded cloud floats mid-sky: fix both.
+2. **Scene composition.** At desktop width the gravestones use only the bottom ~25% of the scene and the top ~40% is empty sky. Match the mockup: rows of graves on a raised hill with depth (back rows smaller), and the castle and trees framing the scene.
+3. **Gravestone text collides with crack sprites.** The name and price use ~8–9px Inter, mid-grey on lavender stone, and the red/orange crack sprites render behind the letters (Wraithwave Premium, Moonnotes Plus, Cryptic Cloud). Put the text on a plaque or epitaph plate area cracks never cover, raise it to a legible size and contrast, and truncate long names with a tooltip.
+4. **No right gutter.** The right-most gravestone's glow runs into the scene border. Add consistent padding.
+5. **Detail panel is unskinned.** It's a plain dark rectangle with a thin red glow, a ragged stack of left-aligned buttons of different widths, and "Close" as plain text. Use the PixelPanel frame: a pixel title bar with the brand monogram and state badge, a 2-column stat grid, and a consistent button grid with Exorcise as the primary action, matching the mockup's side panel.
+6. **Add-a-trial form uses raw native controls.** Inputs, the default mm/dd/yyyy date field with a white calendar glyph, and the default select are unstyled. Skin them with pixel borders and focus states, set `color-scheme: dark` for the date picker, and lay them out on a 2-column grid on desktop.
+7. **Empty panels.** Quests, Collection, Savings and Settings fill only the top ~20% of the viewport, and the Mausoleum card is ~70% empty with uneven card heights. Make them proper RPG menu screens: framed full-height panels, equal-height cards, and pixel art filling the empty areas.
+8. **Sample-receipt thumbnail is tiny.** It's ~90×50px; make it larger, or open it in a preview on click.
+9. **Mobile not yet verified by QA.** Make sure 360/390/430/768px match the handheld-RPG layout in the brief, and refresh `docs/screenshots/` at 360px and 1440px after the fixes.
+
+Keep every pixel asset crisp (`image-rendering: pixelated`, integer scaling), keep reduced-motion support, use fictional brands only, and keep typecheck, tests (504+) and the build green.

@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Spooky copy",
+  "description": "Keep graveyard voice consistent in copy and epitaph strings.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/domain/savings.ts",
+      "src/features/daylight/DaylightList.tsx",
+      "src/features/graveyard/Mausoleum.tsx",
+      "src/features/graveyard/Scene.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A copy, epitaph or empty-state string file was edited. Review the wording against .kiro/steering/product.md: darkly playful, puns welcome, never mean to the user, and the graveyard metaphor stays consistent (graves, tombstones, zombies, ghosts, mausoleum, souls saved). Fix any lines that drift, keep strings clear enough to read without the spooky styling, and run the related tests."
+  }
+}

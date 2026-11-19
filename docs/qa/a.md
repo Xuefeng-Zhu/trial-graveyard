@@ -1,0 +1,8 @@
+QA on the live app (1eed06d, demo graveyard loaded, Nov 19 2026) found the "next charge" and savings figures disagreeing with each other.
+
+1. **HUD "Next charge" picks an overdue trial.** The bottom HUD shows `Next charge Hollowtv: Overdue` (its charge date has already passed), while Savings → "NEXT TO BITE" shows Wraithwave Premium (3h). Both should use one shared selector: the soonest *upcoming* active charge. Overdue trials should be surfaced separately (e.g. "1 overdue") rather than as the next charge.
+2. **Savings "Trial hacker stats" contradict "Souls saved".** With the demo's cancelled Banshee Box, Mausoleum shows "Souls saved $11.99", but the stats show "Trials survived 0, Dollars dodged this year $0.00". After cancelling another trial and reloading, they read "Trials survived 1, Dollars dodged $19.99, Average days used before cancelling 0.0 days". Derive every figure from the same data (and make "0.0 days" read sensibly). Define "Trials that escaped" clearly, or rename it.
+3. **Detail panel rows duplicate each other.** "Remaining" shows "Churning, charges in 57 hours" and "Status" shows "57h left". Make Status the state (Calm/Warning/Critical/Kept/Cancelled) and Remaining the time.
+4. **No at-risk total.** Neither Graveyard nor Savings shows the total that will be charged if nothing is cancelled (e.g. "At risk this week: $X"). Add it, computed from active trials only.
+
+Acceptance: a pure selector module with fast-check property tests (next charge is never in the past and is the minimum upcoming; saved and stats totals agree); XP still never touches money. Keep typecheck, tests (504+) and the build green.

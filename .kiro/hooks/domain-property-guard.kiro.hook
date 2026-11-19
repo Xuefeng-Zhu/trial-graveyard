@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Domain property guard",
+  "description": "Keep fast-check properties in step with changes to src/domain.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/domain/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A file in src/domain/ was edited. Check that the matching property tests in the *.test.ts files and the generators in src/domain/arbitraries.ts still cover the change. If a new or changed behavior has no fast-check property, add one (and a generator if needed). Then run 'npx vitest run src/domain --coverage' and confirm the 100% coverage gate still passes."
+  }
+}
