@@ -18,15 +18,15 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
   - [x] 3.3 `scanner.test.ts` examples. [I7.2]
   - [x] 3.4 `scanner.property.test.ts` with fast-check properties. [I7.3]
 
-- [ ] 4. Séance UI
-  - [ ] 4.1 `useSeance.ts` state machine and `SeanceButton` placed near "Paste a receipt" in `App.tsx`. [I4.1, I4.2]
-  - [ ] 4.2 `SeancePanel` connect step with greyed "Gmail, coming soon" and "Outlook, coming soon", fake consent dialog. [I4.3, I2.2]
-  - [ ] 4.3 Scanning view with live count and reduced-motion variant. [I4.4, I5.1]
-  - [ ] 4.4 `ReviewRow` and review list with confidence labels, snippet, editable fields, validation, "Bury selected", empty and error states. [I4.5 to I4.10, I5.2, I5.3]
-  - [ ] 4.5 Privacy note "What the spirits can see", disconnect and clear state on close. [I6.1 to I6.4]
+- [x] 4. Séance UI
+  - [x] 4.1 `useSeance.ts` state machine and `SeanceButton` placed near "Paste a receipt" in `App.tsx`. [I4.1, I4.2]
+  - [x] 4.2 `SeancePanel` connect step with greyed "Gmail, coming soon" and "Outlook, coming soon", fake consent dialog. [I4.3, I2.2]
+  - [x] 4.3 Scanning view with live count and reduced-motion variant. [I4.4, I5.1]
+  - [x] 4.4 `ReviewRow` and review list with confidence labels, snippet, editable fields, validation, "Bury selected", empty and error states. [I4.5 to I4.10, I5.2, I5.3]
+  - [x] 4.5 Privacy note "What the spirits can see", disconnect and clear state on close. [I6.1 to I6.4]
 
-- [ ] 5. Component tests
+- [x] 5. Component tests
   - `seance.test.tsx` for the review flow, store contents without email text, reduced motion and a vitest-axe check. [I4.11, I6.2, I7.4, I7.5]
 
-- [ ] 6. Documentation
+- [x] 6. Documentation
   - README "Inbox Séance" section and a row for this spec in the "Kiro features used" table. [I8.1, I8.2]
