@@ -55,7 +55,7 @@ function mockMatchMedia(initial: boolean): (matches: boolean) => void {
 
 const noop = () => {};
 const renderScene = (graves: GraveData[], props: Partial<Parameters<typeof Scene>[0]> = {}) =>
-  render(<Scene graves={graves} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} {...props} />);
+  render(<Scene graves={graves} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} {...props} />);
 
 const items = () => Array.from(document.querySelectorAll<HTMLElement>('li[data-item-id]'));
 
@@ -179,7 +179,7 @@ describe('live region and transitions', () => {
     const g = [grave('Phantomflix', 50 * HOUR)];
     const { rerender } = renderScene(g);
     expect(screen.getByTestId('scene-live')).toBeEmptyDOMElement();
-    rerender(<Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
+    rerender(<Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Phantomflix is now Zombie, charges in 47 hours.');
   });
 
@@ -187,7 +187,7 @@ describe('live region and transitions', () => {
     const g = grave('Necro Audiobooks', 5 * DAY, { priceCents: 1495 });
     const { rerender } = renderScene([g]);
     const done = { ...g, status: 'cancelled' as const };
-    rerender(<Scene graves={[done]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
+    rerender(<Scene graves={[done]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
     expect(screen.getByText('Here lies Necro Audiobooks. Saved you $14.95/mo.')).toBeInTheDocument();
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Necro Audiobooks is now a tombstone. Saved $14.95.');
@@ -202,7 +202,7 @@ describe('live region and transitions', () => {
     fireEvent.keyDown(li, { key: 'Enter' });
     fireEvent.click(within(li).getByRole('button', { name: /Keep it/ }));
     expect(onKeep).toHaveBeenCalledWith('calm');
-    rerender(<Scene graves={[{ ...g, status: 'kept' }]} now={NOW} onCancelled={noop} onKeep={onKeep} onEdit={noop} onDelete={noop} onExport={noop} />);
+    rerender(<Scene graves={[{ ...g, status: 'kept' }]} now={NOW} onCancelled={noop} onKeep={onKeep} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
     await waitFor(() => expect(items()).toHaveLength(1));
     expect(screen.getByTestId('scene-live')).toHaveTextContent('Calm is now a ghost.');
     await waitFor(() => expect(document.activeElement).toHaveAttribute('data-kind', 'ghost'));
@@ -255,7 +255,7 @@ describe('edit, delete and export', () => {
     const g = [grave('Phantomflix', 50 * HOUR), grave('Hollowtv', 50 * HOUR)];
     const { rerender } = renderScene(g);
     rerender(
-      <Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />,
+      <Scene graves={g} now={new Date(NOW.getTime() + 3 * HOUR)} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />,
     );
     const live = screen.getByTestId('scene-live');
     expect(live).toHaveTextContent('Phantomflix is now Zombie');
@@ -302,7 +302,7 @@ describe('reduced motion', () => {
     mockMatchMedia(true);
     const g = grave('Hollowtv', DAY);
     const { rerender } = renderScene([g]);
-    rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} />);
+    rerender(<Scene graves={[{ ...g, status: 'cancelled' }]} now={NOW} onCancelled={noop} onKeep={noop} onEdit={noop} onDelete={noop} onExport={noop} onHaunt={noop} onExorcise={noop} />);
     await waitFor(() => expect(screen.getByText(/Here lies Hollowtv/)).toBeInTheDocument());
   });
 });

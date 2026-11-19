@@ -18,6 +18,8 @@ export interface DaylightListProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onExport: (graves: Grave[], filename: string) => void;
+  onHaunt: (graves: Grave[], filename: string) => void;
+  onExorcise: (id: string) => void;
 }
 
 export function Mausoleum({ graves }: { graves: readonly Grave[] }) {
@@ -100,6 +102,16 @@ function GraveItem({ grave, now, ...actions }: { grave: Grave; now: Date } & Omi
             >
               Add to calendar<span className={styles.visuallyHidden}> for {grave.name}</span>
             </button>
+            <button
+              type="button"
+              className={styles.button}
+              onClick={() => actions.onHaunt([grave], `${grave.name}-haunting.ics`)}
+            >
+              Add haunting to calendar<span className={styles.visuallyHidden}> for {grave.name}</span>
+            </button>
+            <button type="button" className={styles.button} onClick={() => actions.onExorcise(grave.id)}>
+              Exorcise<span className={styles.visuallyHidden}> {grave.name}</span>
+            </button>
           </>
         )}
         <button type="button" className={styles.button} onClick={() => actions.onEdit(grave.id)}>
@@ -141,13 +153,22 @@ export function DaylightList({ graves, now, ...actions }: DaylightListProps) {
         <div className={styles.listHead}>
           <h2 id="graves-heading">Graves</h2>
           {active.length > 0 && (
-            <button
-              type="button"
-              className={styles.button}
-              onClick={() => actions.onExport(active, 'trial-graveyard.ics')}
-            >
-              Export all active to calendar
-            </button>
+            <div className={styles.actions}>
+              <button
+                type="button"
+                className={styles.button}
+                onClick={() => actions.onExport(active, 'trial-graveyard.ics')}
+              >
+                Export all active to calendar
+              </button>
+              <button
+                type="button"
+                className={styles.button}
+                onClick={() => actions.onHaunt(active, 'trial-graveyard-hauntings.ics')}
+              >
+                Export all hauntings
+              </button>
+            </div>
           )}
         </div>
         {sorted.length === 0 ? (

@@ -1,2 +1,2 @@
 export { DaylightList, Mausoleum } from './DaylightList';
-export { downloadIcs } from './downloadIcs';
+export { downloadHauntingIcs, downloadIcs } from './downloadIcs';

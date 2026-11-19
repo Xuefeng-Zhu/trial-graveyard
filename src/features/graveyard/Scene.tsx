@@ -24,6 +24,8 @@ export interface SceneProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onExport: (graves: GraveData[], filename: string) => void;
+  onHaunt: (graves: GraveData[], filename: string) => void;
+  onExorcise: (id: string) => void;
   /** Overrides the OS setting. Tests and Storybook-style callers use this. */
   reducedMotion?: boolean;
 }
@@ -77,13 +79,15 @@ function announcement(grave: GraveData, view: ViewState): string {
   return `${grave.name} is now a ghost.`;
 }
 
-function Actions({ grave, onCancelled, onKeep, onEdit, onDelete, onExport, onDone }: {
+function Actions({ grave, onCancelled, onKeep, onEdit, onDelete, onExport, onHaunt, onExorcise, onDone }: {
   grave: GraveData;
   onCancelled: (id: string) => void;
   onKeep: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onExport: (graves: GraveData[], filename: string) => void;
+  onHaunt: (graves: GraveData[], filename: string) => void;
+  onExorcise: (id: string) => void;
   onDone: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
@@ -114,6 +118,12 @@ function Actions({ grave, onCancelled, onKeep, onEdit, onDelete, onExport, onDon
           </button>
           <button type="button" className={styles.button} onClick={() => onExport([grave], `${grave.name}.ics`)}>
             Add to calendar<span className={styles.srOnly}> for {grave.name}</span>
+          </button>
+          <button type="button" className={styles.button} onClick={() => onHaunt([grave], `${grave.name}-haunting.ics`)}>
+            Add haunting to calendar<span className={styles.srOnly}> for {grave.name}</span>
+          </button>
+          <button type="button" className={styles.button} onClick={() => onExorcise(grave.id)}>
+            Exorcise<span className={styles.srOnly}> {grave.name}</span>
           </button>
         </>
       )}
@@ -149,10 +159,12 @@ interface ItemProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onExport: (graves: GraveData[], filename: string) => void;
+  onHaunt: (graves: GraveData[], filename: string) => void;
+  onExorcise: (id: string) => void;
   onClose: () => void;
 }
 
-function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, onEdit, onDelete, onExport, onClose }: ItemProps) {
+function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, onEdit, onDelete, onExport, onHaunt, onExorcise, onClose }: ItemProps) {
   const { grave, view } = entry;
   const present = useIsPresent();
   const urgent = isUrgent(view);
@@ -221,13 +233,15 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
           onEdit={onEdit}
           onDelete={onDelete}
           onExport={onExport}
+          onHaunt={onHaunt}
+          onExorcise={onExorcise}
           onDone={onClose}
         />}
     </motion.li>
   );
 }
 
-export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onExport, reducedMotion }: SceneProps) {
+export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onExport, onHaunt, onExorcise, reducedMotion }: SceneProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedMotion ?? osReduced;
 
@@ -325,6 +339,8 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
             onEdit={onEdit}
             onDelete={onDelete}
             onExport={onExport}
+            onHaunt={onHaunt}
+            onExorcise={onExorcise}
             onClose={() => setOpenId(null)}
           />
         ))}
@@ -357,6 +373,15 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
           onClick={() => onExport(graves.filter((g) => g.status === 'active'), 'trial-graveyard.ics')}
         >
           Export all active to calendar
+        </button>
+      )}
+      {graves.some((g) => g.status === 'active') && (
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => onHaunt(graves.filter((g) => g.status === 'active'), 'trial-graveyard-hauntings.ics')}
+        >
+          Export all hauntings
         </button>
       )}
       <div ref={rootRef} className={styles.field} onKeyDown={onKeyDown}>
