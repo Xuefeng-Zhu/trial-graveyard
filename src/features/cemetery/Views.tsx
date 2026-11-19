@@ -160,6 +160,8 @@ export interface SettingsViewProps {
   onToggleSound: () => void;
   onToggleCalm: () => void;
   onSummon: () => void;
+  /** Export, import and reset controls. */
+  dataTools?: ReactNode;
 }
 
 export function SettingsView(p: SettingsViewProps) {
@@ -181,6 +183,7 @@ export function SettingsView(p: SettingsViewProps) {
         Daylight swaps the pixel scene for a plain list. Calm stops all decorative motion. Sound is off until you turn
         it on.
       </p>
+      {p.dataTools}
     </PixelPanel>
   );
 }
