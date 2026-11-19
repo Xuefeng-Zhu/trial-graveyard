@@ -24,6 +24,12 @@ export const UNREADABLE_IMAGE =
   'This browser cannot open that kind of picture (HEIC, for example). Try a PNG or JPEG screenshot, or enter the trial by hand.';
 export const PRIVACY_NOTE =
   'Your image never leaves this device. Only the trial you confirm is saved, never the image or the words read from it. The first read downloads the reading tools from public CDNs (cdn.jsdelivr.net and tessdata.projectnaptha.com), which can see that you used this feature but never receive your image.';
+/** Tells the user which words the charge date came from, and when the year was a guess. */
+export function dateSourceNote(chargeAt: { value: string; source: string }): string {
+  const year = chargeAt.value.slice(0, 4);
+  const guessed = !/\d{4}/.test(chargeAt.source);
+  return `Charge date read from \u201c${chargeAt.source}\u201d${guessed ? `, with the year assumed to be ${year}` : ''}. Check it before saving.`;
+}
 export const SAMPLE_PATH = 'samples/phantomflix.png';
 
 const HINTS: Record<ConfidenceHint, string> = {
@@ -274,6 +280,7 @@ export function ImageReceipt({ onParsed, onManual, now, engine, preprocess, inco
           <p className={styles.hint}>
             {HINTS[readout.hint]} ({Math.round(readout.confidence)}% sure)
           </p>
+          {readout.parsed.chargeAt && <p className={styles.hint}>{dateSourceNote(readout.parsed.chargeAt)}</p>}
           <details className={styles.details}>
             <summary>What the spirits read</summary>
             <label htmlFor={`${id}-raw`}>Text read from the image</label>

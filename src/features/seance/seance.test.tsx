@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
 import { createGraveStore } from '../../state/store';
 import { Seance } from './Seance';
-import { PRIVACY_NOTE } from './SeancePanel';
+import { PRIVACY_NOTE, pluralize } from './SeancePanel';
 
 const NOW = new Date(2026, 9, 1, 12, 0, 0);
 
@@ -150,5 +150,17 @@ describe('Seance', () => {
     await waitFor(() => expect(document.querySelector('[data-animated]')).not.toBeNull());
     expect(document.querySelector('[data-animated]')).toHaveAttribute('data-animated', animated);
     await screen.findByRole('button', { name: 'Bury selected' });
+  });
+});
+
+describe('pluralize', () => {
+  it('uses singular for exactly one', () => {
+    expect(`${pluralize(1, 'letter')}`).toBe('1 letter');
+    expect(pluralize(1, 'spirit')).toBe('1 spirit');
+  });
+  it('uses plural otherwise', () => {
+    expect(pluralize(0, 'letter')).toBe('0 letters');
+    expect(pluralize(3, 'letter')).toBe('3 letters');
+    expect(pluralize(2, 'spirit')).toBe('2 spirits');
   });
 });

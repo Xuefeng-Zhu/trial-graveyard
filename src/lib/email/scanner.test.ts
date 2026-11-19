@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scanEmails, analyzeMessage, candidateKey } from './scanner';
+import { scanEmails, analyzeMessage, candidateKey, truncateSnippet } from './scanner';
 import { createMockProvider } from './providers/mock';
 import { domainLabel, knownService, senderDomain } from './signals';
 import { graveWith } from '../../domain/arbitraries';
@@ -155,5 +155,43 @@ describe('signals', () => {
     expect(knownService(undefined)).toBeUndefined();
     expect(domainLabel(undefined)).toBeUndefined();
     expect(domainLabel('com')).toBeUndefined();
+  });
+});
+
+describe('truncateSnippet', () => {
+  it('returns short text unchanged', () => {
+    expect(truncateSnippet('  hello world ', 40)).toBe('hello world');
+  });
+  it('cuts at a word boundary with an ellipsis', () => {
+    const out = truncateSnippet('Your trial ends soon so please remember to cancel it', 30);
+    expect(out.endsWith('\u2026')).toBe(true);
+    expect(out.length).toBeLessThanOrEqual(30);
+    expect(out).toBe('Your trial ends soon so\u2026');
+  });
+  it('drops a URL that does not fit instead of cutting it', () => {
+    const out = truncateSnippet('Manage your plan: https://www.example.com/account/plans', 30);
+    expect(out).toBe('Manage your plan\u2026');
+    expect(out).not.toContain('http');
+  });
+  it('keeps a URL whole when it fits', () => {
+    expect(truncateSnippet('Manage: https://a.example/x and then more words here', 28)).toBe(
+      'Manage: https://a.example/x\u2026',
+    );
+  });
+  it('returns an empty string when not even one word fits', () => {
+    expect(truncateSnippet('https://very-long.example/path', 5)).toBe('');
+  });
+});
+
+describe('snippets in scanned messages', () => {
+  it('never ends mid-URL and starts on a word', () => {
+    const text = `${'Intro words. '.repeat(10)}Your trial ends on 2026-11-20. Manage your plan: https://www.example.com/account/plans/very/long/path/that/goes/on`;
+    const c = analyzeMessage(
+      { id: 'm', from: 'Example <hi@example.com>', subject: 'Your free trial', date: '2026-11-01T00:00:00Z', text } as EmailMessage,
+      new Date('2026-11-02T00:00:00Z'),
+    );
+    expect(c?.snippet).toBeDefined();
+    expect(c?.snippet).not.toMatch(/https?:?\/?\/?\S*$/);
+    expect(c?.snippet.length).toBeLessThanOrEqual(161);
   });
 });

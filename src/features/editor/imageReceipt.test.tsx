@@ -1,3 +1,4 @@
+import { dateSourceNote } from './ImageReceipt';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { axe } from 'vitest-axe';
@@ -162,5 +163,16 @@ describe('ImageReceipt', () => {
     fireEvent.click(screen.getByText('Try a sample screenshot'));
     expect(await screen.findByText(ENGINE_FAILED)).toBeInTheDocument();
     vi.unstubAllGlobals();
+  });
+});
+
+describe('dateSourceNote', () => {
+  it('names the source text and flags an assumed year', () => {
+    expect(dateSourceNote({ value: '2027-11-15T00:00:00.000Z', source: 'November 15' })).toBe(
+      'Charge date read from \u201cNovember 15\u201d, with the year assumed to be 2027. Check it before saving.',
+    );
+  });
+  it('does not flag a year that was in the text', () => {
+    expect(dateSourceNote({ value: '2026-11-15', source: 'November 15, 2026' })).not.toContain('assumed');
   });
 });

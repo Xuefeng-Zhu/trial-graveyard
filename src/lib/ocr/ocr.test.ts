@@ -121,3 +121,23 @@ describe('OCR to form mapping with the fake engine', () => {
     });
   });
 });
+
+describe('sample screenshot text (issue #39)', () => {
+  const FULL =
+    'Phantomflix\nWelcome to Phantomflix\nYour free trial has started.\nYour trial ends on November 15.\nAfter that you will be charged $13.99/month.\nCancel any time before then at\nhttps://www.phantomflix.example/account';
+  it('reads the name without the next sentence', () => {
+    for (const text of [SAMPLE_TEXT, FULL]) {
+      expect(interpretText(text, 90, NOW).parsed.name?.value).toBe('Phantomflix');
+    }
+  });
+  it('keeps the date source so the user can verify it', () => {
+    const date = interpretText(FULL, 90, NOW).parsed.chargeAt;
+    expect(date?.source).toBe('November 15');
+    expect(date?.value.slice(0, 10)).toBe('2026-11-15');
+  });
+  it('rolls a past year-less date into next year', () => {
+    const date = interpretText(FULL, 90, new Date('2026-11-19T12:00:00Z')).parsed.chargeAt;
+    expect(date?.value.slice(0, 10)).toBe('2027-11-15');
+    expect(date?.source).toBe('November 15');
+  });
+});
