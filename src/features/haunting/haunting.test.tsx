@@ -89,10 +89,10 @@ describe('StatsPanel', () => {
     render(<StatsPanel graves={graves} now={NOW} />);
     const stats = screen.getByRole('region', { name: 'Trial hacker stats' });
     for (const label of [
-      'Trials survived',
-      'Dollars dodged this year',
+      'Trials survived (cancelled)',
+      'Dollars dodged',
       'Average days used before cancelling',
-      'Trials that escaped',
+      'Overdue trials',
     ]) {
       expect(within(stats).getByText(label)).toBeInTheDocument();
     }
@@ -230,7 +230,7 @@ describe.each([
     await waitFor(() => expect(store.getState().graves[0]?.status).toBe('cancelled'));
     goTo('Savings');
     expect(screen.getByTestId('mausoleum-total')).toHaveTextContent('Souls saved: $15.49');
-    expect(within(screen.getByRole('region', { name: 'Trial hacker stats' })).getByText('Trials survived').nextSibling).toHaveTextContent('1');
+    expect(within(screen.getByRole('region', { name: 'Trial hacker stats' })).getByText('Trials survived (cancelled)').nextSibling).toHaveTextContent('1');
   });
 });
 
