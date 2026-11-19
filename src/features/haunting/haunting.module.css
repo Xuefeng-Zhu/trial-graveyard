@@ -10,6 +10,8 @@
 
 .hero {
   --pulse: var(--color-border);
+  /* Text-safe: the border color is only 1.81:1 on the surface in the night theme. */
+  --pulse-text: var(--stage-sealed);
   margin-block: var(--space-4);
   padding: var(--space-4);
   background: var(--color-surface);
@@ -20,14 +22,17 @@
 
 .hero[data-urgency='uneasy'] {
   --pulse: var(--stage-cracked);
+  --pulse-text: var(--pulse);
 }
 
 .hero[data-urgency='restless'] {
   --pulse: var(--stage-zombie);
+  --pulse-text: var(--pulse);
 }
 
 .hero[data-urgency='rising'] {
   --pulse: var(--stage-overdue);
+  --pulse-text: var(--pulse);
 }
 
 .heroHeading {
@@ -48,7 +53,7 @@
   margin: var(--space-1) 0;
   font-size: 2rem;
   font-weight: 700;
-  color: var(--pulse);
+  color: var(--pulse-text);
 }
 
 .heroAmount,

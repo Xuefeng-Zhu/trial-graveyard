@@ -1,4 +1,6 @@
+/// <reference types="node" />
 import 'fake-indexeddb/auto';
+import { readFileSync } from 'node:fs';
 import { clear } from 'idb-keyval';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { axe } from 'vitest-axe';
@@ -65,6 +67,15 @@ describe('CountdownHero', () => {
   it('has no axe violations', async () => {
     const { container } = render(<CountdownHero graves={[grave('Soon', HOUR)]} now={NOW} />);
     expect((await axe(container)).violations).toEqual([]);
+  });
+});
+
+describe('countdown text color', () => {
+  const css = readFileSync('src/features/haunting/haunting.module.css', 'utf8');
+  it('uses a text-safe token for the calm countdown, not the border color', () => {
+    expect(css).toMatch(/\.hero \{[^}]*--pulse-text: var\(--stage-sealed\);/);
+    expect(css).toMatch(/\.heroCountdown \{[^}]*color: var\(--pulse-text\);/);
+    expect(css).not.toMatch(/\.heroCountdown \{[^}]*color: var\(--pulse\);/);
   });
 });
 
@@ -142,6 +153,27 @@ describe('ExorcismPanel', () => {
   });
 });
 
+describe('ExorcismPanel focus', () => {
+  it('restores focus to the opener on close, but not after confirming', () => {
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
+    const closed = render(<ExorcismPanel grave={grave('Mystery', DAY)} onExorcised={vi.fn()} onClose={vi.fn()} />);
+    closed.unmount();
+    expect(opener).toHaveFocus();
+
+    const other = document.createElement('button');
+    document.body.append(other);
+    const confirmedView = render(<ExorcismPanel grave={grave('Mystery', DAY)} onExorcised={vi.fn()} onClose={vi.fn()} />);
+    other.focus();
+    fireEvent.click(screen.getByRole('button', { name: "It's exorcised" }));
+    confirmedView.unmount();
+    expect(opener).not.toHaveFocus();
+    opener.remove();
+    other.remove();
+  });
+});
+
 describe.each([
   ['daylight list', true],
   ['night scene', false],
@@ -200,5 +232,29 @@ describe.each([
       expect(within(screen.getByRole('region', { name: 'Mausoleum' })).getByText('$15.49')).toBeInTheDocument();
     }
     expect(within(screen.getByRole('region', { name: 'Trial hacker stats' })).getByText('Trials survived').nextSibling).toHaveTextContent('1');
+  });
+});
+
+describe('night scene focus after exorcism', () => {
+  it('moves focus to the replacement tombstone', async () => {
+    const store = createGraveStore({ newId: () => 'id-1' });
+    store.setState((s) => ({ settings: { ...s.settings, daylight: false } }));
+    render(<App store={store} clock={() => NOW} />);
+    await act(async () => {
+      await store.persist.rehydrate();
+    });
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Phantomflix' } });
+    fireEvent.change(screen.getByLabelText('Charge date'), { target: { value: '2026-10-20' } });
+    fireEvent.change(screen.getByLabelText('Price'), { target: { value: '15.49' } });
+    fireEvent.click(screen.getByRole('button', { name: /bury it/i }));
+    const item = screen.getAllByRole('listitem').find((li) => li.getAttribute('aria-label')?.startsWith('Phantomflix'))!;
+    fireEvent.keyDown(item, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: /^Exorcise/ }));
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: "It's exorcised" }));
+    await waitFor(() => {
+      const el = document.activeElement as HTMLElement;
+      expect(el.dataset.itemId).toBe('id-1');
+      expect(el.dataset.kind).toBe('tombstone');
+    });
   });
 });
