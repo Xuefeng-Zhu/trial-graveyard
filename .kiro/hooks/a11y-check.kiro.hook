@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Accessibility check",
+  "description": "Review components for accessibility and run vitest-axe tests.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/components/**/*.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A component was edited. Review it for accessibility: labels and accessible names, keyboard focus and focus order, prefers-reduced-motion handling, and color contrast against the tokens in src/design/tokens.css. Then run the vitest-axe tests with 'npx vitest run' for the related test files and fix any violations. Add an axe test if the component has none."
+  }
+}
