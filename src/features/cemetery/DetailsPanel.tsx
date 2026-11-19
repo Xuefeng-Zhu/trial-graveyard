@@ -94,7 +94,13 @@ export function DetailsPanel({ grave, now, modal, onClose, ...actions }: Details
           <h2 id="details-heading" className={styles.detailsTitle}>
             {grave.name}
           </h2>
-          <PixelBadge tone={toneOf(state.kind)}>{statusText(grave, now)}</PixelBadge>
+          <div className={styles.detailsBadge}>
+            <PixelBadge tone={toneOf(state.kind)}>{statusText(grave, now)}</PixelBadge>
+          </div>
+          <button type="button" className={styles.closeIcon} onClick={onClose}>
+            <span aria-hidden="true">X</span>
+            <span className={styles.srOnly}>Close details for {grave.name}</span>
+          </button>
         </div>
 
         <dl className={styles.facts}>
@@ -144,7 +150,7 @@ export function DetailsPanel({ grave, now, modal, onClose, ...actions }: Details
         <div className={styles.actions}>
           {active && (
             <>
-              <PixelButton variant="primary" onClick={() => actions.onExorcise(grave.id)}>
+              <PixelButton variant="primary" className={styles.wide} onClick={() => actions.onExorcise(grave.id)}>
                 Exorcise Trial<span className={styles.srOnly}> {grave.name}</span>
               </PixelButton>
               <PixelButton onClick={() => actions.onCancelled(grave.id)}>
@@ -184,9 +190,6 @@ export function DetailsPanel({ grave, now, modal, onClose, ...actions }: Details
               Delete<span className={styles.srOnly}> {grave.name}</span>
             </PixelButton>
           )}
-          <PixelButton variant="ghost" onClick={onClose}>
-            Close<span className={styles.srOnly}> details for {grave.name}</span>
-          </PixelButton>
         </div>
       </div>
     </>

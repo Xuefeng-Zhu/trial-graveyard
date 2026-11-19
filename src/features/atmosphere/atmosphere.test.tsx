@@ -21,7 +21,7 @@ function mockReduced(matches: boolean): void {
 }
 
 describe('Atmosphere', () => {
-  it('draws clouds, glow, lanterns, fog and fireflies when motion is allowed', () => {
+  it('draws lanterns, fog and fireflies when motion is allowed', () => {
     render(<Atmosphere motion />);
     const layer = screen.getByTestId('atmosphere');
     expect(layer).toHaveAttribute('aria-hidden', 'true');
