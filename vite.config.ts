@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vitest/config';
-import { resolveBase } from './vite.base';
+import { resolveBase } from './vite.base.ts';
 
 const base = resolveBase(process.env);
 
