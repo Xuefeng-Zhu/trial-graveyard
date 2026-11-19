@@ -278,3 +278,91 @@ describe('P-X1 persistence round trip', () => {
     );
   });
 });
+
+describe('cosmetic progress', () => {
+  it('earns XP once for adding, reviewing and confirming a cancellation', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().reviewGrave('id-1', NOW);
+    store.getState().reviewGrave('id-1', NOW);
+    store.getState().reviewGrave('missing', NOW);
+    store.getState().exorcise('id-1', NOW);
+    store.getState().cancelGrave('id-1', NOW);
+    store.getState().cancelGrave('missing', NOW);
+    expect(store.getState().progress.ledger.map((e) => e.kind)).toEqual(['add', 'review', 'cancel']);
+  });
+
+  it('removes the cancellation XP when the cancellation is undone', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().cancelGrave('id-1', NOW);
+    expect(store.getState().undo(at(1000))).toBe(true);
+    expect(store.getState().progress.ledger.map((e) => e.kind)).toEqual(['add']);
+
+    store.getState().keepGrave('id-1', NOW);
+    expect(store.getState().undo(at(1000))).toBe(true);
+    expect(store.getState().progress.ledger.map((e) => e.kind)).toEqual(['add']);
+  });
+
+  it('keeps the cancellation XP when the undo window has passed', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    store.getState().cancelGrave('id-1', NOW);
+    expect(store.getState().undo(at(UNDO_WINDOW_MS + 1))).toBe(false);
+    expect(store.getState().progress.ledger.map((e) => e.kind)).toEqual(['add', 'cancel']);
+  });
+
+  it('only selects unlocked gravestone styles', () => {
+    const store = newStore();
+    expect(store.getState().selectStyle('mossy')).toBe(false);
+    expect(store.getState().progress.styleId).toBe('classic');
+    store.setState({
+      progress: {
+        styleId: 'classic',
+        ledger: Array.from({ length: 12 }, (_, i) => `g${i}`).map((graveId) => ({ kind: 'cancel' as const, graveId, at: NOW.toISOString() })),
+      },
+    });
+    expect(store.getState().selectStyle('mossy')).toBe(true);
+    expect(store.getState().progress.styleId).toBe('mossy');
+  });
+
+  it('does not change graves or settings behaviour', () => {
+    const store = newStore();
+    store.getState().addGrave(TRIAL, NOW);
+    const before = JSON.stringify(store.getState().graves);
+    store.getState().reviewGrave('id-1', NOW);
+    expect(JSON.stringify(store.getState().graves)).toBe(before);
+  });
+
+  it('persists progress and loads old records with defaults', async () => {
+    const a = newStore();
+    a.getState().addGrave(TRIAL, NOW);
+    a.getState().reviewGrave('id-1', NOW);
+    await new Promise((r) => setTimeout(r, 50));
+    const b = newStore();
+    await b.persist.rehydrate();
+    expect(b.getState().progress).toEqual(a.getState().progress);
+
+    await set(STORAGE_KEY, JSON.stringify({ version: 1, graves: [graveWith()], settings: DEFAULT_SETTINGS }));
+    const c = newStore();
+    await c.persist.rehydrate();
+    expect(c.getState().progress).toEqual({ ledger: [], styleId: 'classic' });
+    expect(c.getState().notice).toBeNull();
+  });
+
+  it('rejects malformed progress', () => {
+    const base = { version: 1, graves: [], settings: DEFAULT_SETTINGS };
+    const bad = [
+      'x',
+      { styleId: 1, ledger: [] },
+      { styleId: 'classic', ledger: 'no' },
+      { styleId: 'classic', ledger: [null] },
+      { styleId: 'classic', ledger: [{ kind: 'nope', graveId: 'a', at: 'x' }] },
+      { styleId: 'classic', ledger: [{ kind: 'add', graveId: 1, at: 'x' }] },
+      { styleId: 'classic', ledger: [{ kind: 'add', graveId: 'a', at: 2 }] },
+    ];
+    for (const progress of bad) expect(deserialize(JSON.stringify({ ...base, progress })).ok).toBe(false);
+    const good = { styleId: 'classic', ledger: [{ kind: 'add', graveId: 'a', at: 'x' }] };
+    expect(deserialize(JSON.stringify({ ...base, progress: good })).ok).toBe(true);
+  });
+});

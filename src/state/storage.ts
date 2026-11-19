@@ -2,6 +2,8 @@ import { del, get, set } from 'idb-keyval';
 import type { PersistStorage, StateStorage } from 'zustand/middleware';
 import { isCadence, isHttpUrl } from '../domain/trial';
 import type { Grave, Status } from '../domain/trial';
+import { DEFAULT_STYLE } from '../domain/xp';
+import type { XpEntry, XpKind } from '../domain/xp';
 
 export const STORAGE_KEY = 'trial-graveyard';
 export const SCHEMA_VERSION = 1;
@@ -14,14 +16,24 @@ export interface Settings {
   llmFallback: boolean;
 }
 
+/** Cosmetic progress. Never read by savings or stats. */
+export interface ProgressState {
+  ledger: XpEntry[];
+  styleId: string;
+}
+
+export const DEFAULT_PROGRESS: ProgressState = { ledger: [], styleId: DEFAULT_STYLE };
+
 export interface PersistedState {
   version: 1;
   graves: Grave[];
   settings: Settings;
+  /** Added after the first release. Records without it load with `DEFAULT_PROGRESS`. */
+  progress?: ProgressState;
 }
 
 /** The slice of store state that is written to storage. */
-export type PersistedSlice = Pick<PersistedState, 'graves' | 'settings'>;
+export type PersistedSlice = Pick<PersistedState, 'graves' | 'settings'> & { progress: ProgressState };
 
 export const DEFAULT_SETTINGS: Settings = { daylight: false, soundOn: false, calm: false, llmFallback: false };
 
@@ -69,13 +81,32 @@ export function isValidSettings(v: unknown): v is Settings {
   );
 }
 
+const XP_KINDS: readonly XpKind[] = ['add', 'review', 'cancel'];
+
+export function isValidProgress(v: unknown): v is ProgressState {
+  return (
+    isRecord(v) &&
+    typeof v.styleId === 'string' &&
+    Array.isArray(v.ledger) &&
+    v.ledger.every(
+      (e) =>
+        isRecord(e) &&
+        typeof e.kind === 'string' &&
+        (XP_KINDS as readonly string[]).includes(e.kind) &&
+        typeof e.graveId === 'string' &&
+        typeof e.at === 'string',
+    )
+  );
+}
+
 export function isValidPersistedState(v: unknown): v is PersistedState {
   return (
     isRecord(v) &&
     v.version === SCHEMA_VERSION &&
     Array.isArray(v.graves) &&
     v.graves.every(isValidGrave) &&
-    isValidSettings(v.settings)
+    isValidSettings(v.settings) &&
+    (v.progress === undefined || isValidProgress(v.progress))
   );
 }
 
@@ -180,8 +211,11 @@ export function createPersistStorage(
         onCorrupt();
         return null;
       }
-      const { graves, settings } = result.state;
-      return { state: { graves, settings }, version: SCHEMA_VERSION };
+      const { graves, settings, progress } = result.state;
+      return {
+        state: { graves, settings, progress: progress ?? { ...DEFAULT_PROGRESS, ledger: [] } },
+        version: SCHEMA_VERSION,
+      };
     },
     setItem: async (name, value) => {
       await backend.setItem(name, serialize({ version: SCHEMA_VERSION, ...value.state }));

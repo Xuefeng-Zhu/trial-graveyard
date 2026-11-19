@@ -49,3 +49,13 @@ export function graveWith(overrides: Partial<Grave> = {}): Grave {
     ...overrides,
   };
 }
+
+export const arbXpKind = fc.constantFrom('add' as const, 'review' as const, 'cancel' as const);
+
+export const arbXpEntry = fc.record({
+  kind: arbXpKind,
+  graveId: fc.constantFrom('a', 'b', 'c', 'd', 'e'),
+  at: arbNowMs.map((ms) => new Date(ms).toISOString()),
+});
+
+export const arbXpLedger = fc.array(arbXpEntry, { maxLength: 40 });
