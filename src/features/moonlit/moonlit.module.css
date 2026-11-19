@@ -81,3 +81,46 @@
 :global(:root[data-theme='daylight']) .atmosphere {
   display: none;
 }
+
+/* Intro overlay */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: linear-gradient(180deg, #050a22 0%, #0a1030 60%, #14325a 100%);
+  will-change: transform;
+}
+
+.introMoon {
+  width: min(40vmin, 14rem);
+  height: min(40vmin, 14rem);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff, #dfe9ff 55%, #aab8e0);
+  box-shadow: 0 0 60px 20px rgba(223, 233, 255, 0.35), 0 0 160px 60px rgba(223, 233, 255, 0.15);
+}
+
+.introTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 2.4rem;
+  color: var(--color-moon);
+}
+
+.introSkip {
+  position: absolute;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  font: inherit;
+  padding: var(--space-2) var(--space-4);
+  min-height: 44px;
+  color: var(--color-moon);
+  background: rgba(10, 16, 48, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}

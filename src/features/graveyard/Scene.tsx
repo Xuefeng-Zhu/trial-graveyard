@@ -5,12 +5,10 @@ import { getViewState, stageLabel } from '../../domain/stage';
 import type { ViewState } from '../../domain/stage';
 import { formatMoney } from '../../domain/savings';
 import type { Grave as GraveData } from '../../domain/trial';
-import { Fog } from './Fog';
-import { CADENCE_SUFFIX, Grave } from './Grave';
-import { Ghost } from './Ghost';
-import { Mausoleum } from './Mausoleum';
-import { Tombstone } from './Tombstone';
-import { Zombie } from './Zombie';
+import { BURY_FX_MS, BuryFx } from './BuryFx';
+import type { BuryEffect } from './BuryFx';
+import { CADENCE_SUFFIX, Stone } from './Stone';
+import { WanderingGhost } from './WanderingGhost';
 import { useReducedMotion } from './useReducedMotion';
 import styles from './graveyard.module.css';
 
@@ -26,7 +24,16 @@ export interface SceneProps {
   onExport: (graves: GraveData[], filename: string) => void;
   /** Overrides the OS setting. Tests and Storybook-style callers use this. */
   reducedMotion?: boolean;
+  /** Graves rise out of the ground one after another, after the intro overlay. */
+  intro?: boolean;
+  /** Delay before the wandering ghost first drifts across. Defaults to a random 8 to 20 seconds. */
+  wanderDelayMs?: number;
+  /** False while saved graves are still loading, so they are not all "summoned" at start-up. */
+  summonNew?: boolean;
 }
+
+/** How long a freshly added grave plays its summon animation. */
+export const SUMMON_MS = 2200;
 
 interface Entry {
   grave: GraveData;
@@ -143,6 +150,10 @@ interface ItemProps {
   reduced: boolean;
   tabbable: boolean;
   open: boolean;
+  summoning: boolean;
+  /** Position in keyboard order, used to stagger the intro. */
+  index: number;
+  intro: boolean;
   onToggle: (id: string) => void;
   onCancelled: (id: string) => void;
   onKeep: (id: string) => void;
@@ -152,12 +163,14 @@ interface ItemProps {
   onClose: () => void;
 }
 
-function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, onEdit, onDelete, onExport, onClose }: ItemProps) {
+function Item({ entry, reduced, tabbable, open, summoning, index, intro, onToggle, onCancelled, onKeep, onEdit, onDelete, onExport, onClose }: ItemProps) {
   const { grave, view } = entry;
   const present = useIsPresent();
   const urgent = isUrgent(view);
   const showActions = open || (grave.status === 'active' && urgent);
+  const [hot, setHot] = useState(false);
 
+  const rise = summoning || intro;
   const motionProps = reduced
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.15 } }
     : {
@@ -167,10 +180,13 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
             ? { opacity: 0, y: -70, scale: 1.15 }
             : view.kind === 'ghost'
               ? { opacity: 0, y: 50, scale: 0.7 }
-              : { opacity: 0, y: 20 },
+              : { opacity: 0, y: rise ? 90 : 20 },
         animate: { opacity: 1, y: 0, scale: 1 },
-        exit: { opacity: 0, y: 30, scale: 0.85 },
-        transition: { type: 'spring' as const, stiffness: 160, damping: 18 },
+        // Sinking into the soil is the "stone sinks" half of the bury animation.
+        exit: { opacity: 0, y: 70, scale: 0.9, transition: { duration: 0.8, ease: 'easeIn' as const } },
+        transition: intro
+          ? { type: 'spring' as const, stiffness: 70, damping: 16, delay: 1.8 + index * 0.12 }
+          : { type: 'spring' as const, stiffness: 160, damping: 18 },
       };
 
   const onKeyDown = (e: KeyboardEvent<HTMLLIElement>): void => {
@@ -198,6 +214,12 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
       tabIndex={present && tabbable ? 0 : -1}
       aria-label={describe(grave, view)}
       onKeyDown={onKeyDown}
+      onPointerEnter={() => setHot(true)}
+      onPointerLeave={() => setHot(false)}
+      onFocus={() => setHot(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setHot(false);
+      }}
       onClick={(e) => {
         if (e.target === e.currentTarget || (e.target as HTMLElement).closest('[data-art]')) {
           onToggle(grave.id);
@@ -205,14 +227,7 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
       }}
     >
       <div data-art="">
-        {view.kind === 'grave' && (view.stage === 'zombie' || view.stage === 'overdue') && (
-          <Zombie grave={grave} overdue={view.stage === 'overdue'} remainingMs={view.remainingMs} reduced={reduced} />
-        )}
-        {view.kind === 'grave' && view.stage !== 'zombie' && view.stage !== 'overdue' && (
-          <Grave grave={grave} stage={view.stage} remainingMs={view.remainingMs} reduced={reduced} />
-        )}
-        {view.kind === 'tombstone' && <Tombstone grave={grave} epitaph={view.epitaph} savedCents={view.savedCents} />}
-        {view.kind === 'ghost' && <Ghost grave={grave} monthlyCents={view.monthlyCents} reduced={reduced} />}
+        <Stone grave={grave} view={view} motionOn={!reduced} hot={hot} summoning={summoning} />
       </div>
       {showActions && <Actions
           grave={grave}
@@ -227,7 +242,7 @@ function Item({ entry, reduced, tabbable, open, onToggle, onCancelled, onKeep, o
   );
 }
 
-export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onExport, reducedMotion }: SceneProps) {
+export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onExport, reducedMotion, intro = false, wanderDelayMs, summonNew = true }: SceneProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedMotion ?? osReduced;
 
@@ -242,6 +257,11 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
   const [openId, setOpenId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<HTMLElement>(null);
+  const known = useRef<Set<string> | null>(null);
+  const [summoning, setSummoning] = useState<ReadonlySet<string>>(new Set());
+  const [effects, setEffects] = useState<BuryEffect[]>([]);
+  const effectKey = useRef(0);
   const pendingFocus = useRef<{ id: string; kind?: ViewState['kind'] } | null>(null);
   const previous = useRef<Map<string, string>>(new Map());
 
@@ -251,14 +271,48 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
   useEffect(() => {
     const next = new Map<string, string>();
     const changes: string[] = [];
+    const fx: BuryEffect[] = [];
+    // The old stone is still mounted while it sinks, so its position is where the soil gets scooped.
+    const whereWas = (id: string): { x: number; y: number } => {
+      const scene = sceneRef.current?.getBoundingClientRect();
+      const old = Array.from(sceneRef.current?.querySelectorAll<HTMLElement>('[data-item-id]') ?? []).find(
+        (n) => n.dataset.itemId === id && n.dataset.kind === 'grave',
+      );
+      const box = old?.getBoundingClientRect();
+      if (!scene || !box) return { x: 50, y: 50 };
+      return { x: box.left - scene.left + box.width / 2, y: box.top - scene.top + box.height * 0.6 };
+    };
     for (const { grave, view } of entries) {
       const key = view.kind === 'grave' ? `grave:${view.stage}` : view.kind;
       next.set(grave.id, key);
       const before = previous.current.get(grave.id);
       if (before !== undefined && before !== key) changes.push(announcement(grave, view));
+      if (before?.startsWith('grave:') && view.kind === 'tombstone' && !reduced) {
+        fx.push({ id: effectKey.current++, ...whereWas(grave.id), text: `+${formatMoney(view.savedCents, grave.currency)} saved` });
+      }
     }
     previous.current = next;
     if (changes.length > 0) setMessage(changes.join(' '));
+    if (fx.length > 0) {
+      const keys = new Set(fx.map((f) => f.id));
+      setEffects((list) => [...list, ...fx]);
+      setTimeout(() => setEffects((list) => list.filter((f) => !keys.has(f.id))), BURY_FX_MS);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entries]);
+
+  // Graves added after the first render are "summoned": soil bursts, the stone rises, the engraving writes in.
+  useEffect(() => {
+    const ids = entries.map((e) => e.grave.id);
+    const before = known.current;
+    known.current = new Set(ids);
+    if (before === null || reduced || !summonNew) return undefined;
+    const fresh = ids.filter((id) => !before.has(id));
+    if (fresh.length === 0) return undefined;
+    setSummoning((cur) => new Set([...cur, ...fresh]));
+    const timer = setTimeout(() => setSummoning((cur) => new Set([...cur].filter((id) => !fresh.includes(id)))), SUMMON_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries]);
 
   // After an action the grave remounts as a tombstone or ghost; move focus to it.
@@ -308,7 +362,7 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
       aria-label={ROW_LABEL[row]}
       data-row={row}
     >
-      <AnimatePresence initial={false}>
+      <AnimatePresence initial={intro}>
         {rows[row].map((entry) => (
           <Item
             key={`${entry.grave.id}:${entry.view.kind}`}
@@ -316,6 +370,9 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
             reduced={reduced}
             tabbable={entry.grave.id === tabbableId}
             open={openId === entry.grave.id}
+            summoning={summoning.has(entry.grave.id)}
+            index={Math.max(0, order.indexOf(entry.grave.id))}
+            intro={intro}
             onToggle={(id) => {
               setActiveId(id);
               setOpenId((o) => (o === id ? null : id));
@@ -333,23 +390,18 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
   );
 
   return (
-    <section className={styles.scene} aria-label="Haunted graveyard" data-motion={reduced ? 'still' : 'animated'}>
-      <div className={styles.sky} aria-hidden="true">
-        <div className={styles.moon} />
-        <div className={styles.stars} />
-      </div>
-      <Fog reduced={reduced} />
-      <div className={styles.hills} aria-hidden="true" />
-      <Mausoleum graves={graves} reduced={reduced} />
+    <section
+      ref={sceneRef}
+      className={styles.scene}
+      aria-label="Haunted graveyard"
+      data-motion={reduced ? 'still' : 'animated'}
+    >
       <div aria-live="polite" aria-atomic="true" className={styles.srOnly} data-testid="scene-live">
         {message}
       </div>
       <p className={styles.srOnly}>
         Use the arrow keys to move between graves. Press Enter to open the actions for a grave and Escape to close them.
       </p>
-      {graves.length === 0 && (
-        <p className={styles.emptyScene}>The graveyard is eerily quiet. Bury a trial above, or summon a demo graveyard.</p>
-      )}
       {graves.some((g) => g.status === 'active') && (
         <button
           type="button"
@@ -365,6 +417,14 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
         {renderRow('stones')}
         {renderRow('front')}
       </div>
+      {!reduced && (
+        <div className={styles.fxLayer} aria-hidden="true">
+          {effects.map((f) => (
+            <BuryFx key={f.id} effect={f} />
+          ))}
+          <WanderingGhost delayMs={wanderDelayMs} />
+        </div>
+      )}
     </section>
   );
 }

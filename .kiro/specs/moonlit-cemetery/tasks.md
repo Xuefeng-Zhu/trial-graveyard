@@ -25,21 +25,21 @@ Ordered and incremental. Each task leaves the app building and tests passing. Re
 - [x] 6. Visual tokens
   - [x] 6.1 Palette, serif font, glass utility, softer Daylight. Contrast tests stay green. [M8.4, M8.5]
 
-- [ ] 7. Tombstones and restlessness
-  - [ ] 7.1 Tombstone SVG with engraved name, countdown, price, depth rows, actions. [M3]
-  - [ ] 7.2 Glow, cracks, tremble, zombie hand with dirt, ghost, using `motionFor`. [M4]
-  - [ ] 7.3 Accessible list mirroring graves; keep Daylight list. [M3.3]
+- [x] 7. Tombstones and restlessness
+  - [x] 7.1 Tombstone SVG with engraved name, countdown, price, depth rows, actions. [M3]
+  - [x] 7.2 Glow, cracks, tremble, zombie hand with dirt, ghost, using `motionFor`. [M4]
+  - [x] 7.3 Accessible list mirroring graves; keep Daylight list. [M3.3]
 
-- [ ] 8. Signature interactions
-  - [ ] 8.1 Intro, skippable, once per session. [M5.1]
-  - [ ] 8.2 Summon, bury with floating saved amount and counter roll. [M5.2, M5.3]
-  - [ ] 8.3 Hover and focus lift, wandering ghost. [M5.4, M5.5]
+- [x] 8. Signature interactions
+  - [x] 8.1 Intro, skippable, once per session. [M5.1]
+  - [x] 8.2 Summon, bury with floating saved amount and counter roll. [M5.2, M5.3]
+  - [x] 8.3 Hover and focus lift, wandering ghost. [M5.4, M5.5]
 
-- [ ] 9. Glass HUD, sound sync and mobile
-  - [ ] 9.1 HUD panels, Calm toggle in settings, all entry points. [M6]
-  - [ ] 9.2 Sound sync with animations. [M7]
-  - [ ] 9.3 360 px layout, bottom sheet. [M9]
-  - [ ] 9.4 Update App, graveyard and landing tests; axe on main views.
+- [x] 9. Glass HUD, sound sync and mobile
+  - [x] 9.1 HUD panels, Calm toggle in settings, all entry points. [M6]
+  - [x] 9.2 Sound sync with animations. [M7]
+  - [x] 9.3 360 px layout, bottom sheet. [M9]
+  - [x] 9.4 Update App, graveyard and landing tests; axe on main views.
 
 - [ ] 10. README and closure
   - [ ] 10.1 Screenshots, Kiro features table, bundle check. [M10]

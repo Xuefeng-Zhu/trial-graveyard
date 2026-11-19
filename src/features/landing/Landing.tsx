@@ -1,4 +1,4 @@
-import { Fog, useReducedMotion } from '../graveyard';
+import { useReducedMotion } from '../graveyard';
 import styles from './landing.module.css';
 
 export const LANDING_PITCH = 'Every free trial is a grave. Cancel before it rises.';
@@ -10,13 +10,13 @@ export interface LandingProps {
   reducedMotion?: boolean;
 }
 
-/** First screen when there are no graves. Daylight mode drops the fog and moon artwork. */
+/** First screen when there are no graves. A glass card over the moonlit backdrop. Daylight mode drops the moon artwork. */
 export function Landing({ daylight, onSummon, reducedMotion }: LandingProps) {
   const osReduced = useReducedMotion();
   const reduced = reducedMotion ?? osReduced;
   return (
     <section
-      className={`${styles.landing} ${daylight ? styles.plain : ''}`}
+      className={`${styles.landing} glass ${daylight ? styles.plain : ''}`}
       aria-labelledby="landing-heading"
       data-motion={reduced ? 'still' : 'animated'}
     >
@@ -27,7 +27,6 @@ export function Landing({ daylight, onSummon, reducedMotion }: LandingProps) {
             <circle cx="38" cy="40" r="7" fill="#bdb68c" />
             <circle cx="60" cy="58" r="10" fill="#bdb68c" opacity="0.7" />
           </svg>
-          <Fog count={12} reduced={reduced} />
         </div>
       )}
       <div className={styles.content}>

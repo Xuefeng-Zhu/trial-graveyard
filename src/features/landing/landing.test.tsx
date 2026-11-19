@@ -29,10 +29,10 @@ describe('Landing', () => {
     expect(screen.getByTestId('landing-art')).toBeInTheDocument();
   });
 
-  it('renders still fog and an unanimated moon when motion is reduced', () => {
+  it('renders an unanimated moon and no canvas when motion is reduced', () => {
     mockReduced(true);
     const { container } = render(<Landing daylight={false} onSummon={() => {}} />);
-    expect(screen.getByTestId('fog')).toHaveAttribute('data-motion', 'still');
+    expect(screen.getByRole('region')).toHaveAttribute('data-motion', 'still');
     expect(container.querySelector('canvas')).toBeNull();
     expect(container.querySelector('svg')?.getAttribute('class')).not.toMatch(/glow/);
   });

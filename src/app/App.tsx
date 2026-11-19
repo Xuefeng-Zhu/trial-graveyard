@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { DaylightList, downloadIcs } from '../features/daylight';
 import { Scene, useReducedMotion } from '../features/graveyard';
-import { MoonlitBackdrop } from '../features/moonlit';
+import { Hud } from '../features/hud';
+import { Intro, MoonlitBackdrop, introSeen, markIntroSeen } from '../features/moonlit';
 import { isMotionAllowed } from '../domain/motion';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
@@ -25,6 +26,7 @@ export interface AppProps {
 }
 
 const defaultClock = (): Date => new Date();
+const NO_GRAVES: Grave[] = [];
 
 export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const s = useStore(store, (state) => state);
@@ -40,6 +42,26 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const { daylight, soundOn, calm } = s.settings;
   const osReduced = useReducedMotion();
   const motionAllowed = isMotionAllowed(osReduced, calm);
+  const osReducedRef = useRef(osReduced);
+  osReducedRef.current = osReduced;
+
+  // Saved graves arrive after mount. Hold the scene back until then so the intro can stagger them in.
+  const [hydrated, setHydrated] = useState(() => store.persist.hasHydrated());
+  const [introOn, setIntroOn] = useState(false);
+  useEffect(() => {
+    const ready = (): void => {
+      const { graves, settings } = store.getState();
+      const play =
+        graves.length > 0 && !settings.daylight && isMotionAllowed(osReducedRef.current, settings.calm) && !introSeen();
+      if (play) markIntroSeen();
+      setIntroOn(play);
+      setHydrated(true);
+    };
+    const unsubscribe = store.persist.onFinishHydration(ready);
+    if (store.persist.hasHydrated()) ready();
+    return unsubscribe;
+  }, [store]);
+  const endIntro = useCallback(() => setIntroOn(false), []);
 
   useEffect(() => {
     document.documentElement.dataset.theme = daylight ? 'daylight' : 'night';
@@ -76,7 +98,10 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const exportGraves = (graves: Grave[], filename: string): void => downloadIcs(graves, clock(), filename);
 
   const empty = s.graves.length === 0;
-  const summon = (): void => s.loadDemo(clock());
+  const summon = (): void => {
+    s.loadDemo(clock());
+    playSound('creak');
+  };
 
   const toastMessage = changed
     ? changed.status === 'cancelled'
@@ -84,32 +109,48 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
       : `${changed.name} is now a ghost.`
     : '';
 
+  const addPanel = (
+    <section aria-labelledby="editor-heading" className={styles.editor}>
+      <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
+      {editing ? (
+        <GraveForm
+          key={editing.id}
+          initial={valuesFromGrave(editing)}
+          submitLabel="Save changes"
+          onSubmit={(trial) => {
+            s.updateGrave(editing.id, trial);
+            setEditingId(null);
+          }}
+          onCancel={() => setEditingId(null)}
+        />
+      ) : (
+        <>
+          <PasteBox
+            now={clock}
+            onParsed={onParsed}
+            onManual={() =>
+              document.querySelector<HTMLElement>('form[aria-label="Grave details"] [name="name"]')?.focus()
+            }
+          />
+          <Seance existing={s.graves} clock={clock} onBury={bury} />
+          <GraveForm
+            initial={EMPTY_VALUES}
+            prefill={prefill}
+            prefillVersion={prefillVersion}
+            autoFocus={!empty}
+            onSubmit={bury}
+          />
+        </>
+      )}
+    </section>
+  );
+
   return (
     <div className={styles.shell}>
       <MoonlitBackdrop motion={motionAllowed} />
+      {introOn && <Intro onDone={endIntro} />}
       <header className={styles.header}>
         <h1>Trial Graveyard</h1>
-        <div className={styles.headerActions}>
-          <button
-            type="button"
-            className={styles.button}
-            aria-pressed={daylight}
-            onClick={s.toggleDaylight}
-          >
-            Daylight mode
-          </button>
-          <button type="button" className={styles.button} aria-pressed={calm} onClick={s.toggleCalm}>
-            Calm mode
-          </button>
-          <button type="button" className={styles.button} aria-pressed={soundOn} onClick={s.toggleSound}>
-            {soundOn ? 'Sound: on' : 'Sound: off'}
-          </button>
-          {!empty && (
-            <button type="button" className={styles.button} onClick={summon}>
-              Summon demo graveyard
-            </button>
-          )}
-        </div>
       </header>
 
       {s.notice && (
@@ -121,66 +162,50 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
         </div>
       )}
 
-      <main>
-        {empty && !editing && <Landing daylight={daylight} onSummon={summon} />}
-        <section aria-labelledby="editor-heading" className={styles.editor}>
-          <h2 id="editor-heading">{editing ? `Edit ${editing.name}` : 'Add a trial'}</h2>
-          {editing ? (
-            <GraveForm
-              key={editing.id}
-              initial={valuesFromGrave(editing)}
-              submitLabel="Save changes"
-              onSubmit={(trial) => {
-                s.updateGrave(editing.id, trial);
-                setEditingId(null);
-              }}
-              onCancel={() => setEditingId(null)}
+      <div className={styles.layout}>
+        <main>
+          {empty && !editing && <Landing daylight={daylight} onSummon={summon} />}
+          {daylight ? (
+            <DaylightList
+              graves={s.graves}
+              now={now}
+              onCancelled={(id) => status(id, 'cancel')}
+              onKeep={(id) => status(id, 'keep')}
+              onEdit={setEditingId}
+              onDelete={deleteGrave}
+              onExport={exportGraves}
             />
           ) : (
-            <>
-              <PasteBox
-                now={clock}
-                onParsed={onParsed}
-                onManual={() =>
-                  document.querySelector<HTMLElement>('form[aria-label="Grave details"] [name="name"]')?.focus()
-                }
-              />
-              <Seance existing={s.graves} clock={clock} onBury={bury} />
-              <GraveForm
-                initial={EMPTY_VALUES}
-                prefill={prefill}
-                prefillVersion={prefillVersion}
-                autoFocus={!empty}
-                onSubmit={bury}
-              />
-            </>
+            <Scene
+              graves={hydrated ? s.graves : NO_GRAVES}
+              now={now}
+              reducedMotion={!motionAllowed}
+              intro={introOn}
+              summonNew={hydrated}
+              onCancelled={(id) => status(id, 'cancel')}
+              onKeep={(id) => status(id, 'keep')}
+              onEdit={setEditingId}
+              onDelete={deleteGrave}
+              onExport={exportGraves}
+            />
           )}
-        </section>
-
-        <ShareButton graves={s.graves} className={styles.button} />
-
-        {daylight ? (
-          <DaylightList
-            graves={s.graves}
-            now={now}
-            onCancelled={(id) => status(id, 'cancel')}
-            onKeep={(id) => status(id, 'keep')}
-            onEdit={setEditingId}
-            onDelete={deleteGrave}
-            onExport={exportGraves}
-          />
-        ) : empty ? null : (
-          <Scene
-            graves={s.graves}
-            now={now}
-            onCancelled={(id) => status(id, 'cancel')}
-            onKeep={(id) => status(id, 'keep')}
-            onEdit={setEditingId}
-            onDelete={deleteGrave}
-            onExport={exportGraves}
-          />
-        )}
-      </main>
+        </main>
+        <Hud
+          graves={s.graves}
+          now={now}
+          daylight={daylight}
+          soundOn={soundOn}
+          calm={calm}
+          motion={motionAllowed}
+          onBury={(id) => status(id, 'cancel')}
+          onToggleDaylight={s.toggleDaylight}
+          onToggleSound={s.toggleSound}
+          onToggleCalm={s.toggleCalm}
+          onSummon={empty ? undefined : summon}
+          addPanel={addPanel}
+          share={<ShareButton graves={s.graves} className={styles.button} />}
+        />
+      </div>
 
       {toastOpen && lastChange && changed && (
         <UndoToast
