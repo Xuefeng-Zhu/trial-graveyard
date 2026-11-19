@@ -257,4 +257,27 @@ describe('night scene focus after exorcism', () => {
       expect(el.dataset.kind).toBe('tombstone');
     });
   });
+
+  it('moves focus after exorcising an urgent grave reached directly, with another grave active', async () => {
+    const store = createGraveStore();
+    store.setState((s) => ({
+      settings: { ...s.settings, daylight: false },
+      graves: [grave('Phantomflix', -DAY), grave('Wraithwave', -2 * DAY)],
+    }));
+    render(<App store={store} clock={() => NOW} />);
+    await act(async () => {
+      await store.persist.rehydrate();
+    });
+    const other = screen.getAllByRole('listitem').find((li) => li.getAttribute('aria-label')?.startsWith('Wraithwave'))!;
+    fireEvent.click(other);
+    const exorcise = screen.getByRole('button', { name: /^Exorcise\s*Phantomflix/ });
+    exorcise.focus();
+    fireEvent.click(exorcise);
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: "It's exorcised" }));
+    await waitFor(() => {
+      const el = document.activeElement as HTMLElement;
+      expect(el.dataset.itemId).toBe('phantomflix');
+      expect(el.dataset.kind).toBe('tombstone');
+    });
+  });
 });
