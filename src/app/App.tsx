@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useStore } from 'zustand';
 import { DaylightList, downloadIcs } from '../features/daylight';
-import { Scene } from '../features/graveyard';
+import { Scene, useReducedMotion } from '../features/graveyard';
+import { MoonlitBackdrop } from '../features/moonlit';
+import { isMotionAllowed } from '../domain/motion';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
 import { Seance } from '../features/seance';
@@ -35,7 +37,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
   const [prefillVersion, setPrefillVersion] = useState(0);
   const [toastOpen, setToastOpen] = useState(false);
 
-  const { daylight, soundOn } = s.settings;
+  const { daylight, soundOn, calm } = s.settings;
+  const osReduced = useReducedMotion();
+  const motionAllowed = isMotionAllowed(osReduced, calm);
 
   useEffect(() => {
     document.documentElement.dataset.theme = daylight ? 'daylight' : 'night';
@@ -82,6 +86,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
 
   return (
     <div className={styles.shell}>
+      <MoonlitBackdrop motion={motionAllowed} />
       <header className={styles.header}>
         <h1>Trial Graveyard</h1>
         <div className={styles.headerActions}>
@@ -92,6 +97,9 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
             onClick={s.toggleDaylight}
           >
             Daylight mode
+          </button>
+          <button type="button" className={styles.button} aria-pressed={calm} onClick={s.toggleCalm}>
+            Calm mode
           </button>
           <button type="button" className={styles.button} aria-pressed={soundOn} onClick={s.toggleSound}>
             {soundOn ? 'Sound: on' : 'Sound: off'}

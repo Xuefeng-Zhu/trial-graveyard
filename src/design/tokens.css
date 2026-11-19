@@ -1,22 +1,30 @@
 /* Design tokens. Every text/background pair listed in contrast.test.ts is >= 4.5:1 (WCAG AA). */
 :root {
-  --font-display: 'Pirata One', 'Georgia', serif;
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
   --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Night theme (default) */
-  --color-bg: #12101a;
-  --color-surface: #1e1a2b;
-  --color-text: #ece8f5;
-  --color-text-muted: #b5aec9;
-  --color-accent: #9be28c;
-  --color-accent-contrast: #12101a;
+  --color-bg: #0a1030;
+  --color-surface: #141c44;
+  --color-text: #e8eefc;
+  --color-text-muted: #b4c0e0;
+  --color-accent: #7cffb2;
+  --color-accent-contrast: #0a1030;
   --color-danger: #ff9b9b;
-  --color-border: #4a4260;
+  --color-border: #3c4a82;
+  --color-moon: #dfe9ff;
+
+  /* Scene gradient behind the artwork, and glass panels */
+  --scene-top: #0a1030;
+  --scene-bottom: #14325a;
+  --glass-bg: rgba(20, 28, 68, 0.55);
+  --glass-border: rgba(223, 233, 255, 0.28);
+  --glass-blur: 14px;
   --color-focus: #ffd866;
 
   --stage-sealed: #c9c3d8;
   --stage-cracked: #e6c88a;
-  --stage-churning: #9be28c;
+  --stage-churning: #7cffb2;
   --stage-zombie: #ffb36b;
   --stage-overdue: #ff9b9b;
 
@@ -37,9 +45,13 @@
 
 /* Daylight theme: calm, light, high contrast, same tokens. */
 :root[data-theme='daylight'] {
-  --color-bg: #fbf9f4;
+  --color-bg: #f3f6fb;
   --color-surface: #ffffff;
-  --color-text: #1d1a26;
+  --scene-top: #dde7f5;
+  --scene-bottom: #f3f6fb;
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(61, 74, 120, 0.3);
+  --color-text: #161c33;
   --color-text-muted: #4d4760;
   --color-accent: #1d6b2a;
   --color-accent-contrast: #ffffff;

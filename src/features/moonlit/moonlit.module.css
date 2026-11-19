@@ -1,0 +1,83 @@
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--scene-top) 0%, var(--scene-bottom) 100%);
+}
+
+.layer {
+  position: absolute;
+  /* Oversized so parallax travel never reveals an edge. */
+  inset: -5%;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: cover;
+  will-change: transform;
+}
+
+.sky {
+  background-image: var(--scene-sky);
+  background-position: center top;
+}
+
+.hills {
+  background-image: var(--scene-hills);
+}
+
+.graves {
+  pointer-events: none;
+}
+
+.fog {
+  background: linear-gradient(0deg, rgba(190, 215, 235, 0.18) 0%, rgba(190, 215, 235, 0) 45%);
+}
+
+.foreground {
+  background-image: var(--scene-foreground);
+}
+
+.moonGlow {
+  position: absolute;
+  top: 6%;
+  right: 14%;
+  width: 40vmin;
+  height: 40vmin;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(220, 235, 255, 0.45) 0%, rgba(220, 235, 255, 0) 70%);
+  opacity: 0.8;
+}
+
+.pulse {
+  animation: moon-pulse 7s ease-in-out infinite;
+}
+
+@keyframes moon-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+}
+
+:global(:root[data-theme='daylight']) .scene {
+  opacity: 0.18;
+}
+
+:global(:root[data-theme='daylight']) .atmosphere {
+  display: none;
+}

@@ -42,6 +42,7 @@ export interface GraveState extends PersistedSlice {
   undo: (now: Date) => boolean;
   toggleDaylight: () => void;
   toggleSound: () => void;
+  toggleCalm: () => void;
   dismissNotice: () => void;
   /** Appends about 8 sample graves covering every stage, one cancelled and one kept. */
   loadDemo: (now: Date) => void;
@@ -157,6 +158,7 @@ export function createGraveStore(options: StoreOptions = {}): GraveStore {
         },
         toggleDaylight: () => set((s) => ({ settings: { ...s.settings, daylight: !s.settings.daylight } })),
         toggleSound: () => set((s) => ({ settings: { ...s.settings, soundOn: !s.settings.soundOn } })),
+        toggleCalm: () => set((s) => ({ settings: { ...s.settings, calm: !s.settings.calm } })),
         dismissNotice: () => set({ notice: null }),
         loadDemo: (now) => {
           const added = demoTrials(now).map(([trial, status]) => {
