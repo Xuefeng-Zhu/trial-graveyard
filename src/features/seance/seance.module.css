@@ -1,0 +1,163 @@
+.entry {
+  margin-bottom: var(--space-4);
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.providers,
+.consent,
+.scanning {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.rowHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.badge {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.snippet {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  border-left: 3px solid var(--color-border);
+  padding-left: var(--space-3);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-2);
+}
+
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.input {
+  font: inherit;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 0.9rem;
+}
+
+.status {
+  margin: 0;
+  min-height: 1.5em;
+  color: var(--color-text-muted);
+}
+
+.muted {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.primary,
+.secondary,
+.disabled {
+  font: inherit;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-accent);
+  cursor: pointer;
+}
+
+.primary {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.secondary {
+  background: transparent;
+  color: var(--color-accent);
+}
+
+.disabled {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-style: dashed;
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+.privacy {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.orb {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--color-accent), var(--color-border));
+  box-shadow: 0 0 1.5rem var(--color-accent);
+}
+
+.orb[data-animated='true'] {
+  animation: swirl 2.4s ease-in-out infinite;
+}
+
+@keyframes swirl {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    transform: scale(1.12);
+    filter: hue-rotate(40deg);
+  }
+}

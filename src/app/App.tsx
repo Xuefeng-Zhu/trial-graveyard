@@ -4,6 +4,7 @@ import { DaylightList, downloadIcs } from '../features/daylight';
 import { Scene } from '../features/graveyard';
 import { GraveForm, PasteBox, EMPTY_VALUES, prefillFromParse, valuesFromGrave } from '../features/editor';
 import type { FormValues } from '../features/editor';
+import { Seance } from '../features/seance';
 import type { Grave } from '../domain/trial';
 import type { ParseResult } from '../lib/parse';
 import { setSoundEnabled, playSound } from '../design/sounds';
@@ -114,6 +115,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           ) : (
             <>
               <PasteBox now={clock} onParsed={onParsed} />
+              <Seance existing={s.graves} clock={clock} onBury={(trial) => s.addGrave(trial, clock())} />
               <GraveForm
                 initial={EMPTY_VALUES}
                 prefill={prefill}

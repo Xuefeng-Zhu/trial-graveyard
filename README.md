@@ -19,10 +19,19 @@ npm run build   # typecheck, then build to dist/ (base path /trial-graveyard/)
 npm run preview # serve the production build
 ```
 
+## Inbox Séance
+
+The crystal-ball button next to "Paste a receipt" opens the Inbox Séance. It connects to an inbox, scans receipt emails for trials, and lists what it found so you can review them and bury the ones you want.
+
+- **How it works:** connect a provider, allow access in a consent step, watch the spirits count up as emails are read, then review each detected trial. Every row has a checkbox, a confidence label, a short source snippet and editable name, date, price and cadence. "Bury selected" adds the checked trials to the graveyard. Trials you already buried do not come back.
+- **Mock provider:** for now the only provider is the "Haunted Demo Inbox", an in-memory inbox of fake receipts with relative dates. There are no network calls. Gmail and Outlook show as "coming soon" (see `src/lib/email/providers/README.md`).
+- **Privacy:** everything stays on the device. Only the trials you confirm are stored, email bodies are never stored, and Disconnect (or closing the panel) clears everything the spirits saw. The panel explains this under "What the spirits can see".
+- **Motion:** the scanning orb stays still when you prefer reduced motion.
+
 ## Built with Kiro
 
 - **Steering:** `.kiro/steering/` holds the product metaphor, tech stack and project structure, always included in the agent's context so the costume stays consistent.
-- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass.
+- **Spec-driven development:** `.kiro/specs/trial-graveyard-mvp/` has requirements, design and a phased task list. Each phase was implemented against the spec and ticked off in `tasks.md`. A second spec, `.kiro/specs/haunted-polish/`, covers the landing screen, epitaphs, sound, share card and mobile pass. A third spec, `.kiro/specs/inbox-seance/`, covers the Inbox Séance.
 - **Agent hooks:** `.kiro/hooks/` has five hooks: test-on-save, domain-property-guard, spec-sync, a11y-check and spooky-copy.
 - **MCP:** `.kiro/settings/mcp.json` configures a `fetch` server and a GitHub server, explained in `.kiro/steering/mcp.md`. The token comes from `GITHUB_TOKEN`.
 - **Property-based tests:** fast-check covers stage boundaries, savings math, ICS export and the receipt parser, alongside example tests.
@@ -33,7 +42,7 @@ npm run preview # serve the production build
 | Feature | Where | What it does here |
 |---|---|---|
 | Steering | `.kiro/steering/` (product, structure, tech, mcp) | Keeps the haunted metaphor, stack and MCP usage consistent. |
-| Specs (2) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/` | Requirements, design and tasks for the MVP and the polish pass. |
+| Specs (3) | `.kiro/specs/trial-graveyard-mvp/`, `.kiro/specs/haunted-polish/`, `.kiro/specs/inbox-seance/` | Requirements, design and tasks for the MVP, the polish pass and the Inbox Séance. |
 | Hooks (5) | `.kiro/hooks/` | Test on save, domain property guard, spec sync, a11y check, spooky copy. |
 | MCP | `.kiro/settings/mcp.json` | `fetch` for real cancellation and pricing pages, GitHub for follow-up issues. |
 | Property-based tests | `src/domain/`, `src/lib/parse/` | fast-check for stages, savings, ICS and the receipt parser. |
