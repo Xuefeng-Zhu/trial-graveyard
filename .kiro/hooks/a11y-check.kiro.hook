@@ -6,7 +6,8 @@
   "when": {
     "type": "fileEdited",
     "patterns": [
-      "src/components/**/*.tsx"
+      "src/features/**/*.tsx",
+      "src/app/**/*.tsx"
     ]
   },
   "then": {
