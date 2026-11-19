@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { getViewState, stageLabel } from '../../domain/stage';
 import type { Grave } from '../../domain/trial';
@@ -19,6 +19,8 @@ export interface HudProps {
   onToggleCalm: () => void;
   /** Shown only when there is something to replace; the landing offers it otherwise. */
   onSummon?: () => void;
+  /** A grave is being edited: reveal the panels and focus the form. */
+  editing?: boolean;
   /** Add trial form, paste box and Inbox Seance. */
   addPanel: ReactNode;
   /** Share button. Renders nothing until a grave is cancelled. */
@@ -45,11 +47,19 @@ export function Hud({
   onToggleSound,
   onToggleCalm,
   onSummon,
+  editing = false,
   addPanel,
   share,
 }: HudProps) {
   const [open, setOpen] = useState(false);
   const panelsId = useId();
+  const panelsRef = useRef<HTMLDivElement>(null);
+  // The edit form mounts inside the collapsed mobile sheet, where its autofocus cannot land.
+  useEffect(() => {
+    if (!editing) return;
+    setOpen(true);
+    panelsRef.current?.querySelector<HTMLElement>('form [name="name"]')?.focus();
+  }, [editing]);
   const next = nextToRise(graves);
   const view = next ? getViewState(next, now) : undefined;
 
@@ -64,7 +74,7 @@ export function Hud({
       >
         {open ? 'Close panels' : 'Open panels'}
       </button>
-      <div id={panelsId} className={styles.panels}>
+      <div id={panelsId} ref={panelsRef} className={styles.panels}>
         <section className={`${styles.panel} glass`} aria-labelledby={`${panelsId}-next`}>
           <h2 id={`${panelsId}-next`} className={styles.title}>
             Next to rise

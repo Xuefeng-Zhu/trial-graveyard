@@ -26,11 +26,13 @@ export function formatTick(remainingMs: number): string {
 /** Counts down in seconds while `hot`. Decorative: the label on the grave already says the same in words. */
 function Ticker({ remainingMs }: { remainingMs: number }) {
   const [elapsed, setElapsed] = useState(0);
+  // Rebase when the prop changes (the app's minute tick), so elapsed time is not subtracted twice.
   useEffect(() => {
     const start = Date.now();
+    setElapsed(0);
     const id = setInterval(() => setElapsed(Date.now() - start), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [remainingMs]);
   return (
     <p className={styles.ticker} aria-hidden="true" data-testid="ticker" data-motion="animated">
       {formatTick(remainingMs - elapsed)}

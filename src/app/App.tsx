@@ -164,7 +164,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
 
       <div className={styles.layout}>
         <main>
-          {empty && !editing && <Landing daylight={daylight} onSummon={summon} />}
+          {empty && !editing && <Landing daylight={daylight} onSummon={summon} reducedMotion={!motionAllowed} />}
           {daylight ? (
             <DaylightList
               graves={s.graves}
@@ -202,6 +202,7 @@ export function App({ store = graveStore, clock = defaultClock }: AppProps) {
           onToggleSound={s.toggleSound}
           onToggleCalm={s.toggleCalm}
           onSummon={empty ? undefined : summon}
+          editing={editingId !== null}
           addPanel={addPanel}
           share={<ShareButton graves={s.graves} className={styles.button} />}
         />
