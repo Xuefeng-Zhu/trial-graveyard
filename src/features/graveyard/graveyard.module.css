@@ -653,6 +653,17 @@
   }
 }
 
+/* Calm mode (in-app setting): no decorative hover lift. */
+.scene[data-motion='still'] .figure {
+  transition: none;
+}
+
+.scene[data-motion='still'] .item:hover .figure,
+.scene[data-motion='still'] .item:focus-visible .figure,
+.scene[data-motion='still'] .item:focus-within .figure {
+  --lift: 0px;
+}
+
 /* Safety net on top of global.css: no keyframes at all under reduced motion. */
 @media (prefers-reduced-motion: reduce) {
   .scene *,

@@ -310,8 +310,9 @@ export function Scene({ graves, now, onCancelled, onKeep, onEdit, onDelete, onEx
     const fresh = ids.filter((id) => !before.has(id));
     if (fresh.length === 0) return undefined;
     setSummoning((cur) => new Set([...cur, ...fresh]));
-    const timer = setTimeout(() => setSummoning((cur) => new Set([...cur].filter((id) => !fresh.includes(id)))), SUMMON_MS);
-    return () => clearTimeout(timer);
+    // Not cleared on re-run: entry updates inside the window must not strand these ids in `summoning`.
+    setTimeout(() => setSummoning((cur) => new Set([...cur].filter((id) => !fresh.includes(id)))), SUMMON_MS);
+    return undefined;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entries]);
 
