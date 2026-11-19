@@ -13,6 +13,9 @@ A Kiroween 2026 Costume Contest entry. It's a free-trial and subscription tracke
 - **Kept** (paid) subscriptions are **ghosts** that drift above the graveyard, showing their monthly cost.
 - The **Mausoleum** keeps a running total of money saved (the "souls saved" counter).
 
+## Look and feel
+Retro Pixel: an 8-bit graveyard with pixel gravestones, a pixel Reaper, a game-like HUD (level, saved coins, daily quest, Exorcise Trials button) and a violet, green and orange palette. Level, XP, streaks and collectibles are cosmetic only and never change money totals.
+
 ## Users
 People who start free trials and forget to cancel them, like deal hunters and busy parents. The demo persona has around 8 trials and subscriptions.
 

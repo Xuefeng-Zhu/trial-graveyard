@@ -6,8 +6,8 @@ Ordered by the phases of issue #34. Each task leaves the app building and tests 
   - [x] 0.1 Merge pixel assets, install `@fontsource/press-start-2p`.
 
 ## Phase 1: Audit
-- [ ] 1.1 List screens, components and tests that depend on `features/moonlit` and `public/scene`. [R2.2]
-- [ ] 1.2 Record contrast and trademark audit of current copy and samples. [R1.4, R8]
+- [x] 1.1 List screens, components and tests that depend on `features/moonlit` and `public/scene`. [R2.2]
+- [x] 1.2 Record contrast and trademark audit of current copy and samples. [R1.4, R8]
 
 ## Phase 2: Design system
 - [x] 2.1 Palette tokens, Press Start 2P + Inter, pixel utilities. [R1]
@@ -20,7 +20,7 @@ Ordered by the phases of issue #34. Each task leaves the app building and tests 
 - [x] 3.4 Gravestone component for all five states plus selected. [R3, R3.8]
 
 ## Phase 4: Mobile
-- [ ] 4.1 360 px layout, touch targets, no horizontal scroll. [R4.1]
+- [x] 4.1 360 px layout, touch targets, no horizontal scroll. [R4.1]
 - [x] 4.2 Daylight list view restyled. [R4.2]
 
 ## Phase 5: Feature integration
@@ -40,7 +40,7 @@ Ordered by the phases of issue #34. Each task leaves the app building and tests 
 - [x] 6.3 Cancellation celebration. [R7.3]
 
 ## Phase 7: Validation
-- [ ] 7.1 `npm run typecheck`, `npm test` with 100% domain coverage, `npm run build`. [R9.1]
-- [ ] 7.2 Accessibility tests (vitest-axe). [R9.1]
-- [ ] 7.3 Screenshots at 360 px and 1440 px in `docs/screenshots`. [R9.2]
-- [ ] 7.4 Em dash and trademark sweep. [R8]
+- [x] 7.1 `npm run typecheck`, `npm test` with 100% domain coverage, `npm run build`. [R9.1]
+- [x] 7.2 Accessibility tests (vitest-axe). [R9.1]
+- [x] 7.3 Screenshots at 360 px and 1440 px in `docs/screenshots`. [R9.2]
+- [x] 7.4 Em dash and trademark sweep. [R8]
